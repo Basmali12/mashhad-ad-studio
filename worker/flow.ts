@@ -28,16 +28,19 @@ export async function media(page:Page):Promise<Asset[]>{return page.locator('vid
 }));}
 export async function attachments(page:Page,files:string[]){if(!files.length)return;
  // Verified current Flow upload chooser + selection. Uploading references never clicks Generate.
- await page.getByRole('button',{name:'إضافة المكوّنات إلى مربّع الطلب',exact:true}).click();
- for(const file of files){const upload=page.getByRole('button').filter({hasText:'تحميل وسائط'});if(await upload.count()!==1)throw new Error('UNSUPPORTED: رفع المراجع غير ظاهر في هذا الوضع.');
+ const chips=page.getByRole('button',{name:'المكوّن',exact:true});const initial=await chips.count();
+ for(const [index,file] of files.entries()){await page.getByRole('button',{name:'إضافة المكوّنات إلى مربّع الطلب',exact:true}).click();const upload=page.getByRole('button').filter({hasText:'تحميل وسائط'});await upload.waitFor({state:'visible',timeout:10000});if(await upload.count()!==1)throw new Error('UNSUPPORTED: رفع المراجع غير ظاهر في هذا الوضع.');
  const waiting=page.waitForEvent('filechooser',{timeout:10000});await upload.click();const chooser=await waiting;await chooser.setFiles(file);
  const item=page.getByRole('option').filter({hasText:basename(file)});await item.waitFor({timeout:60000});
  const deadline=Date.now()+60000;while((await item.innerText()).includes('جارٍ التحميل')&&Date.now()<deadline)await sleep(500);
  if((await item.innerText()).includes('جارٍ التحميل')||await item.count()!==1)throw new Error('REFERENCE_UPLOAD_FAILED: لم يكتمل رفع المرجع.');
- await item.click();if(await item.getAttribute('aria-selected')!=='true')throw new Error('REFERENCE_UNSUPPORTED: لم يُحدد المرجع.');
+ await item.click();
+ // Current Flow attaches a single selected ingredient immediately and closes the chooser.
+ for(let n=0;n<50;n++){if(await chips.count()>initial+index||await item.getAttribute('aria-selected').catch(()=>null)==='true')break;await sleep(100);}
+ if(await chips.count()<=initial+index){if(await item.getAttribute('aria-selected').catch(()=>null)!=='true')throw new Error('REFERENCE_UNSUPPORTED: لم يُحدد المرجع.');const add=page.getByRole('button',{name:'الإضافة إلى الطلب',exact:true});if(!await add.isEnabled())throw new Error('REFERENCE_UNSUPPORTED: هذا الوضع لم يقبل المراجع.');await add.click();}
+ await chips.nth(initial+index).waitFor({state:'visible',timeout:10000});
  }
- const add=page.getByRole('button',{name:'الإضافة إلى الطلب',exact:true});if(!await add.isEnabled())throw new Error('REFERENCE_UNSUPPORTED: هذا الوضع لم يقبل المراجع.');await add.click();
- const chips=page.locator('button').filter({hasText:/^cancel$/});if(await chips.count()<files.length)throw new Error('REFERENCE_UNSUPPORTED: تحقق من المراجع المرفقة قبل إرسال الطلب.');
+ if(await chips.count()<initial+files.length)throw new Error('REFERENCE_UNSUPPORTED: تحقق من المراجع المرفقة قبل إرسال الطلب.');
 }
 export async function waitAssets(page:Page,ids:string[],baseline:string[],count:number,signal:()=>boolean,expectedPrompt:string):Promise<Asset[]>{
  const deadline=Date.now()+15*60*1000;
@@ -45,7 +48,7 @@ export async function waitAssets(page:Page,ids:string[],baseline:string[],count:
  const body=(await page.locator('body').innerText()).slice(-12000);if(/تعذّر الإنشاء|فشل الإنشاء|غير متاحة.*بلد|وحدات غير كافية|generation failed|unusual traffic/i.test(body))throw new Error('FLOW_BLOCKED: توقف Flow؛ لا إعادة توليد تلقائية.');
  const all=await media(page);const result=ids.length?all.filter(a=>ids.includes(a.id)):all.filter(a=>!baseline.includes(a.id));
  const editor=new URL(page.url()).pathname.match(/\/project\/([a-f0-9-]+)\/edit\/([a-f0-9-]+)$/);
- if(editor){const marker=expectedPrompt.match(/معرّف المشهد:\s*[a-zA-Z0-9-]+/)?.[0];if(count!==1||(ids.length&&!ids.includes(editor[2]))||(!ids.length&&!body.includes(expectedPrompt.trim())&&!(marker&&body.includes(marker))))throw new Error('IDENTITY_AMBIGUOUS: محرر الفيديو لا يطابق الطلب المحفوظ.');return [{id:editor[2],url:'',duration:0,width:0,height:0}];}
+ if(editor){const marker=expectedPrompt.match(/معرّف المشهد:\s*[a-zA-Z0-9-]+/)?.[0];if(count!==1||(ids.length&&!ids.includes(editor[2]))||(!ids.length&&!body.includes(expectedPrompt.trim())&&!(marker&&body.includes(marker))))throw new Error('IDENTITY_AMBIGUOUS: محرر الفيديو لا يطابق الطلب المحفوظ.');const downloadControl=page.getByRole('button',{name:'تنزيل الوسائط',exact:true});if(await downloadControl.count()===1&&await downloadControl.isEnabled())return [{id:editor[2],url:'',duration:0,width:0,height:0}];await sleep(2000);continue;}
  const tiles=page.locator('flow-video-tile');
  if(!ids.length&&!baseline.length&&count===1&&await tiles.count()===1&&await tiles.getByText('play_circle',{exact:true}).count()>0){await tiles.click();await sleep(1000);continue;}
  // Fresh empty dedicated project + baseline + one submit are required; no arbitrary gallery fallback.

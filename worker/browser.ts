@@ -4,11 +4,13 @@ import { spawn } from 'node:child_process';
 import { access,writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { root, sleep } from './runtime';
+import {platformConfig} from './platform';
 const endpoint='http://127.0.0.1:9431';
 let connected:Awaited<ReturnType<typeof connectFlow>>|undefined;
 export async function browser(){
  try{await fetch(`${endpoint}/json/version`,{signal:AbortSignal.timeout(1500)});}catch{
- const exe='C:/Program Files/Google/Chrome/Application/chrome.exe';await access(exe);
+ if(process.platform==='linux'&&!process.env.DISPLAY)throw new Error('LOGIN_REQUIRED: Linux requires a private graphical display for headed Chrome.');
+ const exe=platformConfig().chrome;await access(exe);
  // Standard installed Chrome, headed. No stealth, no sandbox disabling, no cookie import.
  const child=spawn(exe,[`--user-data-dir=${resolve(root,'chrome-profile')}`,'--remote-debugging-address=127.0.0.1','--remote-debugging-port=9431','https://labs.google/fx/tools/flow'],{detached:true,stdio:'ignore',windowsHide:false});child.unref();
  let ready=false;for(let n=0;n<20;n++){await sleep(500);try{const r=await fetch(`${endpoint}/json/version`,{signal:AbortSignal.timeout(1000)});if(r.ok){ready=true;break}}catch{/* Startup */}}

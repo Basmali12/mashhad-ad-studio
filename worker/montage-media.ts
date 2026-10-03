@@ -4,7 +4,8 @@ import {createHash} from 'node:crypto';
 import ffmpeg from 'ffmpeg-static';
 import ffprobe from 'ffprobe-static';
 import {editDimensions,type EditSettings} from '../shared/editing';
-export const tools={ffmpeg:ffmpeg!,ffprobe:ffprobe.path};
+import {platformConfig} from './platform';
+export const tools={ffmpeg:process.env.MASHHAD_FFMPEG_PATH??ffmpeg!,ffprobe:process.env.MASHHAD_FFPROBE_PATH??ffprobe.path};
 export async function command(exe:string,args:string[],cwd?:string,progress?:(seconds:number)=>void,signal?:AbortSignal):Promise<Buffer>{
  return new Promise((resolve,reject)=>{const p=spawn(exe,args,{cwd,windowsHide:true,signal}),out:Buffer[]=[];let error='',pending='';p.stdout.on('data',(b:Buffer)=>{if(progress){pending+=b.toString();let at;while((at=pending.indexOf('\n'))>=0){const line=pending.slice(0,at).trim();pending=pending.slice(at+1);if(line.startsWith('out_time_us='))progress(Number(line.split('=')[1])/1e6);}}else out.push(b);});p.stderr.on('data',b=>{error=(error+b.toString()).slice(-6000)});p.on('error',reject);p.on('close',code=>code===0?resolve(Buffer.concat(out)):reject(new Error(`Media command failed (${code}): ${error.replace(/https?:\/\/\S+/g,'[URL]').slice(-1800)}`)));});
 }
@@ -21,6 +22,6 @@ export function wrapped(s:string,max=34){const lines:string[]=[];let line='';for
 export async function subtitles(path:string,s:EditSettings,texts:{name:string;address:string;phone:string}){
  const lines=[...(s.text.name?wrapped(texts.name).map(l=>'\u200f'+l):[]),...(s.text.address?wrapped(texts.address).map(l=>'\u200f'+l):[]),...(s.text.phone?wrapped(texts.phone).map(l=>'\u200e'+l):[])];if(lines.length>6)throw new Error('النص يتجاوز ستة أسطر؛ اختصر العنوان أو عطّل بعض الحقول.');
  const color=(c:string)=>'&H00'+c.slice(5,7)+c.slice(3,5)+c.slice(1,3);const {width:w,height:h}=editDimensions(s),margin=Math.round(s.width*.075),font=Math.round(s.width*.046);
- const ass=`[Script Info]\nScriptType: v4.00+\nPlayResX: ${w}\nPlayResY: ${h}\nWrapStyle: 2\nScaledBorderAndShadow: yes\n[ V4+ Styles ]\n`.replace('[ V4+ Styles ]','[V4+ Styles]')+`Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Main,Arial,${font},${color(s.text.color)},${color(s.text.color)},${color(s.text.background)},${color(s.text.background)},0,0,0,0,100,100,0,0,3,8,0,${s.text.position==='top'?8:2},${margin},${margin},${margin},1\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:03:00.00,Main,,0,0,0,,${lines.join('\\N')}\n`;
+ const ass=`[Script Info]\nScriptType: v4.00+\nPlayResX: ${w}\nPlayResY: ${h}\nWrapStyle: 2\nScaledBorderAndShadow: yes\n[ V4+ Styles ]\n`.replace('[ V4+ Styles ]','[V4+ Styles]')+`Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Main,${platformConfig().font},${font},${color(s.text.color)},${color(s.text.color)},${color(s.text.background)},${color(s.text.background)},0,0,0,0,100,100,0,0,3,8,0,${s.text.position==='top'?8:2},${margin},${margin},${margin},1\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:03:00.00,Main,,0,0,0,,${lines.join('\\N')}\n`;
  await writeFile(path,ass,'utf8');return lines;
 }

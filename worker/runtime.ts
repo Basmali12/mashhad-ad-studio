@@ -1,7 +1,8 @@
 import { mkdir, readFile, writeFile, rename, open, unlink } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
-export const root=resolve(import.meta.dirname,'../../../work/mashhad-worker');
+import {platformConfig} from './platform';
+export const root=platformConfig().root;
 export const sleep=(ms:number)=>new Promise<void>(resolve=>setTimeout(resolve,ms));
 export async function read<T>(name:string):Promise<T|null>{try{return JSON.parse(await readFile(resolve(root,name),'utf8')) as T;}catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return null;throw error;}}
 export async function persist(name:string,value:unknown){await mkdir(root,{recursive:true});const target=resolve(root,name),temporary=`${target}.${randomUUID()}.tmp`;await writeFile(temporary,JSON.stringify(value,null,2),{encoding:'utf8',mode:0o600});await rename(temporary,target);}
