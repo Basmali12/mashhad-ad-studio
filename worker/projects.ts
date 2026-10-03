@@ -1,0 +1,4 @@
+import type {Page} from 'playwright';
+import {workspace} from './browser';
+import {media} from './flow';
+export async function newProject(page:Page){const url=new URL(page.url());const home=url.hostname==='labs.google'?'/fx/tools/flow':'/';await page.goto(url.origin+home);await page.locator('button:visible').first().waitFor({timeout:15000});const button=page.getByRole('button').filter({hasText:/^(?:add\s*)?(?:مشروع جديد|إنشاء مشروع|New project)(?:\s*add)?$/i});if(await button.count()!==1)throw new Error('UI_CHANGED: زر مشروع جديد غير واضح؛ لم يُرسل توليد.');await button.click();await page.waitForURL(/\/project\/[a-zA-Z0-9-]+$/, {timeout:20000});await page.locator('textarea:visible, [contenteditable="true"]:visible').waitFor({timeout:15000});await workspace(page);if((await media(page)).length||await page.locator('flow-video-tile').count())throw new Error('IDENTITY_AMBIGUOUS: المشروع ليس فارغًا.');return new URL(page.url()).pathname;}

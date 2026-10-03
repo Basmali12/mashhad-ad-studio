@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+
+worker/node_modules/
+worker/dist/
+worker/runtime/
+*.secret
+
+# Local video deliverables and media must not be committed.
+*.mp4
+
+# Local screenshots and verification evidence stay on this computer.
+/*.png
+/*.jpg
+/VERIFICATION*.md
+*.log
+*.secret.*
+**/chrome-profile/
+**/downloads/
