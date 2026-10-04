@@ -1,6 +1,8 @@
 # رابط مشهد
 
-الدومين الخاص: https://iraqaistudio.com/، مرتبط بمستودع مشهد الحالي. `public/CNAME` يحفظ الدومين داخل كل بناء Vite، وملف `CNAME` موجود في فرع gh-pages. سجلا الجذر وwww في Cloudflare يستهدفان basmali12.github.io؛ تسجيل الدومين يبقى في Hostinger. نطاقا HTTPS للدومين وwww أُضيفا إلى CLIENT_ORIGINS في Convex Development مع إبقاء المعاينة وgithub.io. تأكيد HTTPS وإعادة Cloudflare proxy بعد إصدار شهادة الأصل شرطا إنهاء النقل.
+الدومين الخاص: https://iraqaistudio.com/، مرتبط بمستودع مشهد الحالي. `public/CNAME` يحفظ الدومين داخل كل بناء Vite، وملف `CNAME` موجود في فرع gh-pages. سجلا الجذر وwww في Cloudflare يستهدفان basmali12.github.io بوضع Proxied؛ تسجيل الدومين يبقى في Hostinger. نطاقا HTTPS للدومين وwww أُضيفا إلى CLIENT_ORIGINS في Convex Development مع إبقاء المعاينة وgithub.io.
+
+تحقق 2026-10-04: صدرت شهادة GitHub للجذر وwww، وفُعّل HTTPS الإجباري، ثم أعيد Proxy في Cloudflare. نجح HTTPS للجذر بـ200، وwww وHTTP يتحولان إليه بـ301. نجح دخول Google بحساب المالك على الدومين وظهرت قائمة الفيديوهات التسعة. خدمة Worker وChrome بقيتا active دون بدء توليد أو صرف نقاط. فحص الملفات دون مصادقة أعاد401 مع CORS صحيح للدومين الجديد.
 
 https://basmali12.github.io/mashhad-ad-studio/
 
