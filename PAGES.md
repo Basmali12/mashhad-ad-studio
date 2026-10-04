@@ -1,5 +1,7 @@
 # رابط مشهد
 
+الدومين الخاص: https://iraqaistudio.com/، مرتبط بمستودع مشهد الحالي. `public/CNAME` يحفظ الدومين داخل كل بناء Vite، وملف `CNAME` موجود في فرع gh-pages. سجلا الجذر وwww في Cloudflare يستهدفان basmali12.github.io؛ تسجيل الدومين يبقى في Hostinger. نطاقا HTTPS للدومين وwww أُضيفا إلى CLIENT_ORIGINS في Convex Development مع إبقاء المعاينة وgithub.io. تأكيد HTTPS وإعادة Cloudflare proxy بعد إصدار شهادة الأصل شرطا إنهاء النقل.
+
 https://basmali12.github.io/mashhad-ad-studio/
 
 الكود في فرع main، والواجهة المبنية في gh-pages، مع .nojekyll وbase نسبي. البناء المحلي: npm run build. لا تنشر محتويات المشروع كلها إلى فرع Pages؛ انقل dist فقط.
