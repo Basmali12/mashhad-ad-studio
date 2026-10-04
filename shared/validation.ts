@@ -17,8 +17,9 @@ export function validateSignature(bytes: Uint8Array, type: string) {
     : type === 'video/mp4' && text(4,8)==='ftyp' && ['isom','iso2','mp41','mp42','avc1','M4V ','MSNV','dash','iso5','iso6'].some(brand=>text(8,32).includes(brand));
   if (!valid) throw new Error('محتوى الملف لا يطابق نوعه المعلن.');
 }
-export function validateForm(form: {name:string;address:string;phone:string;products:string;prompt:string;instructions:string;model:string;aspect:string;duration:number;dialect:string}, clipCount: number) {
+export function validateForm(form: {name:string;address:string;phone:string;products:string;prompt:string;instructions:string;model:string;aspect:string;duration:number;dialect:string;continuationPrompts?:string[]}, clipCount: number) {
   for (const [value,limit] of [[form.name,120],[form.address,500],[form.phone,40],[form.products,5000],[form.prompt,10000]] as const) if (!value.trim() || value.length>limit) throw new Error('أكمل الحقول المطلوبة ضمن الطول المسموح.');
+  if(form.continuationPrompts && (form.continuationPrompts.length>59 || form.continuationPrompts.some(p=>p.length>10000)))throw new Error('برومبت التكملة يتجاوز الحد المسموح.');
   if(form.instructions.length>5000 || !['Omni Flash','Veo 3.1 Fast','Veo 3.1 Quality'].includes(form.model) || !['9:16','16:9'].includes(form.aspect) || !['العراقية','العربية الفصحى','الخليجية','المصرية','الشامية'].includes(form.dialect)) throw new Error('إعدادات الطلب غير صالحة.');
   if(!Number.isInteger(form.duration)||form.duration<1||form.duration>180||!Number.isInteger(clipCount)||clipCount<1||clipCount>60) throw new Error('المدة من 1 إلى 180 ثانية، وعدد المقاطع من 1 إلى 60.');
 }

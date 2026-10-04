@@ -8,10 +8,10 @@ export interface Asset{id:string;url:string;duration:number;width:number;height:
 const labels:Record<string,string>={'Omni Flash':'Omni 1.1 Flash','Veo 3.1 Fast':'Veo 3.1 - Fast','Veo 3.1 Quality':'Veo 3.1 - Quality'};
 export async function openSettings(page:Page){await workspace(page);const control=page.getByRole('button',{name:'مشغِّل الإعدادات',exact:true});if(await control.count()!==1)throw new Error('UI_CHANGED: اختر وضع الإنشاء المباشر.');const video=page.getByRole('radio').filter({hasText:'فيديو'});if(!await video.isVisible()){await control.click();await sleep(500);if(!await video.isVisible())await control.press('Space');}await video.waitFor({state:'visible',timeout:8000});return control;}
 async function radio(page:Page,text:string){const choice=page.getByRole('radio').filter({hasText:text});if(await choice.count()!==1||!await choice.isEnabled())throw new Error(`UNSUPPORTED: ${text}`);await choice.click();for(let n=0;n<15;n++){if(await choice.getAttribute('aria-checked')==='true')return;await sleep(100);}throw new Error(`UI_CHANGED: ${text} not selected`);}
-export async function configure(page:Page,model:string,aspect:string,seconds:number,resolution:'360p'|'720p',outputs:number):Promise<Plan>{
+export async function configure(page:Page,model:string,aspect:string,seconds:number,resolution:'360p'|'720p',outputs:number,mode:'ingredients'|'frames'='ingredients'):Promise<Plan>{
  await page.bringToFront();await workspace(page);
  if(new URL(page.url()).pathname.includes('/edit/'))throw new Error('UI_CHANGED: افتح مساحة مشروع الإنشاء، وليس محرر فيديو موجود.');
- const control=await openSettings(page);await radio(page,'فيديو');await sleep(300);
+ const control=await openSettings(page);await radio(page,'فيديو');await radio(page,mode==='frames'?'الإطارات':'المكوّنات');await sleep(300);
  await page.getByRole('button',{name:'اختيار فئة النماذج',exact:true}).click();const label=labels[model];if(!label)throw new Error('UNSUPPORTED: model');const choice=page.getByRole('menuitem').filter({hasText:label});if(await choice.count()!==1)throw new Error(`UNSUPPORTED: ${model}`);await choice.click();
  await radio(page,aspect);await radio(page,`x${outputs}`);
  for(const setting of [resolution,`${seconds}ث`]){const option=page.getByRole('radio').filter({hasText:setting});if(await option.count()===1)await radio(page,setting);else if(!(await control.innerText()).includes(setting))throw new Error(`UNSUPPORTED: ${setting} is not available or the fixed model default differs.`);}
@@ -19,6 +19,22 @@ export async function configure(page:Page,model:string,aspect:string,seconds:num
  const plan={model:label,aspect,seconds,resolution,outputs,cost:Number(match[1]),projectPath:new URL(page.url()).pathname};
  await persist('last-options.json',plan);await screenshot(page,'options-before-generation.jpg');
  await page.keyboard.press('Escape');return plan;
+}
+export async function startFrame(page:Page,file:string){
+ const start=page.getByRole('button',{name:'بدء',exact:true});
+ if(await start.count()!==1||await page.getByRole('button',{name:'مكوّن الصورة',exact:true}).count())throw new Error('CONTINUATION_UNSUPPORTED: إطار بداية فارغ غير متاح.');
+ await start.click();const upload=page.getByRole('button').filter({hasText:'تحميل وسائط'});await upload.waitFor({timeout:10000});
+ const waiting=page.waitForEvent('filechooser',{timeout:10000});await upload.click();await(await waiting).setFiles(file);
+ const item=page.getByRole('option').filter({hasText:basename(file)});await item.waitFor({timeout:60000});
+ const deadline=Date.now()+60000;while((await item.innerText()).includes('جارٍ التحميل')&&Date.now()<deadline)await sleep(500);
+ if((await item.innerText()).includes('جارٍ التحميل'))throw new Error('FRAME_UPLOAD_FAILED: لم يكتمل رفع إطار البداية.');
+ await item.click();const chip=page.getByRole('button',{name:'مكوّن الصورة',exact:true});
+ for(let n=0;n<50;n++){if(await chip.count()===1&&await chip.getAttribute('aria-busy')==='false')break;await sleep(100);}
+ // Current Flow selects and closes automatically; older UI requires explicit Add.
+ if(await start.count()){const add=page.getByRole('button',{name:'الإضافة إلى الطلب',exact:true});if(await add.count()===1&&await add.isVisible()&&await add.isEnabled())await add.click();}
+ await chip.waitFor({timeout:10000});
+ if(await chip.count()!==1||await start.count()||await chip.getAttribute('aria-busy')!=='false'||await page.getByRole('button',{name:'إنهاء',exact:true}).count()!==1)throw new Error('FRAME_IDENTITY_AMBIGUOUS: لم يُثبت إطار البداية وحده؛ لا توليد.');
+ await screenshot(page,'continuation-start-frame.jpg');
 }
 export async function media(page:Page):Promise<Asset[]>{return page.locator('video').evaluateAll(nodes=>nodes.flatMap(node=>{
  const video=node as HTMLVideoElement;let id='';for(let el:Element|null=video,depth=0;el&&depth<8;el=el.parentElement,depth++){id=el.getAttribute('data-asset-id')??el.getAttribute('data-media-id')??el.getAttribute('data-generation-id')??'';if(id)break;}

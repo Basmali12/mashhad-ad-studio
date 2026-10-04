@@ -8,12 +8,12 @@ import type {FlowOption} from '../shared/pipeline';
 import {canonical} from '../shared/editing';
 import {root,read,persist,rpc,connection,exclusive,sleep} from './runtime';
 import {browser,workspace,screenshot} from './browser';
-import {configure,attachments,media,waitAssets,download} from './flow';
+import {configure,attachments,startFrame,media,waitAssets,download} from './flow';
 import {capabilities} from './capabilities';
 import {newProject} from './projects';
 import {probe,decode,hashFile,alpha,wrapped,tools,command as mediaCommand} from './montage-media';
 type Job=Doc<'pipelines'>;
-type Checkpoint={clips:Record<string,{intent?:boolean;submitted?:boolean;projectPath?:string;assetId?:string;path?:string;hash?:string}>};
+type Checkpoint={clips:Record<string,{intent?:boolean;submitted?:boolean;projectPath?:string;assetId?:string;path?:string;hash?:string;framePath?:string;frameHash?:string;frameSourceHash?:string}>};
 const command=process.argv[2]??'status';
 if(command==='stop'){await persist('service-stop.json',{stop:true});await persist('montage-stop.json',{stop:true});console.log('Stop requested. Submitted Flow tasks may continue; no refund is guaranteed.');process.exit(0);}
 if(command==='status'){const s=await read<{pid:number;running:boolean}>('service-status.json');let running=false;if(s?.running)try{process.kill(s.pid,0);running=true;}catch{/* stale PID */}console.log({running,status:s});process.exit(0);}
@@ -41,9 +41,9 @@ async function execute(jobId:Id<'pipelines'>){
  const dir=resolve(root,'pipeline',jobId);await mkdir(dir,{recursive:true});
  const save=()=>persist(journalName,journal);
  async function stage(stage:Job['stage']){check();await rpc('pipeStage',{...identity,stage});await persist('service-job.json',{jobId,stage,at:new Date().toISOString()});console.log(jobId,stage);}
- async function file(storageId:string){
+ async function file(storageId:string,video=false){
   async function fetchPart(extra:object){const response=await fetch(`${cfg.site}/runner`,{method:'POST',headers:{Authorization:`Bearer ${cfg.token}`,'Content-Type':'application/json'},body:JSON.stringify({op:'pipeFile',args:{jobId,storageId,...extra}}),signal:AbortSignal.timeout(30000)});if(!response.ok)throw new Error('Protected attachment refused');return response;}
-  const m=await (await fetchPart({metadata:true})).json() as {size:number;hash:string;type:string};if(!Number.isSafeInteger(m.size)||m.size<1||m.size>10*1024*1024||!['image/png','image/webp','image/jpeg'].includes(m.type))throw new Error('Invalid image');const extension={'image/png':'png','image/webp':'webp','image/jpeg':'jpg'}[m.type];const path=resolve(dir,`${storageId}.${extension}`);try{if((await stat(path)).size===m.size&&await hashFile(path)===m.hash)return path;}catch{/* no cache */}const parts:Buffer[]=[];for(let offset=0;offset<m.size;offset+=8*1024*1024){check();parts.push(Buffer.from(await (await fetchPart({offset})).arrayBuffer()));}await writeFile(path+'.part',Buffer.concat(parts));if(await hashFile(path+'.part')!==m.hash)throw new Error('Image hash mismatch');await rename(path+'.part',path);return path;
+  const m=await (await fetchPart({metadata:true})).json() as {size:number;hash:string;type:string};if(!Number.isSafeInteger(m.size)||m.size<1||m.size>(video?100:10)*1024*1024||!(video?m.type==='video/mp4':['image/png','image/webp','image/jpeg'].includes(m.type)))throw new Error('Invalid image');const extension=video?'mp4':{'image/png':'png','image/webp':'webp','image/jpeg':'jpg'}[m.type];const path=resolve(dir,`${storageId}.${extension}`);try{if((await stat(path)).size===m.size&&await hashFile(path)===m.hash)return path;}catch{/* no cache */}const parts:Buffer[]=[];for(let offset=0;offset<m.size;offset+=8*1024*1024){check();parts.push(Buffer.from(await (await fetchPart({offset})).arrayBuffer()));}await writeFile(path+'.part',Buffer.concat(parts));if(await hashFile(path+'.part')!==m.hash)throw new Error('Image hash mismatch');await rename(path+'.part',path);return path;
  }
  try{
   // Validate montage before spending. Rendering failures can still be resumed without generation.
@@ -58,9 +58,28 @@ async function execute(jobId:Id<'pipelines'>){
     const b=await browser();
     if(c.state==='pending'){
      if(state!=='online')throw new Error('LOGIN_REQUIRED: افتح مشروع Flow وأعد تشغيل Worker لتحديث الخيارات.');
-     const path=await newProject(b.page);const p=await configure(b.page,j.option.model,j.option.aspect,j.option.seconds,j.option.resolution,1);
+     const continuation=i>0&&!!j.form.continuationPrompts;
+     let frame:string|undefined;
+     if(continuation){
+      const previous=j.clips[i-1],prior=journal.clips[i-1]??(journal.clips[i-1]={});
+      if(previous.state!=='uploaded'||!previous.storageId)throw new Error('CONTINUATION_SOURCE_MISSING: لم يُحفظ المقطع السابق؛ لا توليد تكملة.');
+      if(!prior.path||!prior.hash||await hashFile(prior.path).catch(()=>null)!==prior.hash){prior.path=await file(previous.storageId,true);prior.hash=await hashFile(prior.path);await decode(prior.path);await save();}
+      frame=resolve(dir,`start-frame-${i+1}.png`);
+      if(cp.frameSourceHash!==prior.hash||!cp.frameHash||await hashFile(frame).catch(()=>null)!==cp.frameHash){
+       // update=1 retains the last decoded frame of the original, without changing it.
+       await mediaCommand(tools.ffmpeg,['-v','error','-sseof','-1','-i',prior.path,'-an','-vsync','0','-update','1','-y',frame]);
+       await decode(frame);cp.framePath=frame;cp.frameHash=await hashFile(frame);cp.frameSourceHash=prior.hash;await save();
+      }
+     }
+     const path=await newProject(b.page);
+     if(i===0&&j.clips.length>1&&j.form.continuationPrompts){
+      const quote=await configure(b.page,j.option.model,j.option.aspect,j.option.seconds,j.option.resolution,1,'frames');
+      if(quote.model!==j.option.actualModel||quote.cost!==j.option.cost||await b.page.getByRole('button',{name:'بدء',exact:true}).count()!==1)throw new Error('CONTINUATION_UNSUPPORTED: خيارات التكملة أو كلفتها تختلف؛ لم يبدأ أي توليد.');
+     }
+     let p=await configure(b.page,j.option.model,j.option.aspect,j.option.seconds,j.option.resolution,1,continuation?'frames':'ingredients');
+     if(frame){await startFrame(b.page,frame);p=await configure(b.page,j.option.model,j.option.aspect,j.option.seconds,j.option.resolution,1,'frames');}
      const actual={model:j.option.model,actualModel:p.model,seconds:p.seconds,resolution:p.resolution,aspect:p.aspect,cost:p.cost};if(canonical(actual)!==canonical(j.option))throw new Error('COST_CHANGED: تغيّرت الخيارات أو الكلفة؛ يلزم تفويض جديد من الواجهة.');
-     const paths:string[]=[];for(const id of j.referenceIds)paths.push(await file(id));await attachments(b.page,paths);await (await workspace(b.page)).fill(promptText);
+     const paths:string[]=[];if(!continuation){for(const id of j.referenceIds)paths.push(await file(id));await attachments(b.page,paths);}await (await workspace(b.page)).fill(promptText);
      if((await media(b.page)).length||await b.page.locator('flow-video-tile').count())throw new Error('IDENTITY_AMBIGUOUS: نتيجة سابقة داخل مشروع المقطع.');
      check();await stage('generating');cp.projectPath=path;cp.intent=true;await save();await rpc('pipeClip',{...identity,index:i,state:'intent',projectPath:path});check();
      // The sole paid click; never retry this block for an intent/submitted/unknown clip.
