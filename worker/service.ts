@@ -12,6 +12,8 @@ import {configure,attachments,startFrame,media,waitAssets,download} from './flow
 import {capabilities} from './capabilities';
 import {newProject} from './projects';
 import {probe,decode,hashFile,alpha,wrapped,tools,command as mediaCommand} from './montage-media';
+import {imageCapabilities} from './image-flow';
+import {executeImage} from './image-service';
 type Job=Doc<'pipelines'>;
 type Checkpoint={clips:Record<string,{intent?:boolean;submitted?:boolean;projectPath?:string;assetId?:string;path?:string;hash?:string;framePath?:string;frameHash?:string;frameSourceHash?:string}>};
 const command=process.argv[2]??'status';
@@ -31,7 +33,7 @@ async function presence(){await rpc('pipePresence',{workerId,state,options,obser
 const transient=(e:unknown)=>/fetch failed|Convex refused.*\((?:5\d\d|408|429)\)/i.test(safe(e))||(e instanceof Error&&['TimeoutError','AbortError'].includes(e.name)&&!e.message.includes('locator.'));
 async function disconnected(e:unknown){if(!connectionLost)console.log('Convex connection lost; no generation retries:',safe(e));connectionLost=true;await persist('service-status.json',{pid:process.pid,running:true,state:'offline',error:safe(e),reconnecting:true,updatedAt:new Date().toISOString()});}
 await presence();let pulsing=false;const pulse=setInterval(()=>{if(pulsing||connectionLost)return;pulsing=true;void presence().catch(async e=>{await disconnected(e);if(!transient(e))stopping=true;}).finally(()=>{pulsing=false;});},10000);
-async function scan(){state='inspecting';await presence();try{const b=await browser();await b.page.keyboard.press('Escape');await b.page.keyboard.press('Escape');const editorPath=new URL(b.page.url()).pathname.match(/^(\/project\/[a-zA-Z0-9-]+)\/edit\/[a-zA-Z0-9-]+$/);if(editorPath){await b.page.goto(new URL(b.page.url()).origin+editorPath[1]);await b.page.locator('textarea:visible, [contenteditable="true"]:visible').waitFor({timeout:15000});}if(!new URL(b.page.url()).pathname.includes('/project/')){const last=await read<{projectPath:string}>('last-options.json');if(last&&/^\/project\/[a-zA-Z0-9-]+$/.test(last.projectPath)){await b.page.goto(new URL(b.page.url()).origin+last.projectPath);await b.page.locator('textarea:visible, [contenteditable="true"]:visible').waitFor({timeout:15000});}}options=await capabilities(b.page);observedAt=Date.now();state='online';error=undefined;await persist('capabilities.json',{options,observedAt});}catch(e){state='login';error=safe(e);console.log('Options unavailable:',error);}await presence();}
+async function scan(){state='inspecting';await presence();try{const b=await browser();await b.page.keyboard.press('Escape');await b.page.keyboard.press('Escape');const editorPath=new URL(b.page.url()).pathname.match(/^(\/project\/[a-zA-Z0-9-]+)\/edit\/[a-zA-Z0-9-]+$/);if(editorPath){await b.page.goto(new URL(b.page.url()).origin+editorPath[1]);await b.page.locator('textarea:visible, [contenteditable="true"]:visible').waitFor({timeout:15000});}if(!new URL(b.page.url()).pathname.includes('/project/')){const last=await read<{projectPath:string}>('last-options.json');if(last&&/^\/project\/[a-zA-Z0-9-]+$/.test(last.projectPath)){await b.page.goto(new URL(b.page.url()).origin+last.projectPath);await b.page.locator('textarea:visible, [contenteditable="true"]:visible').waitFor({timeout:15000});}}options=await capabilities(b.page);observedAt=Date.now();try{const imageOptions=await imageCapabilities(b.page);await rpc('imagePresence',{options:imageOptions,observedAt:Date.now()});}catch(imageError){await rpc('imagePresence',{options:[],observedAt:Date.now(),error:safe(imageError)});console.log('Image settings unavailable:',safe(imageError));}state='online';error=undefined;await persist('capabilities.json',{options,observedAt});}catch(e){state='login';error=safe(e);console.log('Options unavailable:',error);}await presence();}
 async function execute(jobId:Id<'pipelines'>){
  const identity={jobId,workerId,fence:randomUUID()};let j=await rpc<Job>('pipeClaim',identity),halt=false;
  const heartbeat=setInterval(()=>{void rpc<{stop:boolean;paused:boolean}>('pipeHeartbeat',identity).then(s=>{if(s.stop||s.paused)halt=true;}).catch(()=>{halt=true;})},10000);
@@ -58,10 +60,10 @@ async function execute(jobId:Id<'pipelines'>){
     const b=await browser();
     if(c.state==='pending'){
      if(state!=='online')throw new Error('LOGIN_REQUIRED: افتح مشروع Flow وأعد تشغيل Worker لتحديث الخيارات.');
-     const continuation=i>0&&!!j.form.continuationPrompts;
+     const continuation=(i>0&&!!j.form.continuationPrompts)||(i===0&&!!j.form.continuationSourceId);
      let frame:string|undefined;
      if(continuation){
-      const previous=j.clips[i-1],prior=journal.clips[i-1]??(journal.clips[i-1]={});
+      const previous=i===0?{state:'uploaded',storageId:j.form.continuationSourceId}:j.clips[i-1],prior=journal.clips[i-1]??(journal.clips[i-1]={});
       if(previous.state!=='uploaded'||!previous.storageId)throw new Error('CONTINUATION_SOURCE_MISSING: لم يُحفظ المقطع السابق؛ لا توليد تكملة.');
       if(!prior.path||!prior.hash||await hashFile(prior.path).catch(()=>null)!==prior.hash){prior.path=await file(previous.storageId,true);prior.hash=await hashFile(prior.path);await decode(prior.path);await save();}
       frame=resolve(dir,`start-frame-${i+1}.png`);
@@ -72,7 +74,7 @@ async function execute(jobId:Id<'pipelines'>){
       }
      }
      const path=await newProject(b.page);
-     if(i===0&&j.clips.length>1&&j.form.continuationPrompts){
+     if(i===0&&!continuation&&j.clips.length>1&&j.form.continuationPrompts){
       const quote=await configure(b.page,j.option.model,j.option.aspect,j.option.seconds,j.option.resolution,1,'frames');
       if(quote.model!==j.option.actualModel||quote.cost!==j.option.cost||await b.page.getByRole('button',{name:'بدء',exact:true}).count()!==1)throw new Error('CONTINUATION_UNSUPPORTED: خيارات التكملة أو كلفتها تختلف؛ لم يبدأ أي توليد.');
      }
@@ -87,7 +89,7 @@ async function execute(jobId:Id<'pipelines'>){
     }else{
      const path=c.projectPath??cp.projectPath;if(!path)throw new Error('FOLLOW_UP_REQUIRED: معرّف المشروع مفقود؛ لا إعادة توليد تلقائية.');const assetId=c.assetId??cp.assetId;await b.page.goto(new URL(b.page.url()).origin+path+(assetId?`/edit/${assetId}`:''));await b.page.locator('textarea:visible, [contenteditable="true"]:visible').waitFor({timeout:15000});await stage('generating');
     }
-    const assets=await waitAssets(b.page,c.assetId?[c.assetId]:cp.assetId?[cp.assetId]:[],[],1,stopped,promptText),asset=assets[0];cp.assetId=asset.id;await save();await rpc('pipeClip',{...identity,index:i,state:'submitted',assetId:asset.id});await stage('downloading');
+    const assets=await waitAssets(b.page,c.assetId?[c.assetId]:cp.assetId?[cp.assetId]:[],[],1,stopped,promptText,percent=>rpc('pipeClip',{...identity,index:i,state:'submitted',percent}).then(()=>undefined)),asset=assets[0];cp.assetId=asset.id;await save();await rpc('pipeClip',{...identity,index:i,state:'submitted',assetId:asset.id});await stage('downloading');
     const path=resolve(dir,`clip-${i+1}.mp4`);await download(b.context,asset,path+'.part',b.page);check();await probe(path+'.part');await decode(path+'.part');await rename(path+'.part',path);cp.path=path;cp.hash=await hashFile(path);await save();await rpc('pipeClip',{...identity,index:i,state:'downloaded',assetId:asset.id});
    }
    if(!cp.path||!cp.hash||await hashFile(cp.path)!==cp.hash)throw new Error('LOCAL_FILE_MISSING: استرجع الملف الأصلي؛ لا توليد جديد.');
@@ -122,6 +124,6 @@ async function standalone(exportId:string){
 try{
  await scan();let lastScan=Date.now();
  let backoff=3000,testDisconnect=process.argv.includes('--test-connection-failure-once');
- while(!stopping){try{if(testDisconnect){testDisconnect=false;throw new TypeError('fetch failed (intentional idle connection test)');}if(connectionLost){await presence();connectionLost=false;backoff=3000;console.log('Convex reconnected; continuing saved queue only.');}const id=await rpc<Id<'pipelines'>|null>('pipeNext',{});if(id)await execute(id);else{const exportId=await rpc<string|null>('editPending',{});if(exportId)await standalone(exportId);else await sleep(2000);if(state==='online'&&Date.now()-lastScan>20*60*1000){await scan();lastScan=Date.now();}}}catch(e){if(!transient(e))throw e;await disconnected(e);await persist('montage-stop.json',{stop:true});await sleep(backoff);backoff=Math.min(30000,backoff*2);}}
+ while(!stopping){try{if(testDisconnect){testDisconnect=false;throw new TypeError('fetch failed (intentional idle connection test)');}if(connectionLost){await presence();connectionLost=false;backoff=3000;console.log('Convex reconnected; continuing saved queue only.');}const id=await rpc<Id<'pipelines'>|null>('pipeNext',{});if(id)await execute(id);else{const imageId=await rpc<Id<'imageJobs'>|null>('imageNext',{});if(imageId){await executeImage(imageId,workerId,()=>stopping||connectionLost);continue;}const exportId=await rpc<string|null>('editPending',{});if(exportId)await standalone(exportId);else await sleep(2000);if(state==='online'&&Date.now()-lastScan>20*60*1000){await scan();lastScan=Date.now();}}}catch(e){if(!transient(e))throw e;await disconnected(e);await persist('montage-stop.json',{stop:true});await sleep(backoff);backoff=Math.min(30000,backoff*2);}}
 }finally{clearInterval(control);clearInterval(pulse);state='offline';stopping=true;await persist('montage-stop.json',{stop:true});await presence().catch(()=>undefined);await unlock();}
 process.exit(0);

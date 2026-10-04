@@ -13,6 +13,7 @@
   "scripts": {
     "login": "tsx cli.ts login",
     "inspect": "tsx cli.ts inspect",
+    "image:inspect": "tsx inspect-image-ui.ts",
     "review": "tsx cli.ts review",
     "run": "tsx cli.ts run",
     "resume": "tsx cli.ts resume",

@@ -1,0 +1,5 @@
+import {it,expect} from 'vitest';
+import type {Doc} from '../convex/_generated/dataModel';
+import {taskSteps} from './studio';
+it('does not invent generation or upload percentages when telemetry is unavailable',()=>{const job={stage:'generating',clips:[{state:'submitted'},{state:'pending'}]} as unknown as Doc<'pipelines'>;const steps=taskSteps(job,undefined);expect(steps[0].percent).toBeUndefined();expect(steps[3].percent).toBeUndefined();expect(steps.every(s=>!s.done)).toBe(true);});
+it('uses an observed clip percentage and closes steps only after real milestones',()=>{const job={stage:'generating',clips:[{state:'uploaded'},{state:'submitted',percent:40}]} as unknown as Doc<'pipelines'>;expect(taskSteps(job,undefined)[0].percent).toBe(70);const output={status:'encoding',percent:43} as Doc<'exports'>;const steps=taskSteps({...job,stage:'montage'},output);expect(steps[1].done).toBe(true);expect(steps[2].percent).toBe(43);expect(steps[2].done).toBe(false);expect(steps[3].done).toBe(false);expect(taskSteps({...job,stage:'completed'},{...output,status:'completed'}).every(s=>s.done)).toBe(true);});

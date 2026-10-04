@@ -58,14 +58,15 @@ export async function attachments(page:Page,files:string[]){if(!files.length)ret
  }
  if(await chips.count()<initial+files.length)throw new Error('REFERENCE_UNSUPPORTED: تحقق من المراجع المرفقة قبل إرسال الطلب.');
 }
-export async function waitAssets(page:Page,ids:string[],baseline:string[],count:number,signal:()=>boolean,expectedPrompt:string):Promise<Asset[]>{
- const deadline=Date.now()+15*60*1000;
+export async function waitAssets(page:Page,ids:string[],baseline:string[],count:number,signal:()=>boolean,expectedPrompt:string,onProgress?:(percent:number)=>Promise<void>):Promise<Asset[]>{
+ const deadline=Date.now()+15*60*1000;let lastProgress=-1;
  while(Date.now()<deadline){if(signal())throw new Error('STOPPED: متابعة محفوظة؛ لم تُعد عملية التوليد.');await workspace(page);
  const body=(await page.locator('body').innerText()).slice(-12000);if(/تعذّر الإنشاء|فشل الإنشاء|غير متاحة.*بلد|وحدات غير كافية|generation failed|unusual traffic/i.test(body))throw new Error('FLOW_BLOCKED: توقف Flow؛ لا إعادة توليد تلقائية.');
  const all=await media(page);const result=ids.length?all.filter(a=>ids.includes(a.id)):all.filter(a=>!baseline.includes(a.id));
  const editor=new URL(page.url()).pathname.match(/\/project\/([a-f0-9-]+)\/edit\/([a-f0-9-]+)$/);
  if(editor){const marker=expectedPrompt.match(/معرّف المشهد:\s*[a-zA-Z0-9-]+/)?.[0];if(count!==1||(ids.length&&!ids.includes(editor[2]))||(!ids.length&&!body.includes(expectedPrompt.trim())&&!(marker&&body.includes(marker))))throw new Error('IDENTITY_AMBIGUOUS: محرر الفيديو لا يطابق الطلب المحفوظ.');const downloadControl=page.getByRole('button',{name:'تنزيل الوسائط',exact:true});if(await downloadControl.count()===1&&await downloadControl.isEnabled())return [{id:editor[2],url:'',duration:0,width:0,height:0}];await sleep(2000);continue;}
  const tiles=page.locator('flow-video-tile');
+ if(onProgress&&await tiles.count()===1){const text=await tiles.innerText();const match=text.match(/(?:%|٪)\s*(\d{1,3})|(\d{1,3})\s*(?:%|٪)/);if(match){const observed=Number(match[1]??match[2]);if(observed>=0&&observed<=99&&observed>lastProgress){await onProgress(observed);lastProgress=observed;}}}
  if(!ids.length&&!baseline.length&&count===1&&await tiles.count()===1&&await tiles.getByText('play_circle',{exact:true}).count()>0){await tiles.click();await sleep(1000);continue;}
  // Fresh empty dedicated project + baseline + one submit are required; no arbitrary gallery fallback.
  if(result.length===count)return result;if(result.length>count)throw new Error('IDENTITY_AMBIGUOUS: أكثر من نتيجة جديدة؛ لا اختيار عشوائي.');await sleep(2000);

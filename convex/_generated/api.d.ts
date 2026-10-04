@@ -9,16 +9,22 @@
  */
 
 import type * as access from "../access.js";
+import type * as adminCode from "../adminCode.js";
+import type * as adminGate from "../adminGate.js";
 import type * as editValidators from "../editValidators.js";
 import type * as editing from "../editing.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
+import type * as images from "../images.js";
 import type * as pipeline from "../pipeline.js";
 import type * as pipelineValidators from "../pipelineValidators.js";
 import type * as requests from "../requests.js";
 import type * as runner from "../runner.js";
 import type * as runnerHttp from "../runnerHttp.js";
+import type * as studio from "../studio.js";
 import type * as validators from "../validators.js";
+import type * as walletBilling from "../walletBilling.js";
+import type * as wallets from "../wallets.js";
 
 import type {
   ApiFromModules,
@@ -28,16 +34,22 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   access: typeof access;
+  adminCode: typeof adminCode;
+  adminGate: typeof adminGate;
   editValidators: typeof editValidators;
   editing: typeof editing;
   files: typeof files;
   http: typeof http;
+  images: typeof images;
   pipeline: typeof pipeline;
   pipelineValidators: typeof pipelineValidators;
   requests: typeof requests;
   runner: typeof runner;
   runnerHttp: typeof runnerHttp;
+  studio: typeof studio;
   validators: typeof validators;
+  walletBilling: typeof walletBilling;
+  wallets: typeof wallets;
 }>;
 
 /**

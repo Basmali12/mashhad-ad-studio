@@ -11,6 +11,22 @@ export function runnerRoutes(http:HttpRouter){
  if(Number(request.headers.get('Content-Length')??0)>16000)return new Response('Too large',{status:413});
  try{const {op,args}=await request.json();let value:unknown;
  switch(op){
+ case 'imagePresence':value=await ctx.runMutation(internal.images.presence,args);break;
+ case 'imageNext':value=await ctx.runQuery(internal.images.next,{});break;
+ case 'imageGet':value=await ctx.runQuery(internal.images.get,args);break;
+ case 'imageClaim':value=await ctx.runMutation(internal.images.claim,args);break;
+ case 'imageHeartbeat':value=await ctx.runMutation(internal.images.heartbeat,args);break;
+ case 'imageRelease':value=await ctx.runMutation(internal.images.release,args);break;
+ case 'imageProgress':value=await ctx.runMutation(internal.images.progress,args);break;
+ case 'imageUpload':value=await ctx.runMutation(internal.images.upload,args);break;
+ case 'imageFinish':value=await ctx.runAction(internal.images.finish,args);break;
+ case 'imageFile':{
+ if(!await ctx.runQuery(internal.images.fileAccess,{jobId:args.jobId,storageId:args.storageId}))return new Response('Forbidden',{status:403});
+ const blob=await ctx.storage.get(args.storageId);if(!blob)return new Response('Not found',{status:404});
+ if(args.metadata){const meta=await ctx.runQuery(internal.runner.metadata,{storageId:args.storageId});return Response.json({size:blob.size,type:blob.type,hash:meta?.hash});}
+ const offset=args.offset??0;if(!Number.isSafeInteger(offset)||offset<0||offset>=blob.size)return new Response('Invalid offset',{status:400});
+ return new Response(blob.slice(offset,offset+8*1024*1024),{headers:{'Content-Type':blob.type,'Cache-Control':'no-store'}});
+ }
  case 'pipePresence':value=await ctx.runMutation(internal.pipeline.presence,args);break;
  case 'pipeNext':value=await ctx.runQuery(internal.pipeline.next,{});break;
  case 'pipeGet':value=await ctx.runQuery(internal.pipeline.get,args);break;

@@ -16,6 +16,7 @@ export const save = mutation({args:{key:v.string(),form:formValidator,clipCount:
  const existing = await ctx.db.query('requests').withIndex('by_key',q=>q.eq('key',args.key)).unique();
  // A queued request is immutable: retries return the same ID, including concurrent calls.
  if(existing && existing.status!=='مسودة') return existing._id;
+ if(args.form.continuationSourceId){const source=ctx.db.system.normalizeId('_storage',args.form.continuationSourceId);if(!source)throw new ConvexError('معرّف فيديو التكملة غير صالح.');await asset(ctx,source,'video');}
  if(args.logoId) await asset(ctx,args.logoId,'image');
  for(const id of args.referenceIds) await asset(ctx,id,'image');
  const now=Date.now();const data={form:args.form,clipCount:args.clipCount,logoId:args.logoId,referenceIds:args.referenceIds,updatedAt:now,status:args.submit?'بانتظار التشغيل' as const:'مسودة' as const};
