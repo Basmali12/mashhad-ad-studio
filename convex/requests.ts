@@ -2,30 +2,33 @@ import { v, ConvexError } from 'convex/values';
 import { query, mutation } from './_generated/server';
 import type { MutationCtx } from './_generated/server';
 import type { Id } from './_generated/dataModel';
-import { requireOwner } from './access';
+import { requireOwner, requireCustomer, ownedRequest, owns } from './access';
+import {assertFileOwner} from './customerFiles';
 import { formValidator, statusValidator } from './validators';
 import { validateForm } from '../shared/validation';
 async function asset(ctx:MutationCtx,id:Id<'_storage'>,kind:'image'|'video') {
+ const actor=await requireCustomer(ctx);await assertFileOwner(ctx,actor.subject,id);
  const file = await ctx.db.query('uploads').withIndex('by_storage',q=>q.eq('storageId',id)).unique();
  if(!file || file.kind!==kind) throw new ConvexError('الملف لم يكتمل رفعه أو نوعه غير مناسب.');
 }
-export const list = query({args:{},handler:async(ctx)=>{await requireOwner(ctx);return ctx.db.query('requests').order('desc').collect();}});
+export const list = query({args:{},handler:async(ctx)=>{const actor=await requireCustomer(ctx);return (await ctx.db.query('requests').order('desc').collect()).filter(r=>owns(actor.subject,r));}});
 export const save = mutation({args:{key:v.string(),form:formValidator,clipCount:v.number(),logoId:v.optional(v.id('_storage')),referenceIds:v.array(v.id('_storage')),submit:v.boolean(),createdAt:v.optional(v.number())},handler:async(ctx,args)=>{
- await requireOwner(ctx);validateForm(args.form,args.clipCount);
+ const actor=await requireCustomer(ctx);validateForm(args.form,args.clipCount);
  if(!args.key || args.key.length>100 || args.referenceIds.length>8) throw new ConvexError('بيانات الطلب غير صالحة.');
  const existing = await ctx.db.query('requests').withIndex('by_key',q=>q.eq('key',args.key)).unique();
+ if(existing&&!owns(actor.subject,existing))throw new ConvexError('معرف الطلب غير مصرح له.');
  // A queued request is immutable: retries return the same ID, including concurrent calls.
  if(existing && existing.status!=='مسودة') return existing._id;
  if(args.form.continuationSourceId){const source=ctx.db.system.normalizeId('_storage',args.form.continuationSourceId);if(!source)throw new ConvexError('معرّف فيديو التكملة غير صالح.');await asset(ctx,source,'video');}
  if(args.logoId) await asset(ctx,args.logoId,'image');
  for(const id of args.referenceIds) await asset(ctx,id,'image');
- const now=Date.now();const data={form:args.form,clipCount:args.clipCount,logoId:args.logoId,referenceIds:args.referenceIds,updatedAt:now,status:args.submit?'بانتظار التشغيل' as const:'مسودة' as const};
+ const now=Date.now();const data={subject:actor.subject,form:args.form,clipCount:args.clipCount,logoId:args.logoId,referenceIds:args.referenceIds,updatedAt:now,status:args.submit?'بانتظار التشغيل' as const:'مسودة' as const};
  if(existing){await ctx.db.patch(existing._id,data);return existing._id;}
  const createdAt=args.createdAt && Number.isFinite(args.createdAt) && args.createdAt>0 && args.createdAt<=now ? args.createdAt:now;
  return ctx.db.insert('requests',{...data,key:args.key,createdAt});
 }});
 export const attachManualVideo = mutation({args:{requestId:v.id('requests'),storageId:v.id('_storage')},handler:async(ctx,args)=>{
- await requireOwner(ctx);const request=await ctx.db.get(args.requestId);if(!request)throw new ConvexError('الطلب غير موجود.');await asset(ctx,args.storageId,'video');
+ const request=await ownedRequest(ctx,args.requestId);await asset(ctx,args.storageId,'video');
  if(request.runner&&!['prepared','uploaded'].includes(request.runner.phase))throw new ConvexError('برنامج التشغيل يتابع هذا الطلب. لا تستبدل نتيجته أثناء التنفيذ.');
  await ctx.db.patch(args.requestId,{videoId:args.storageId,videoSource:'manual',status:'مكتمل',updatedAt:Date.now(),error:undefined,externalVideoUrl:undefined});
 }});

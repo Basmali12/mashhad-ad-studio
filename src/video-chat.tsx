@@ -1,3 +1,4 @@
+import {defaultFlowOption} from '../shared/flow-options';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {useMutation,useQuery} from 'convex/react';
 import {useMedia} from './studio-media';
@@ -17,7 +18,7 @@ export function VideoChat({hidden,renderProgress}:{hidden:boolean;renderProgress
  const cloud=useCloud()!,worker=useQuery(api.pipeline.worker),wallet=useQuery(api.wallets.mine),rates=useQuery(api.wallets.pricing);
  const [kind,setKind]=useState<'video'|'image'>('video'),[prompt,setPrompt]=useState(''),[model,setModel]=useState('Veo 3.1 Fast'),[imageModel,setImageModel]=useState('Nano Banana 2'),[aspect,setAspect]=useState('9:16'),[imageAspect,setImageAspect]=useState('9:16'),[choice,setChoice]=useState<FlowOption|null>(null),[settings,setSettings]=useState(false),[files,setFiles]=useState<File[]>([]),[previews,setPreviews]=useState<string[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState(''),[sent,setSent]=useState(false),[key,setKey]=useState(()=>crypto.randomUUID()),[now,setNow]=useState(Date.now());
  const lock=useRef(false),input=useRef<HTMLInputElement>(null),panel=useRef<HTMLDivElement>(null),trigger=useRef<HTMLButtonElement>(null);
- const options=worker?.options.filter(o=>o.model===model&&o.aspect===aspect)??[],option=options.find(o=>o.resolution===choice?.resolution&&o.seconds===choice?.seconds)??options[0];
+ const options=worker?.options.filter(o=>o.model===model&&o.aspect===aspect)??[],option=options.find(o=>o.resolution===choice?.resolution&&o.seconds===choice?.seconds)??defaultFlowOption(options);
  const imageOption=worker?.imageOptions?.find(o=>o.model===imageModel&&o.aspect===imageAspect),imageJob=imageJobs?.find(j=>j.key===`image-${key}`);
  const points=kind==='video'?rates?.find(r=>r.model===option?.model&&r.resolution===option?.resolution&&r.seconds===option?.seconds)?.points:imagePoints(rates?.find(r=>r.model===imageModel&&r.resolution==='original'&&r.seconds===0));
  const fresh=!!worker&&now-(kind==='image'?(worker.imageObservedAt??0):worker.observedAt)<3600000,online=worker?.state==='online'&&now-worker.seenAt<30000,request=cloud.requests?.find(r=>r.key===key),insufficient=wallet!==undefined&&(!wallet||wallet.wallet.balance<=0||points!==undefined&&wallet.wallet.balance<points);

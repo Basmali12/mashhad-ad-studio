@@ -33,6 +33,10 @@ describe('owner-only requests',()=>{
   await expect(t.action(api.files.finish,{key,storageId})).rejects.toThrow('المصرح');await user.action(api.files.finish,{key,storageId});
   const result=await user.mutation(api.files.begin,{key,kind:'image',name:'image.png',type:'image/png',size:bytes.length});expect(result.storageId).toBe(storageId);
   expect((await user.fetch(`/files?id=${storageId}`)).status).toBe(200);expect((await t.fetch(`/files?id=${storageId}`)).status).toBe(401);
+  expect((await user.fetch(`/files?id=${storageId}&metadata=1`)).status).toBe(200);
+  await t.run(ctx=>ctx.storage.delete(storageId));
+  // An old upload record must not authorize playback of a deleted cached blob.
+  expect((await user.fetch(`/files?id=${storageId}&metadata=1`)).status).toBe(404);
  });
  it('validates video results and rejects unauthorized runner/manual changes',async()=>{
   const t=convexTest(schema,modules),user=t.withIdentity(owner);const requestId=await user.mutation(api.requests.save,input);const storageId=await t.run(ctx=>ctx.storage.store(new Blob(['fake'],{type:'video/mp4'})));

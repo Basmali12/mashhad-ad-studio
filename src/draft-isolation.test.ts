@@ -1,0 +1,4 @@
+import {it,expect} from 'vitest';
+import 'fake-indexeddb/auto';
+import {draftRepository,type Draft} from './data';
+it('keeps legacy drafts in place and isolates customer drafts on the same device',async()=>{const draft:Draft={id:'legacy',createdAt:'2026-10-05',status:'مسودة',form:{name:'متجر',address:'',phone:'0770',products:'قهوة',prompt:'اختبار',instructions:'',model:'Omni Flash',aspect:'9:16',duration:10,dialect:'العراقية'},logo:null,references:[]};await draftRepository.save(draft);await draftRepository.save({...draft,id:'alice'},'alice');await draftRepository.save({...draft,id:'bob'},'bob');expect((await draftRepository.list()).map(d=>d.id)).toEqual(['legacy']);expect((await draftRepository.list('alice')).map(d=>d.id)).toEqual(['alice']);expect((await draftRepository.list('bob')).map(d=>d.id)).toEqual(['bob']);});

@@ -1,0 +1,91 @@
+/* Shared studio identity; page content and generation behavior stay independent. */
+.mashhad-account-card{direction:rtl!important;width:min(360px,calc(100vw - 28px))!important;border:1px solid #78bfffa3!important;border-radius:22px!important;background:linear-gradient(140deg,#163653ed,#19152eef)!important;backdrop-filter:blur(12px);box-shadow:inset 0 1px 0 #c2eaff35,0 12px 42px #0006,0 0 20px #64b4ff25!important;color:#f0f5ff!important;font-family:Tahoma,Arial,sans-serif!important;overflow:hidden}
+.mashhad-account-card .cl-userButtonPopoverMain{background:transparent!important}
+.mashhad-account-card .cl-userPreview{padding:20px!important}
+.mashhad-account-card .cl-userPreviewMainIdentifier{color:#f4f1ff!important;font-weight:700}
+.mashhad-account-card .cl-userPreviewSecondaryIdentifier{color:#b8d4ed!important;direction:ltr}
+.mashhad-account-card .cl-userButtonPopoverActions{border-top:1px solid #88beeb33!important;background:transparent!important}
+.mashhad-account-card .cl-userButtonPopoverActionButton{min-height:52px!important;background:transparent!important;color:#e4eaff!important;border-bottom:1px solid #88beeb22!important;transition:background .15s}
+.mashhad-account-card .cl-userButtonPopoverActionButton:hover{background:#78baff1f!important}
+.mashhad-account-card .cl-userButtonPopoverActionButton:focus-visible{outline:2px solid #8bd1ff!important;outline-offset:-4px}
+.mashhad-account-card .cl-userButtonPopoverActionButtonIcon{color:#a7caff!important}
+.mashhad-account-footer{display:none!important}
+[data-theme=light] .mashhad-account-card{background:linear-gradient(140deg,#e4f3ffed,#f5eeffef)!important;border-color:#8ab9dd!important;color:#252c49!important;box-shadow:0 10px 32px #24426a26!important}
+[data-theme=light] .mashhad-account-card :is(.cl-userPreviewMainIdentifier,.cl-userButtonPopoverActionButton){color:#252c49!important}
+[data-theme=light] .mashhad-account-card :is(.cl-userPreviewSecondaryIdentifier,.cl-userButtonPopoverActionButtonIcon){color:#526b94!important}
+.app-update{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100;max-width:calc(100vw - 24px);width:440px;padding:14px 18px;box-sizing:border-box;border:1px solid #bf8cff;border-radius:18px;background:#12172ff5;color:#f6efff;box-shadow:0 8px 32px #0008;display:flex;align-items:center;gap:12px;flex-wrap:wrap;direction:rtl;font-size:13px}
+.app-update button{display:flex;align-items:center;gap:7px;margin-right:auto;min-height:44px;border:1px solid #e0bcff;border-radius:12px;background:#ba85fa;color:#211332;padding:8px 12px;font-weight:700;cursor:pointer}
+.app-update small{width:100%;font-size:10px;line-height:1.8;color:#d0c5e5}
+.ad-studio :is(.studio-gallery,.video-chat,.film-studio){animation:ad-enter .35s ease both;min-width:0}
+.ad-studio :is(.gallery-heading,.film-heading){margin:12px 0 24px;gap:16px}
+.ad-studio :is(.gallery-heading h1,.film-heading h1,.chat-welcome h1){font-size:clamp(26px,3vw,40px);letter-spacing:-.7px;color:var(--text)}
+.ad-studio :is(.gallery-heading h1 span,.film-heading h1 span){color:var(--accent)}
+.ad-studio :is(.gallery-total,.film-new,.film-download){border:1px solid var(--border);background:var(--soft);color:var(--accent);border-radius:14px;min-height:44px;box-shadow:inset 0 1px 0 #ffffff18}
+.ad-studio .gallery-total{display:flex;align-items:center;white-space:nowrap;padding:10px 18px}
+.ad-studio .video-grid{max-width:none;gap:22px}
+.ad-studio .video-tile{border-radius:23px;background:linear-gradient(145deg,#b580ff0b,transparent),var(--card);box-shadow:inset 0 1px 0 #ffffff18,0 12px 30px #0002}
+.ad-studio .video-tile:hover{border-color:var(--accent);box-shadow:0 0 22px #9b58ee24;transform:translateY(-3px)}
+.ad-studio .tile-picture{height:260px;background:radial-gradient(ellipse at center,#965fff20,transparent),var(--field)}
+.ad-studio .tile-play{width:52px;height:52px;background:#251b48a6;border-color:#d3b5ff9c;box-shadow:0 0 24px #b074ff35}
+.ad-studio .tile-caption{padding:19px 21px;border-top:1px solid var(--border)}
+.ad-studio .tile-caption strong{font-size:15px}
+.ad-studio .tile-caption small{font-size:11px;line-height:1.8}
+.ad-studio .saved-jobs{padding:20px;border:1px solid var(--border);border-radius:20px;background:var(--card)}
+.ad-studio .saved-jobs summary{min-height:24px;color:var(--accent);font-size:13px}
+.ad-studio .video-chat{max-width:960px;min-height:70dvh;padding:18px 0 32px}
+.ad-studio .chat-welcome{padding:45px 15px 52px}
+.ad-studio :is(.chat-emblem,.film-orb){background:radial-gradient(circle at 30% 20%,#de9aff55,#6735b366 55%,var(--field));border:1px solid #b88dff;box-shadow:inset 0 1px 0 #ffffff70,0 0 30px #9b4cff40,0 12px 45px #0003;color:var(--accent);transform:rotate(-5deg)}
+.ad-studio :is(.chat-emblem,.film-orb)>svg{width:36px;height:36px;filter:drop-shadow(0 0 8px #bf7eff66)}
+.ad-studio :is(.chat-composer,.chat-settings,.film-toolbar,.film-folder,.film-production-job){background:linear-gradient(140deg,#b090ff0b,transparent 55%),var(--card);border:1px solid var(--border);box-shadow:inset 0 1px 0 #ffffff24,0 14px 38px #0002;border-radius:23px}
+.ad-studio .chat-composer{padding:24px}
+.ad-studio .chat-composer:focus-within{box-shadow:0 0 0 3px #ad79ff18,0 14px 38px #0002}
+.ad-studio :is(.chat-send,.film-composer button){background:linear-gradient(135deg,#e9bcff,#b67bff);box-shadow:inset 0 1px 0 #fff9,0 0 18px #b175ff35;color:#27143e;min-width:44px;min-height:44px}
+.ad-studio :is(.chat-attach,.chat-settings-trigger){min-height:44px;border-radius:14px;color:var(--accent);box-shadow:inset 0 1px 0 #ffffff17}
+.ad-studio .chat-segments{border:1px solid var(--border);background:var(--field)}
+.ad-studio :is(.chat-segments button,.film-toolbar button){min-height:44px}
+.ad-studio :is(.chat-segments button[aria-pressed=true],.film-toolbar button[aria-pressed=true]){background:linear-gradient(135deg,#aa6dff30,#683bbb22);color:var(--accent);border-color:var(--accent);box-shadow:inset 0 1px 0 #ffffff24}
+.ad-studio .chat-settings{z-index:25}
+.ad-studio .chat-cost{padding:14px;border-top:1px solid var(--border);color:var(--accent)}
+.ad-studio .film-studio{padding:0 0 30px}
+.ad-studio .film-toolbar{padding:9px;margin-bottom:24px;gap:8px}
+.ad-studio .film-toolbar button{border:1px solid transparent;border-radius:15px;font-size:12px}
+.ad-studio :is(.film-toolbar svg,.film-chat-title svg,.film-clean svg){color:var(--accent);flex-shrink:0}
+.ad-studio .film-project-select{padding:14px 18px;background:var(--card);border:1px solid var(--border);border-radius:18px}
+.ad-studio .film-discussion{grid-template-columns:minmax(0,1fr) 320px;gap:22px}
+.ad-studio .film-chat-title{padding:20px;background:var(--soft)}
+.ad-studio .film-messages{height:470px}
+.ad-studio :is(.film-ref-card,.film-scene,.film-clip-card){background:linear-gradient(150deg,#a478ff08,transparent),var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:inset 0 1px 0 #ffffff17}
+.ad-studio .film-workshop :is(button,a.film-download){border:1px solid var(--border);background:var(--soft);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.ad-studio .film-workshop button[aria-pressed=true]{background:var(--accent);color:var(--bg)}
+.ad-studio .film-price{border-color:var(--border);background:var(--soft)}
+.ad-studio .film-price strong{color:var(--accent)}
+.ad-studio .film-clip-placeholder{background:radial-gradient(ellipse at center,#9b5af51c,transparent),var(--field)}
+.ad-studio .film-clip-card.is-active{box-shadow:0 0 24px #a56cff25;border-color:var(--accent)}
+.ad-studio :is(.film-welcome button,.studio-empty button){min-height:44px;border-radius:13px}
+.ad-studio :is(.studio-gallery,.video-chat,.film-studio) button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.ad-studio :is(.film-workshop,.studio-gallery,.video-chat) button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:1000px){.ad-studio .film-discussion{grid-template-columns:minmax(0,1fr) 270px}.ad-studio .tile-picture{height:225px}}
+@media(max-width:760px){
+ .ad-studio :is(.gallery-heading,.film-heading){margin:10px 0 20px;align-items:center}
+ .ad-studio .gallery-total{padding:8px 12px;font-size:10px}
+ .ad-studio .video-grid{gap:12px}
+ .ad-studio .tile-picture{height:170px}
+ .ad-studio .video-tile{border-radius:18px}
+ .ad-studio .tile-caption{padding:13px 11px}
+ .ad-studio .tile-caption strong{font-size:12px}
+ .ad-studio .tile-caption small{font-size:10px}
+ .ad-studio .tile-play{width:42px;height:42px}
+ .ad-studio .video-chat{min-height:65dvh;padding-top:0}
+ .ad-studio .chat-composer{padding:17px}
+ .ad-studio .chat-settings{position:fixed;inset:auto 13px 106px;width:auto;max-height:calc(100dvh - 205px);z-index:30}
+ .ad-studio .chat-welcome{padding:35px 10px}
+ .ad-studio .film-discussion{grid-template-columns:1fr}
+ .ad-studio .film-summary{order:2}
+ .ad-studio .film-toolbar{gap:4px;padding:6px}
+ .ad-studio .film-toolbar button{font-size:10px;padding:11px 9px;min-width:68px}
+ .ad-studio .film-messages{height:400px;padding:15px}
+ .ad-studio .film-project-select{padding:12px}
+ .ad-studio .film-new{font-size:11px;padding:10px}
+ .ad-studio .saved-jobs{padding:15px}
+}
+@media(max-width:420px){.ad-studio .tile-picture{height:145px}.ad-studio .gallery-heading h1{font-size:27px}.ad-studio .gallery-heading p{font-size:11px}.ad-studio .film-heading{flex-wrap:wrap}.ad-studio .chat-settings-trigger{font-size:9px!important}.ad-studio .tile-duration{left:7px;bottom:7px}}

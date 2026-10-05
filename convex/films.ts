@@ -1,3 +1,4 @@
+import {containsFilmSecret,filmInputIssue} from '../shared/film-safety';
 import {filmPlan} from './filmValidators';
 import {PLAN_INSTRUCTIONS,planSchema,validatePlan,type FilmPlan} from '../shared/film-plan';
 import {ConvexError, v} from 'convex/values';
@@ -38,7 +39,8 @@ export const create = mutation({args:{key:v.string(),title:v.string()},handler:a
 export async function enqueue(ctx:MutationCtx,a:{projectId:Id<'filmProjects'>;key:string;text:string},planRequest?:{previousPlans?:string;episode:number;seconds:number;snapshot:string;revision:number;brief:string}){
  const p=await owned(ctx,a.projectId),text=a.text.trim();
  if(!text||text.length>4000||a.key.length>100)throw new ConvexError('الرسالة مطلوبة وحتى 4000 حرف.');
- if(/sk-[a-zA-Z0-9_-]{12,}/.test(text))throw new ConvexError('لا تضع مفاتيح خدمات في المناقشة.');
+ const scopeIssue=filmInputIssue(text);if(scopeIssue)throw new ConvexError(scopeIssue);
+ if(planRequest&&containsFilmSecret(planRequest.snapshot))throw new ConvexError('لا تضع مفاتيح خدمات في المراجع.');
  const key=`${p._id}:${a.key}`,prior=await ctx.db.query('filmTurns').withIndex('by_key',q=>q.eq('key',key)).unique();
  if(prior){if(prior.userText!==text)throw new ConvexError('هذا الإرسال محفوظ بنص مختلف.');return prior._id;}
  if(!process.env.OPENAI_API_KEY)throw new ConvexError('مساعد المناقشة غير متاح حاليًا.');
@@ -48,13 +50,16 @@ export async function enqueue(ctx:MutationCtx,a:{projectId:Id<'filmProjects'>;ke
  const context=JSON.stringify([...turns.filter(t=>t.status==='completed').flatMap(t=>[{role:'user',content:t.userText},{role:'assistant',content:JSON.stringify({reply:t.reply,brief:t.brief})}]),{role:'user',content:text}]);
  if(new TextEncoder().encode(context+(planRequest?.snapshot??'')).length>60_000)throw new ConvexError('وصل النقاش إلى حد السياق؛ احتفظ بالمشروع وابدأ نقاشًا جديدًا.');
  const reserve=filmReserve(context+(planRequest?.snapshot??'')+(planRequest?PLAN_INSTRUCTIONS:''))+(planRequest?6000:0);
- if(p.spentMicros+p.heldMicros+reserve>p.budgetMicros)throw new ConvexError('وصلت إلى حد كلفة مناقشة هذا الفيلم.');
+ const aiWallet=await ctx.db.query('aiWallets').withIndex('by_subject',q=>q.eq('subject',p.subject)).unique();
+ if(!aiWallet||aiWallet.balanceMicros-aiWallet.heldMicros<reserve)throw new ConvexError('رصيد المناقشة لا يكفي لهذا الطلب. اشحن محفظة الذكاء الاصطناعي عبر الإدارة.');
  const date=new Date().toISOString().slice(0,10),dailyKey=`global:${date}`;
  const daily=await ctx.db.query('filmBudgets').withIndex('by_key',q=>q.eq('key',dailyKey)).unique();
  if((daily?.usedMicros??0)+reserve>FILM_DAILY_BUDGET)throw new ConvexError('وصل مساعد المناقشة إلى حد الصرف اليومي.');
  if(daily)await ctx.db.patch(daily._id,{usedMicros:daily.usedMicros+reserve});else await ctx.db.insert('filmBudgets',{key:dailyKey,usedMicros:reserve});
  if(planRequest)planRequest={...planRequest,snapshot:JSON.stringify({storyContext:JSON.parse(context),planContext:JSON.parse(planRequest.snapshot)})};
- const id=await ctx.db.insert('filmTurns',{projectId:p._id,subject:p.subject,key,...(planRequest?{planRequest}:{}),userText:text,status:'queued',reserveMicros:reserve,dailyKey,createdAt:Date.now(),updatedAt:Date.now()});
+ const id=await ctx.db.insert('filmTurns',{projectId:p._id,subject:p.subject,aiWalletId:aiWallet._id,key,...(planRequest?{planRequest}:{}),userText:text,status:'queued',reserveMicros:reserve,dailyKey,createdAt:Date.now(),updatedAt:Date.now()});
+ await ctx.db.patch(aiWallet._id,{heldMicros:aiWallet.heldMicros+reserve,updatedAt:Date.now()});
+ await ctx.db.insert('aiLedger',{key:'reserve-'+id,walletId:aiWallet._id,kind:'reserve',amountMicros:0,balanceAfter:aiWallet.balanceMicros,heldAfter:aiWallet.heldMicros+reserve,note:'حجز مؤقت للمناقشة أو تخطيط الحلقة',actor:p.subject,createdAt:Date.now()});
  await ctx.db.patch(p._id,{heldMicros:p.heldMicros+reserve,updatedAt:Date.now()});
  await ctx.scheduler.runAfter(0,internal.films.respond,{turnId:id});
  return id;
@@ -84,6 +89,7 @@ export const finish = internalMutation({args:{turnId:v.id('filmTurns'),status:v.
  const known=a.costMicros!==undefined;
  if(known&&(!Number.isSafeInteger(a.costMicros)||a.costMicros!<0))throw new Error('Invalid cost');
  const daily=await ctx.db.query('filmBudgets').withIndex('by_key',q=>q.eq('key',turn.dailyKey)).unique();
+ if(known&&turn.aiWalletId){const w=await ctx.db.get(turn.aiWalletId);if(!w)throw new Error('Missing AI wallet');const balance=w.balanceMicros-a.costMicros!,held=w.heldMicros-turn.reserveMicros;if(held<0||!Number.isSafeInteger(balance))throw new Error('Invalid wallet settlement');await ctx.db.patch(w._id,{balanceMicros:balance,heldMicros:held,spentMicros:w.spentMicros+a.costMicros!,updatedAt:Date.now()});await ctx.db.insert('aiLedger',{key:'settle-'+turn._id,walletId:w._id,kind:'settle',amountMicros:-a.costMicros!,balanceAfter:balance,heldAfter:held,note:'تسوية الاستخدام المسجل للمناقشة أو التخطيط',actor:turn.subject,createdAt:Date.now()});}
  if(known){await ctx.db.patch(p._id,{heldMicros:p.heldMicros-turn.reserveMicros,spentMicros:p.spentMicros+a.costMicros!,brief:a.brief??p.brief,updatedAt:Date.now()});if(daily)await ctx.db.patch(daily._id,{usedMicros:daily.usedMicros-turn.reserveMicros+a.costMicros!});}
  else await ctx.db.patch(p._id,{updatedAt:Date.now()}); // Unknown provider usage remains reserved, never presented as actual spend.
  if(a.plan&&turn.planRequest){const pr=turn.planRequest;const refs=await ctx.db.query('filmReferences').withIndex('by_project',q=>q.eq('projectId',p._id)).collect();validatePlan(a.plan,pr.seconds,refs);const old=await ctx.db.query('filmEpisodes').withIndex('by_project',q=>q.eq('projectId',p._id)).collect();await ctx.db.insert('filmEpisodes',{projectId:p._id,previousPlans:pr.previousPlans??'[]',episode:pr.episode,version:1+Math.max(0,...old.filter(e=>e.episode===pr.episode).map(e=>e.version)),plan:a.plan,referenceRevision:pr.revision,brief:pr.brief,approved:false,createdAt:Date.now()});}

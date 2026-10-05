@@ -1,15 +1,18 @@
+import {forgetMedia,readMedia,writeMedia} from './media-disk-cache';
 export type MediaProgress={loaded:number;total:number};
 type Progress=(progress:MediaProgress)=>void;
 type Loader=(signal:AbortSignal,progress:Progress)=>Promise<Blob>;
 type Entry={promise:Promise<Blob>;controller:AbortController;listeners:Set<Progress>;progress?:MediaProgress;blob?:Blob};
-// Session-scoped memory only. Cards and the player share one authenticated download.
+// Session memory deduplicates downloads; each reuse revalidates server access.
 export class ProtectedMediaCache{
  private entries=new Map<string,Entry>();
  private bytes=0;
  private active=0;
  private waiters:(()=>void)[]=[];
  private disposed=false;
- async get(id:string,loader:Loader,signal?:AbortSignal,progress?:Progress):Promise<Blob>{
+ async get(id:string,loader:Loader,signal?:AbortSignal,progress?:Progress,validate?:()=>Promise<void>):Promise<Blob>{
+  if(this.disposed||signal?.aborted)throw new DOMException('Cancelled','AbortError');
+  if(validate&&this.entries.has(id))try{await validate()}catch(error){if(signal?.aborted)throw error;const stale=this.entries.get(id);stale?.controller.abort();if(stale?.blob)this.bytes-=stale.blob.size;this.entries.delete(id);throw error}
   if(this.disposed||signal?.aborted)throw new DOMException('Cancelled','AbortError');
   let entry=this.entries.get(id);
   if(!entry){
@@ -37,11 +40,18 @@ async function bounded<T>(signal:AbortSignal,task:(signal:AbortSignal)=>Promise<
  try{return await new Promise<T>((resolve,reject)=>{const fail=()=>reject(controller.signal.reason);controller.signal.addEventListener('abort',fail,{once:true});if(controller.signal.aborted){fail();return;}task(controller.signal).then(resolve,reject).finally(()=>controller.signal.removeEventListener('abort',fail));});}
  finally{clearTimeout(timer);signal.removeEventListener('abort',cancel);}
 }
-export async function downloadProtectedMedia(endpoint:string,getToken:()=>Promise<string|null>,signal:AbortSignal,progress:Progress,timeoutMs=45000){
+export async function validateProtectedMedia(endpoint:string,getToken:()=>Promise<string|null>,signal:AbortSignal,timeoutMs=45000,scope?:string){
  const token=await bounded(signal,()=>getToken(),timeoutMs);if(!token)throw new Error('يحتاج تسجيل دخول.');
- const metadata=await bounded(signal,async s=>{const response=await fetch(`${endpoint}&metadata=1`,{headers:{Authorization:`Bearer ${token}`},cache:'no-store',signal:s});if(!response.ok)throw new Error(response.status===401?'انتهت الجلسة؛ سجّل الدخول مجددًا.':'تعذر تحميل الملف المحمي. أعد المحاولة.');return response.json() as Promise<{size:number;type:string}>;},timeoutMs);
+ const metadata=await bounded(signal,async s=>{const response=await fetch(`${endpoint}&metadata=1`,{headers:{Authorization:`Bearer ${token}`},cache:'no-store',signal:s});if(!response.ok){if(scope&&[400,401,403,404].includes(response.status))await forgetMedia(`${scope}:${endpoint}`);throw new Error(response.status===401?'انتهت الجلسة؛ سجّل الدخول مجددًا.':'تعذر تحميل الملف المحمي. أعد المحاولة.')}return response.json() as Promise<{size:number;type:string}>;},timeoutMs);
  const {size,type}=metadata;if(!Number.isSafeInteger(size)||size<=0||size>100*1024*1024||!['video/mp4','image/png','image/jpeg','image/webp'].includes(type))throw new Error('بيانات الملف غير صالحة.');
+ return {token,size,type};
+}
+export async function downloadProtectedMedia(endpoint:string,getToken:()=>Promise<string|null>,signal:AbortSignal,progress:Progress,timeoutMs=45000,scope?:string){
+ const {token,size,type}=await validateProtectedMedia(endpoint,getToken,signal,timeoutMs,scope);
+ const key=scope?`${scope}:${endpoint}`:undefined,cached=key?await readMedia(key,size,type):null;
+ if(signal.aborted)throw new DOMException('Cancelled','AbortError');
+ if(cached){progress({loaded:size,total:size});return cached}
  progress({loaded:0,total:size});const parts:Blob[]=[];
  for(let offset=0;offset<size;offset+=8*1024*1024){const part=await bounded(signal,async s=>{const response=await fetch(`${endpoint}&offset=${offset}`,{headers:{Authorization:`Bearer ${token}`},cache:'no-store',signal:s});if(!response.ok)throw new Error('انقطع تنزيل الملف المحمي. أعد المحاولة.');return response.blob();},timeoutMs);if(part.size!==Math.min(8*1024*1024,size-offset))throw new Error('التحميل غير مكتمل؛ أعد المحاولة.');parts.push(part);progress({loaded:offset+part.size,total:size});}
- return new Blob(parts,{type});
+ const blob=new Blob(parts,{type});if(key&&!signal.aborted)await writeMedia(key,blob);return blob;
 }

@@ -1,25 +1,26 @@
 import {v,ConvexError} from 'convex/values';
 import {query,mutation,internalQuery,internalMutation,internalAction,type MutationCtx} from './_generated/server';
 import {internal} from './_generated/api';
-import {requireOwner} from './access';
+import {requireCustomer} from './access';
+import {assertFileOwner} from './customerFiles';
 import {imageOptionValidator,imageStatusValidator,validateImageOption,imagePoints} from '../shared/images';
 import {validateFile,validateSignature} from '../shared/validation';
 import {canonical} from '../shared/editing';
 import type {Id} from './_generated/dataModel';
 const identity={jobId:v.id('imageJobs'),workerId:v.string(),fence:v.string()};
 async function locked(ctx:MutationCtx,a:{jobId:Id<'imageJobs'>;workerId:string;fence:string}){const j=await ctx.db.get(a.jobId);if(!j||j.lease?.workerId!==a.workerId||j.lease.fence!==a.fence||j.lease.until<Date.now())throw new ConvexError('Image lease lost');return j;}
-export const list=query({args:{},handler:async ctx=>{const i=await requireOwner(ctx);return ctx.db.query('imageJobs').withIndex('by_subject',q=>q.eq('subject',i.subject)).order('desc').take(100);}});
+export const list=query({args:{},handler:async ctx=>{const i=await requireCustomer(ctx);return ctx.db.query('imageJobs').withIndex('by_subject',q=>q.eq('subject',i.subject)).order('desc').take(100);}});
 export const authorize=mutation({args:{key:v.string(),prompt:v.string(),referenceIds:v.array(v.id('_storage')),option:imageOptionValidator},handler:async(ctx,a)=>{
- const i=await requireOwner(ctx);validateImageOption(a.option);if(!/^[a-zA-Z0-9-]{8,100}$/.test(a.key)||!a.prompt.trim()||a.prompt.length>10000||a.referenceIds.length>8||new Set(a.referenceIds).size!==a.referenceIds.length)throw new ConvexError('طلب الصورة غير صالح.');
+ const i=await requireCustomer(ctx);validateImageOption(a.option);if(!/^[a-zA-Z0-9-]{8,100}$/.test(a.key)||!a.prompt.trim()||a.prompt.length>10000||a.referenceIds.length>8||new Set(a.referenceIds).size!==a.referenceIds.length)throw new ConvexError('طلب الصورة غير صالح.');
  const old=await ctx.db.query('imageJobs').withIndex('by_key',q=>q.eq('key',a.key)).unique();if(old){if(old.subject!==i.subject||old.prompt!==a.prompt.trim()||canonical(old.option)!==canonical(a.option)||canonical(old.referenceIds)!==canonical(a.referenceIds))throw new ConvexError('معرف المحاولة مرتبط بإعدادات مختلفة.');return old._id;}
  const w=await ctx.db.query('workers').withIndex('by_key',q=>q.eq('key','pipeline')).unique();if(!w?.imageObservedAt||Date.now()-w.imageObservedAt>3600000||!w.imageOptions?.some(o=>canonical(o)===canonical(a.option)))throw new ConvexError('خيارات الصور أو كلفتها تحتاج قراءة حديثة من Flow.');
- for(const storageId of a.referenceIds){const f=await ctx.db.query('uploads').withIndex('by_storage',q=>q.eq('storageId',storageId)).unique();if(!f||f.kind!=='image')throw new ConvexError('الصورة المرجعية غير مصرح لها.');}
+ for(const storageId of a.referenceIds){await assertFileOwner(ctx,i.subject,storageId);const f=await ctx.db.query('uploads').withIndex('by_storage',q=>q.eq('storageId',storageId)).unique();if(!f||f.kind!=='image')throw new ConvexError('الصورة المرجعية غير مصرح لها.');}
  const wallet=await ctx.db.query('pointWallets').withIndex('by_subject',q=>q.eq('subject',i.subject)).unique(),rate=await ctx.db.query('pointRates').withIndex('by_key',q=>q.eq('key',`${a.option.model}:original:0`)).unique(),points=imagePoints(rate??undefined);
  if(!wallet?.enabled||!wallet.models.includes(a.option.model))throw new ConvexError('فعّل صلاحية موديل الصور لهذه المحفظة من الأدمن.');if(wallet.balance<=0||wallet.balance<points)throw new ConvexError('رصيدك غير كافٍ؛ اشحن عبر واتساب.');
  return ctx.db.insert('imageJobs',{...a,prompt:a.prompt.trim(),subject:i.subject,walletId:wallet._id,points,status:'queued',paused:false,stopRequested:false,createdAt:Date.now(),updatedAt:Date.now()});
 }});
-export const stop=mutation({args:{jobId:v.id('imageJobs')},handler:async(ctx,a)=>{const i=await requireOwner(ctx),j=await ctx.db.get(a.jobId);if(!j||j.subject!==i.subject)throw new ConvexError('Unauthorized image');if(j.status==='completed')return;await ctx.db.patch(j._id,{paused:true,stopRequested:true,status:'stopped',updatedAt:Date.now()});}});
-export const resume=mutation({args:{jobId:v.id('imageJobs')},handler:async(ctx,a)=>{const i=await requireOwner(ctx),j=await ctx.db.get(a.jobId);if(!j||j.subject!==i.subject)throw new ConvexError('Unauthorized image');if(j.status==='completed')return;await ctx.db.patch(j._id,{paused:false,stopRequested:false,status:j.intentAt?'generating':'queued',error:undefined,updatedAt:Date.now()});}});
+export const stop=mutation({args:{jobId:v.id('imageJobs')},handler:async(ctx,a)=>{const i=await requireCustomer(ctx),j=await ctx.db.get(a.jobId);if(!j||j.subject!==i.subject)throw new ConvexError('Unauthorized image');if(j.status==='completed')return;await ctx.db.patch(j._id,{paused:true,stopRequested:true,status:'stopped',updatedAt:Date.now()});}});
+export const resume=mutation({args:{jobId:v.id('imageJobs')},handler:async(ctx,a)=>{const i=await requireCustomer(ctx),j=await ctx.db.get(a.jobId);if(!j||j.subject!==i.subject)throw new ConvexError('Unauthorized image');if(j.status==='completed')return;await ctx.db.patch(j._id,{paused:false,stopRequested:false,status:j.intentAt?'generating':'queued',error:undefined,updatedAt:Date.now()});}});
 export const presence=internalMutation({args:{options:v.array(imageOptionValidator),observedAt:v.number(),error:v.optional(v.string())},handler:async(ctx,a)=>{for(const o of a.options)validateImageOption(o);if(a.options.length>30||a.observedAt>Date.now()+1000)throw new ConvexError('Invalid image presence');const w=await ctx.db.query('workers').withIndex('by_key',q=>q.eq('key','pipeline')).unique();if(w)await ctx.db.patch(w._id,{imageOptions:a.options,imageObservedAt:a.observedAt,imageError:a.error});}});
 export const next=internalQuery({args:{},handler:async ctx=>(await ctx.db.query('imageJobs').collect()).filter(j=>!j.paused&&!j.stopRequested&&j.status!=='completed'&&(!j.lease||j.lease.until<Date.now())).sort((a,b)=>a.createdAt-b.createdAt)[0]?._id??null});
 export const get=internalQuery({args:{jobId:v.id('imageJobs')},handler:async(ctx,a)=>ctx.db.get(a.jobId)});

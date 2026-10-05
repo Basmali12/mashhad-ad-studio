@@ -3,4 +3,5 @@ import {createRoot} from 'react-dom/client';
 import {CloudRoot} from './cloud';
 import {Studio} from './studio';
 import './style.css';
-createRoot(document.getElementById('root')!).render(<React.StrictMode><CloudRoot><Studio/></CloudRoot></React.StrictMode>);
+import {AppUpdate} from './app-update';
+createRoot(document.getElementById('root')!).render(<React.StrictMode><AppUpdate/><CloudRoot><Studio/></CloudRoot></React.StrictMode>);
