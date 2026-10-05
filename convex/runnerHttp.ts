@@ -11,6 +11,24 @@ export function runnerRoutes(http:HttpRouter){
  if(Number(request.headers.get('Content-Length')??0)>16000)return new Response('Too large',{status:413});
  try{const {op,args}=await request.json();let value:unknown;
  switch(op){
+ case 'filmNext':value=await ctx.runQuery(internal.filmProduction.next,{});break;
+ case 'filmGet':value=await ctx.runQuery(internal.filmProduction.get,args);break;
+ case 'filmClaim':value=await ctx.runMutation(internal.filmProduction.claim,args);break;
+ case 'filmHeartbeat':value=await ctx.runMutation(internal.filmProduction.heartbeat,args);break;
+ case 'filmRelease':value=await ctx.runMutation(internal.filmProduction.release,args);break;
+ case 'filmProgress':value=await ctx.runMutation(internal.filmProduction.progress,args);break;
+ case 'filmClip':value=await ctx.runMutation(internal.filmProduction.clip,args);break;
+ case 'filmUpload':value=await ctx.runMutation(internal.filmProduction.upload,args);break;
+ case 'filmFinish':value=await ctx.runAction(internal.filmProduction.finish,args);break;
+ case 'filmReview':value=await ctx.runAction(internal.filmReview.run,args);break;
+ case 'filmReviewCapacity':value=await ctx.runQuery(internal.filmReview.capacity,args);break;
+ case 'filmFile':{
+ if(!await ctx.runQuery(internal.filmProduction.fileAccess,{jobId:args.jobId,storageId:args.storageId}))return new Response('Forbidden',{status:403});
+ const blob=await ctx.storage.get(args.storageId);if(!blob)return new Response('Not found',{status:404});
+ if(args.metadata){const meta=await ctx.runQuery(internal.runner.metadata,{storageId:args.storageId});return Response.json({size:blob.size,type:blob.type,hash:meta?.hash});}
+ const offset=args.offset??0;if(!Number.isSafeInteger(offset)||offset<0||offset>=blob.size)return new Response('Invalid offset',{status:400});
+ return new Response(blob.slice(offset,offset+8*1024*1024),{headers:{'Content-Type':blob.type,'Cache-Control':'no-store'}});
+ }
  case 'imagePresence':value=await ctx.runMutation(internal.images.presence,args);break;
  case 'imageNext':value=await ctx.runQuery(internal.images.next,{});break;
  case 'imageGet':value=await ctx.runQuery(internal.images.get,args);break;

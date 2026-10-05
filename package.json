@@ -25,6 +25,7 @@
     "montage:watch": "npm --prefix worker run montage:watch --",
     "montage:status": "npm --prefix worker run montage:status --",
     "montage:stop": "npm --prefix worker run montage:stop --",
+    "film:existing": "npm --prefix worker run film:existing --",
     "worker:start": "npm --prefix worker run service:start --"
   },
   "dependencies": {

@@ -6,6 +6,9 @@ export async function connectFlow(endpoint:string){
  const pages=targets.filter(t=>t.type==='page'&&/^https:\/\/(?:flow\.google\.com|labs\.google)\//.test(t.url));
  const selected=pages.find(t=>new URL(t.url).pathname.includes('/project/'))??pages[0];
  if(!selected)throw new Error('LOGIN_REQUIRED: افتح Flow في Chrome المخصص ثم افتح مشروعًا.');
+ // The dedicated VPS has one page. Use Playwright's native transport there;
+ // selective attachment is needed only when unrelated pages could suspend it.
+ if(targets.filter(t=>t.type==='page').length===1)return chromium.connectOverCDP(endpoint,{timeout:20000});
  const version=await (await fetch(`${endpoint}/json/version`)).json() as {webSocketDebuggerUrl:string};
  if(!version.webSocketDebuggerUrl.startsWith('ws://127.0.0.1:9431/'))throw new Error('Invalid local Chrome endpoint');
  const ws=new WebSocket(version.webSocketDebuggerUrl);await new Promise<void>((resolve,reject)=>{ws.onopen=()=>resolve();ws.onerror=()=>reject(new Error('Local Chrome connection failed'));});

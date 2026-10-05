@@ -20,3 +20,6 @@ worker/runtime/
 *.secret.*
 **/chrome-profile/
 **/downloads/
+
+# Local generated media, diagnostics, and private verification artifacts.
+/outputs/

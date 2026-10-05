@@ -27,6 +27,7 @@
     "montage:watch": "tsx montage.ts watch",
     "montage:status": "tsx montage.ts status",
     "montage:stop": "tsx montage.ts stop",
+    "film:existing": "tsx film-cli.ts",
     "service:start": "tsx service.ts start",
     "service:status": "tsx service.ts status",
     "service:stop": "tsx service.ts stop"

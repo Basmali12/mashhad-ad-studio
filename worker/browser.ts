@@ -5,6 +5,7 @@ import { access,writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { root, sleep } from './runtime';
 import {platformConfig} from './platform';
+import {humanChallenge} from '../shared/flow-human';
 const endpoint='http://127.0.0.1:9431';
 let connected:Awaited<ReturnType<typeof connectFlow>>|undefined;
 export async function browser(){
@@ -24,9 +25,11 @@ export async function browser(){
 }
 export async function workspace(page:Page){
  if(!/^https:\/\/(?:labs\.google\/fx\/tools\/flow|flow\.google\.com)\/project\/[a-zA-Z0-9-]+(?:[/?#]|$)/.test(page.url()))throw new Error('LOGIN_REQUIRED: افتح مشروع Flow حتى تظهر أدوات الفيديو.');
- if(await page.getByText(/unusual traffic|verify you are human|captcha|تحقق.*بشري|حركة مرور غير معتادة/i).first().isVisible().catch(()=>false))throw new Error('LOGIN_REQUIRED: تحقق بشري؛ أكمله بنفسك.');
- const prompt=page.locator('textarea:visible, [contenteditable="true"]:visible');if(await prompt.count()!==1)throw new Error('UI_CHANGED: لا يوجد مربع توليد واحد واضح.');return prompt;
+ const possible=page.getByText(/unusual traffic|verify you are human|captcha|تحقق.*بشري|حركة مرور غير معتادة/i);
+ for(const n of await possible.all())if(await n.isVisible().catch(()=>false)&&humanChallenge(await n.innerText()))throw new Error('LOGIN_REQUIRED: تحقق بشري؛ أكمله بنفسك.');
+ const prompt=page.locator('textarea:visible, [contenteditable="true"]:visible');await prompt.first().waitFor({state:'visible',timeout:15000});
+ if(/ينتهك هذا الطلب سياساتنا|prominent people|violates.*polic/i.test(await page.locator('body').innerText()))throw new Error('FLOW_BLOCKED: رفض Flow الطلب بسبب سياسة المحتوى أو صور الشخصيات. راجع المراجع؛ لا إعادة توليد تلقائية.');
+ if(await prompt.count()!==1)throw new Error('UI_CHANGED: لا يوجد مربع توليد واحد واضح.');return prompt;
 }
 export async function inspect(page:Page){await workspace(page);const controls=await page.locator('button:visible, [role="tab"]:visible, [role="menuitem"]:visible, [role="option"]:visible').evaluateAll(nodes=>nodes.map(n=>({role:n.getAttribute('role'),text:(n.textContent??'').trim(),label:n.getAttribute('aria-label'),selected:n.getAttribute('aria-selected')})));return {at:new Date().toISOString(),projectPath:new URL(page.url()).pathname,controls};}
 export async function screenshot(page:Page,name:string){if(new URL(page.url()).hostname!=='flow.google.com')return;const session=await page.context().newCDPSession(page);try{const {data}=await session.send('Page.captureScreenshot',{format:'jpeg',quality:85});await writeFile(resolve(root,name),Buffer.from(data,'base64'));}finally{await session.detach();}}
-
