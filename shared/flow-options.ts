@@ -5,5 +5,5 @@ export function flowDurations(labels:string[],header:string){
  if(!durations.length){const fixed=clean(header).match(/(\d+)\s*ث/);if(fixed)durations.push(Number(fixed[1]));}
  return durations.filter(n=>Number.isSafeInteger(n)&&n>=1&&n<=30);
 }
-export function defaultFlowOption(options:FlowOption[]){return options.find(o=>o.model==='Omni Flash'&&o.seconds===10)??options[0];}
+export function defaultFlowOption(options:FlowOption[],economy=false){return (economy?options.find(o=>o.model==='Omni Flash'&&o.seconds===10&&o.resolution==='360p'):undefined)?? options.find(o=>o.model==='Omni Flash'&&o.seconds===10)??options[0];}
 export function preferredFlowDurations(model:string,durations:number[]){return model==='Omni Flash'?[...durations].sort((a,b)=>Number(b===10)-Number(a===10)):durations;}

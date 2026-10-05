@@ -25,6 +25,7 @@ import type * as films from "../films.js";
 import type * as http from "../http.js";
 import type * as images from "../images.js";
 import type * as multiuserTrial from "../multiuserTrial.js";
+import type * as onboarding from "../onboarding.js";
 import type * as pipeline from "../pipeline.js";
 import type * as pipelineValidators from "../pipelineValidators.js";
 import type * as requests from "../requests.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   images: typeof images;
   multiuserTrial: typeof multiuserTrial;
+  onboarding: typeof onboarding;
   pipeline: typeof pipeline;
   pipelineValidators: typeof pipelineValidators;
   requests: typeof requests;

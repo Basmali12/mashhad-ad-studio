@@ -1,5 +1,6 @@
+import {GuestStudio} from './guest-studio';
 import { Component, createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ClerkProvider, SignInButton, UserButton, useAuth } from '@clerk/react';
+import { ClerkProvider, UserButton, useAuth } from '@clerk/react';
 import { arSA } from '@clerk/localizations';
 import { ConvexReactClient, useConvex, useConvexAuth, useMutation, useQuery, useAction } from 'convex/react';
 import { ConvexProviderWithClerk } from 'convex/react-clerk';
@@ -9,7 +10,6 @@ import type { Draft } from './data';
 import { validateFile, validateSignature, type FileKind } from '../shared/validation';
 import type {FlowOption,Template} from '../shared/pipeline';
 import {canonical} from '../shared/editing';
-import {MyWallet} from './wallet';
 import {ProtectedMediaCache,downloadProtectedMedia,validateProtectedMedia,type MediaProgress} from './protected-media';
 import {clearMediaScope} from './media-disk-cache';
 const config={url:import.meta.env.VITE_CONVEX_URL as string|undefined,site:import.meta.env.VITE_CONVEX_SITE_URL as string|undefined,key:import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string|undefined};
@@ -25,14 +25,20 @@ class Boundary extends Component<{children:ReactNode},{failed:boolean}>{state={f
 export function CloudRoot({children}:{children:ReactNode}){
  if(!hasConfig)return <><div className="setup-banner">الربط السحابي بانتظار إعداد Convex وتسجيل دخول المالك. المسودات المحلية الحالية محفوظة. راجع README و.env.example.</div>{children}</>;
  if(!client)return <div className="auth-screen"><h1>إعداد Development غير مكتمل</h1><p>أكمل متغيرات Convex وClerk في .env.local. يقبل المشروع مفتاح Clerk التجريبي فقط؛ لم تُفتح البيانات المحلية أو السحابية.</p></div>;
- return <ClerkProvider publishableKey={config.key!} localization={arSA}><MediaCacheSession/><ConvexProviderWithClerk client={client} useAuth={useAuth}><Boundary><OwnerGate>{children}</OwnerGate></Boundary></ConvexProviderWithClerk></ClerkProvider>;
+ return <ClerkProvider publishableKey={config.key!} localization={arSA} appearance={{variables:{colorPrimary:"#b58aff",colorBackground:"#13182c",colorForeground:"#f4efff",colorMutedForeground:"#b9bbd0",colorInput:"#0d1324",colorInputForeground:"#f4efff",borderRadius:"16px",fontFamily:"Tahoma, Arial, sans-serif"},elements:{card:"mashhad-signin-card",socialButtonsBlockButton:"mashhad-google-signin"}}}><MediaCacheSession/><ConvexProviderWithClerk client={client} useAuth={useAuth}><Boundary><OwnerGate>{children}</OwnerGate></Boundary></ConvexProviderWithClerk></ClerkProvider>;
 }
 function MediaCacheSession(){const {userId,isLoaded}=useAuth(),previous=useRef<string|null>(null);useEffect(()=>{if(!isLoaded)return;const old=previous.current;previous.current=userId??null;if(old&&old!==userId)void clearMediaScope(old)},[userId,isLoaded]);return null}
-function OwnerGate({children}:{children:ReactNode}){const {userId}=useAuth();const {isLoading,isAuthenticated}=useConvexAuth();const allowed=useQuery(api.access.customer,isAuthenticated?{}:'skip');
+function OwnerGate({children}:{children:ReactNode}){
+ const {userId}=useAuth(),{isLoading,isAuthenticated}=useConvexAuth(),enter=useMutation(api.onboarding.enter);
+ const [entered,setEntered]=useState(''),[error,setError]=useState(''),[attempt,setAttempt]=useState(0);
+ const ready=isAuthenticated&&entered===userId;
+ const allowed=useQuery(api.access.customer,ready?{}:'skip');
+ useEffect(()=>{if(!isAuthenticated||!userId)return;let active=true;setError('');void enter({}).then(()=>{if(active)setEntered(userId)}).catch(e=>{if(active)setError(cloudError(e))});return()=>{active=false}},[isAuthenticated,userId,enter,attempt]);
  if(isLoading)return <div className="auth-screen"><h1>جارٍ التحقق من تسجيل الدخول…</h1></div>;
- if(!isAuthenticated)return <div className="auth-screen"><h1>مشهد — استوديوك الخاص</h1><p>سجّل الدخول للوصول إلى طلباتك وملفاتك.</p><SignInButton mode="modal"><button className="primary">تسجيل الدخول</button></SignInButton></div>;
- if(allowed===undefined)return <div className="auth-screen">جارٍ التحقق من صلاحية الحساب…</div>;
- if(!allowed)return <div className="auth-screen"><h1>مرحبًا في مشهد</h1><p>يمكنك إنشاء معرّف محفظتك وإرساله للأدمن. فعّل حسابك من الأدمن لتتمكن من التوليد.</p><UserButton/><div className="studio-shell customer-wallet"><MyWallet/></div></div>;
+ if(!isAuthenticated)return <GuestStudio/>;
+ if(error)return <div className="auth-screen"><p role="alert">{error}</p><button onClick={()=>setAttempt(x=>x+1)}>إعادة المحاولة</button><UserButton/></div>;
+ if(!ready||allowed===undefined)return <div className="auth-screen">جارٍ تجهيز حسابك…</div>;
+ if(!allowed)return <div className="auth-screen"><h1>الحساب موقوف من الإدارة</h1><p>تواصل مع الإدارة لإعادة تفعيل حسابك.</p><UserButton/></div>;
  return <CloudReady key={userId}>{children}</CloudReady>;
 }
 function uploadBytes(url:string,file:File,progress:(percent:number)=>void):Promise<Id<'_storage'>>{return new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('POST',url);xhr.setRequestHeader('Content-Type',file.type);xhr.timeout=120000;xhr.upload.onprogress=e=>{if(e.lengthComputable)progress(Math.round(e.loaded/e.total*100));};xhr.onerror=()=>reject(new Error('انقطع الاتصال أثناء الرفع. أعد المحاولة؛ المسودة محفوظة.'));xhr.ontimeout=()=>reject(new Error('انتهت مهلة رفع الملف. أعد المحاولة.'));xhr.onload=()=>{try{if(xhr.status<200||xhr.status>=300)throw new Error('تعذر رفع الملف إلى Convex.');const value=JSON.parse(xhr.responseText) as {storageId?:Id<'_storage'>};if(!value.storageId)throw new Error('لم يُرجع الخادم معرّف الملف.');resolve(value.storageId);}catch(error){reject(error);}};xhr.send(file);});}

@@ -5,7 +5,7 @@ import type { Id } from './_generated/dataModel';
 export async function requireOwner(ctx: Pick<QueryCtx | MutationCtx | ActionCtx,'auth'>) {
  const identity = await ctx.auth.getUserIdentity();
  const subject = process.env.OWNER_SUBJECT;
- if (!subject || !identity || identity.subject !== subject || identity.issuer !== process.env.CLERK_JWT_ISSUER_DOMAIN) throw new ConvexError('الوصول متاح للمالك المصرح له فقط.');
+ if (!subject || !identity || identity.subject !== subject || identity.issuer !== process.env.CLERK_JWT_ISSUER_DOMAIN || (identity.email!==undefined && identity.email.toLowerCase()!=='basm1998ali@gmail.com')) throw new ConvexError('الوصول متاح للمالك المصرح له فقط.');
  return identity;
 }
 export const allowed = query({args:{},handler:async(ctx)=>{try{await requireOwner(ctx);return true;}catch{return false;}}});

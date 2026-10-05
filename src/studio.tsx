@@ -29,11 +29,11 @@ export function Studio(){const cloud=useCloud();return cloud?<StudioReady/>:<div
 function StudioReady(){
  const cloud=useCloud()!,branding=useQuery(api.studio.branding),gallery=useQuery(api.studio.gallery),worker=useQuery(api.pipeline.worker),wallet=useQuery(api.wallets.mine),rates=useQuery(api.wallets.pricing);
  const [wantImages,setWantImages]=useState(false),[tab,setTab]=useState<'generate'|'requests'|'video-ai'|'films'>('generate'),[walletOpen,setWalletOpen]=useState(false),[settings,setSettings]=useState(false),[theme,setTheme]=useState('dark');
- const [form,setForm]=useState<AdForm>(blank),[count,setCount]=useState(1),[choice,setChoice]=useState<FlowOption|null>(null),[draftId,setDraftId]=useState<string>(()=>crypto.randomUUID()),[assets,setAssets]=useState<Draft|null>(null),[drafts,setDrafts]=useState<Draft[]>([]);
+ const [form,setForm]=useState<AdForm>(()=>cloud.draftScope?{...blank,model:'Omni Flash',duration:10}:blank),[count,setCount]=useState(1),[choice,setChoice]=useState<FlowOption|null>(null),[draftId,setDraftId]=useState<string>(()=>crypto.randomUUID()),[assets,setAssets]=useState<Draft|null>(null),[drafts,setDrafts]=useState<Draft[]>([]);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState(''),[source,setSource]=useState<{id:string;image:string;name:string;duration?:number}|null>(null),[sourceBusy,setSourceBusy]=useState(false),[opened,setOpened]=useState<GalleryItem|null>(null),[trackId,setTrackId]=useState<Id<'requests'>|null>(null);
  const [filmSection,setFilmSection]=useState<'discussion'|'characters'|'episodes'>('discussion');
  const lock=useRef(false),sourceAttempt=useRef(0);
- const options=worker?.options.filter(o=>o.model===form.model&&o.aspect===form.aspect)??[],option=options.find(o=>o.resolution===choice?.resolution&&o.seconds===choice?.seconds)??defaultFlowOption(options);
+ const options=worker?.options.filter(o=>o.model===form.model&&o.aspect===form.aspect)??[],option=options.find(o=>o.resolution===choice?.resolution&&o.seconds===choice?.seconds)??defaultFlowOption(options,!!cloud.draftScope);
  const sourceDuration=source?.duration??gallery?.find(v=>v.storageId===form.continuationSourceId)?.duration??undefined;
  const unitPoints=rates?.find(r=>r.model===option?.model&&r.resolution===option?.resolution&&r.seconds===option?.seconds)?.points,totalPoints=unitPoints===undefined?undefined:unitPoints*count;
  const noBalance=wallet!==undefined&&(!wallet||wallet.wallet.balance<=0||totalPoints!==undefined&&wallet.wallet.balance<totalPoints);
