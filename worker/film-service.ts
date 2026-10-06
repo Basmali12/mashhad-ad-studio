@@ -3,7 +3,7 @@ import {resolve} from 'node:path';
 import {randomUUID} from 'node:crypto';
 import type {Doc,Id} from '../convex/_generated/dataModel';
 import {canonical} from '../shared/editing';
-import {filmFailure,continuesScene} from '../shared/film-production';
+import {filmFailure} from '../shared/film-production';
 import {root,read,persist,rpc,connection} from './runtime';
 import {browser,workspace,screenshot} from './browser';
 import {configure,attachments,startFrame,media,waitAssets,download} from './flow';
@@ -37,7 +37,7 @@ export async function executeFilm(jobId:Id<'filmProductions'>,workerId:string,ex
     if(c.state==='pending'){
      if(!await rpc<boolean>('filmReviewCapacity',{jobId}))throw new Error('حد كلفة المراجعة لا يكفي؛ لم يبدأ توليد هذا المقطع.');
      let frame:string|undefined;
-     const followsPrevious=i>0&&(c.part>0||continuesScene(j.plan,c.scene));
+     const followsPrevious=i>0;
      if(followsPrevious||i===0&&j.previousFinalId){const previous=followsPrevious?j.clips[i-1]:undefined;if(previous&&(!previous.storageId||!previous.review?.passed))throw new Error('Previous scene is not approved');const source=await file(previous?.storageId??j.previousFinalId!);const duration=previous?.target??(await probe(source)).duration;frame=resolve(dir,`start-${i}.png`);await filmEndFrame(source,duration,frame,undefined,controller.signal);}
      const projectPath=await newProject(b.page);let p=await configure(b.page,j.option.model,j.option.aspect,j.option.seconds,j.option.resolution,1,frame?'frames':'ingredients');
      if(frame){await startFrame(b.page,frame);p=await configure(b.page,j.option.model,j.option.aspect,j.option.seconds,j.option.resolution,1,'frames');}else{const refs:string[]=[];for(const id of c.referenceIds)refs.push(await file(id));await attachments(b.page,refs);}

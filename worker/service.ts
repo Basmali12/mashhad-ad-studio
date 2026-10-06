@@ -7,7 +7,9 @@ import type {Doc,Id} from '../convex/_generated/dataModel';
 import type {FlowOption} from '../shared/pipeline';
 import {canonical} from '../shared/editing';
 import {root,read,persist,rpc,connection,exclusive,sleep} from './runtime';
-import {browser,workspace,screenshot} from './browser';
+import {browser,workspace,screenshot,withFlowPage} from './browser';
+import {flowConcurrency,SerialStage} from '../shared/concurrency';
+const montageStage=new SerialStage(),capacity=flowConcurrency(process.env.FLOW_CONCURRENCY);
 import {configure,attachments,startFrame,media,waitAssets,download} from './flow';
 import {capabilities} from './capabilities';
 import {newProject} from './projects';
@@ -25,6 +27,7 @@ if(command!=='start')throw new Error('Use worker:start, worker:status or worker:
 const unlock=await exclusive(),cfg=await connection(),workerId=`${cfg.workerId}-${randomUUID().slice(0,8)}`;
 await mediaCommand(tools.ffmpeg,['-version']);await mediaCommand(tools.ffprobe,['-version']);
 await mkdir(resolve(root,'pipeline'),{recursive:true});await persist('service-stop.json',{stop:false});
+const running=new Map<string,Promise<void>>();let balanceDirty=false;
 let stopping=false,connectionLost=false,state='inspecting',options:FlowOption[]|undefined,observedAt:number|undefined,error:string|undefined;
 const control=setInterval(()=>{void read<{stop:boolean}>('service-stop.json').then(s=>{if(s?.stop)stopping=true}).catch(()=>{stopping=true;})},500);
 process.on('SIGINT',()=>{stopping=true;});process.on('SIGTERM',()=>{stopping=true;});
@@ -33,15 +36,16 @@ process.on('SIGINT',()=>{stopping=true;});process.on('SIGTERM',()=>{stopping=tru
 const safe=(e:unknown)=>String(e instanceof Error?e.message:e).replace(/\u001b\[[0-9;]*m/g,'').replace(/(?:https?|wss?):\/\/\S+/g,'[URL]').replace(/Bearer\s+\S+/gi,'[secret]').slice(0,1000);
 let flowBalance:Awaited<ReturnType<typeof readFlowBalance>>|undefined;
 async function refreshBalance(){try{const b=await browser();flowBalance=await readFlowBalance(b.page);}catch{flowBalance={at:Date.now(),error:'تعذرت قراءة رصيد Flow.'};}await presence();}
-async function presence(){await rpc('pipePresence',{workerId,state,filmReady:true,flowBalance,options,observedAt,error});await persist('service-status.json',{pid:process.pid,running:!stopping,state,error,observedAt,updatedAt:new Date().toISOString()});}
+async function presence(){await rpc('pipePresence',{workerId,state,filmReady:true,flowBalance,options,observedAt,error});await persist('service-status.json',{pid:process.pid,running:!stopping,state,capacity,activeJobs:[...running.keys()],error,observedAt,updatedAt:new Date().toISOString()});}
 const transient=(e:unknown)=>/fetch failed|Convex refused.*\((?:5\d\d|408|429)\)/i.test(safe(e))||(e instanceof Error&&['TimeoutError','AbortError'].includes(e.name)&&!e.message.includes('locator.'));
 async function disconnected(e:unknown){if(!connectionLost)console.log('Convex connection lost; no generation retries:',safe(e));connectionLost=true;await persist('service-status.json',{pid:process.pid,running:true,state:'offline',error:safe(e),reconnecting:true,updatedAt:new Date().toISOString()});}
 await presence();let pulsing=false;const pulse=setInterval(()=>{if(pulsing||connectionLost)return;pulsing=true;void presence().catch(async e=>{await disconnected(e);if(!transient(e))stopping=true;}).finally(()=>{pulsing=false;});},10000);
 async function scan(){state='inspecting';await presence();try{const b=await browser();await b.page.keyboard.press('Escape');await b.page.keyboard.press('Escape');const editorPath=new URL(b.page.url()).pathname.match(/^(\/project\/[a-zA-Z0-9-]+)\/edit\/[a-zA-Z0-9-]+$/);if(editorPath){await b.page.goto(new URL(b.page.url()).origin+editorPath[1]);await b.page.locator('textarea:visible, [contenteditable="true"]:visible').waitFor({timeout:15000});}if(!new URL(b.page.url()).pathname.includes('/project/')){const last=await read<{projectPath:string}>('last-options.json');if(last&&/^\/project\/[a-zA-Z0-9-]+$/.test(last.projectPath)){await b.page.goto(new URL(b.page.url()).origin+last.projectPath);await b.page.locator('textarea:visible, [contenteditable="true"]:visible').waitFor({timeout:15000});}}options=await capabilities(b.page);observedAt=Date.now();flowBalance=await readFlowBalance(b.page);try{const imageOptions=await imageCapabilities(b.page);await rpc('imagePresence',{options:imageOptions,observedAt:Date.now()});}catch(imageError){await rpc('imagePresence',{options:[],observedAt:Date.now(),error:safe(imageError)});console.log('Image settings unavailable:',safe(imageError));}state='online';error=undefined;await persist('capabilities.json',{options,observedAt});}catch(e){state='login';error=safe(e);console.log('Options unavailable:',error);}await presence();}
 async function execute(jobId:Id<'pipelines'>){
+ let releaseMontage:(()=>void)|undefined;
  const identity={jobId,workerId,fence:randomUUID()};let j=await rpc<Job>('pipeClaim',identity),halt=false;
  const heartbeat=setInterval(()=>{void rpc<{stop:boolean;paused:boolean}>('pipeHeartbeat',identity).then(s=>{if(s.stop||s.paused)halt=true;}).catch(()=>{halt=true;})},10000);
- const stopped=()=>stopping||halt||connectionLost;
+ const stopped=()=>stopping||halt||connectionLost||state==='login';
  const check=()=>{if(stopped())throw new Error('STOPPED: لا خطوات لاحقة؛ متابعة الأصل محفوظة.');};
  const journalName=`pipeline/${jobId}.json`,journal=await read<Checkpoint>(journalName)??{clips:{}};
  const dir=resolve(root,'pipeline',jobId);await mkdir(dir,{recursive:true});
@@ -102,7 +106,7 @@ async function execute(jobId:Id<'pipelines'>){
    if(!storageId){check();const response=await fetch(ticket.url!,{method:'POST',headers:{'Content-Type':'video/mp4'},body:await readFile(cp.path),signal:AbortSignal.timeout(120000)});if(!response.ok)throw new Error('UPLOAD_FAILED: الملف المحلي محفوظ؛ الاستئناف يرفع فقط.');storageId=(await response.json() as {storageId:string}).storageId;}
    await rpc('pipeFinish',{...identity,index:i,key,storageId,duration:m.duration,width:m.width,height:m.height});
   }
-  check();const exportId=await rpc<string>('pipeExport',identity);await stage('montage');
+  check();releaseMontage=await montageStage.enter();check();const exportId=await rpc<string>('pipeExport',identity);await stage('montage');
   let e=await rpc<Doc<'exports'>|null>('pipeExportState',{jobId});
   if(e?.status!=='completed'){
    // A running editor owns its independent lease; do not start a second process.
@@ -117,7 +121,7 @@ async function execute(jobId:Id<'pipelines'>){
   const phase=stopped()?'stopped':uncertain?'uncertain':/LOGIN_REQUIRED|browserType.connectOverCDP/.test(diagnostic)?'login':'failed';await rpc('pipeStage',{...identity,stage:phase,error:diagnostic,pause:true}).catch(()=>undefined);
   try{if(j.mode==='generate'){const b=await browser();await screenshot(b.page,`pipeline-${jobId}-diagnostic.jpg`);}}catch{/* Diagnostics never trigger generation. */}console.log(jobId,phase,diagnostic);
   if(/COST_CHANGED/.test(diagnostic))await scan();else if(phase==='login'){state='login';error=diagnostic;await presence();}
- }finally{clearInterval(heartbeat);await rpc('pipeRelease',identity).catch(()=>undefined);}
+ }finally{releaseMontage?.();clearInterval(heartbeat);await rpc('pipeRelease',identity).catch(()=>undefined);}
 }
 async function standalone(exportId:string){
  await persist('service-job.json',{exportId,stage:'montage',at:new Date().toISOString()});
@@ -125,9 +129,22 @@ async function standalone(exportId:string){
  const child=spawn(process.execPath,args,{stdio:['ignore','pipe','pipe'],windowsHide:true});let finished=false;child.on('close',()=>{finished=true});child.on('error',()=>{finished=true});child.stdout.on('data',b=>console.log(b.toString().trim()));child.stderr.on('data',b=>console.log(safe(b.toString())));
  while(!finished){if(stopping||connectionLost)await persist('montage-stop.json',{stop:true});await sleep(500);}
 }
+
 try{
- await scan();let lastScan=Date.now();
- let backoff=3000,testDisconnect=process.argv.includes('--test-connection-failure-once');
- while(!stopping){try{if(testDisconnect){testDisconnect=false;throw new TypeError('fetch failed (intentional idle connection test)');}if(connectionLost){await presence();connectionLost=false;backoff=3000;console.log('Convex reconnected; continuing saved queue only.');}const filmId=await rpc<Id<'filmProductions'>|null>('filmNext',{});if(filmId){await executeFilm(filmId,workerId,()=>stopping||connectionLost);if(!stopping&&!connectionLost)await refreshBalance();continue;}const id=await rpc<Id<'pipelines'>|null>('pipeNext',{});if(id){await execute(id);if(!stopping&&!connectionLost)await refreshBalance();}else{const imageId=await rpc<Id<'imageJobs'>|null>('imageNext',{});if(imageId){await executeImage(imageId,workerId,()=>stopping||connectionLost);if(!stopping&&!connectionLost)await refreshBalance();continue;}const exportId=await rpc<string|null>('editPending',{});if(exportId)await standalone(exportId);else await sleep(2000);if(state==='online'&&Date.now()-lastScan>20*60*1000){await scan();lastScan=Date.now();}}}catch(e){if(!transient(e))throw e;await disconnected(e);await persist('montage-stop.json',{stop:true});await sleep(backoff);backoff=Math.min(30000,backoff*2);}}
-}finally{clearInterval(control);clearInterval(pulse);state='offline';stopping=true;await persist('montage-stop.json',{stop:true});await presence().catch(()=>undefined);await unlock();}
+ await scan();let lastScan=Date.now(),backoff=3000,testDisconnect=process.argv.includes('--test-connection-failure-once');
+ while(!stopping){try{
+  if(testDisconnect){testDisconnect=false;throw new TypeError('fetch failed (intentional idle connection test)');}
+  if(connectionLost){await presence();connectionLost=false;backoff=3000;console.log('Convex reconnected; continuing saved queue only.');}
+  if(running.size===0&&balanceDirty){await refreshBalance();balanceDirty=false;}
+  if(running.size===0){const filmId=await rpc<Id<'filmProductions'>|null>('filmNext',{});if(filmId){await executeFilm(filmId,workerId,()=>stopping||connectionLost);if(!stopping&&!connectionLost)await refreshBalance();continue;}}
+  if(state==='online'&&running.size<capacity){const id=await rpc<Id<'pipelines'>|null>('pipeNext',{});if(id&&!running.has(id)){
+   const task=withFlowPage(()=>execute(id)).catch(async e=>{console.log('Job stopped before execution:',safe(e));if(transient(e))await disconnected(e);}).finally(()=>{running.delete(id);balanceDirty=true;});running.set(id,task);continue;
+  }}
+  if(running.size===0){const imageId=await rpc<Id<'imageJobs'>|null>('imageNext',{});if(imageId){await executeImage(imageId,workerId,()=>stopping||connectionLost);if(!stopping&&!connectionLost)await refreshBalance();continue;}
+   const exportId=await rpc<string|null>('editPending',{});if(exportId)await standalone(exportId);
+   if(state==='online'&&Date.now()-lastScan>20*60*1000){await scan();lastScan=Date.now();}
+  }
+  await sleep(1000);
+ }catch(e){if(!transient(e))throw e;await disconnected(e);await persist('montage-stop.json',{stop:true});await sleep(backoff);backoff=Math.min(30000,backoff*2);}}
+}finally{stopping=true;await persist('montage-stop.json',{stop:true});await Promise.allSettled([...running.values()]);clearInterval(control);clearInterval(pulse);state='offline';await presence().catch(()=>undefined);await unlock();}
 process.exit(0);

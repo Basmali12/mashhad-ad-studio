@@ -23,8 +23,9 @@ export const authorize=mutation({args:{requestId:v.id('requests'),key:v.string()
  validateEdit({...a.template,clips:[{storageId:'planned',start:0,end:r.form.duration}],duration:r.form.duration,transition:0});
  if(a.template.logo.enabled){const f=r.logoId?await ctx.db.query('uploads').withIndex('by_storage',q=>q.eq('storageId',r.logoId)).unique():null;if(!f||!['image/png','image/webp'].includes(f.type))throw new ConvexError('اختر شعار PNG/WebP شفافًا أو عطّل الشعار.');}
  const jobs=await ctx.db.query('pipelines').withIndex('by_request',q=>q.eq('requestId',r._id)).collect();if(jobs.some(j=>!j.paused&&!['completed','failed','stopped'].includes(j.stage)))throw new ConvexError('يوجد تشغيل لهذا الطلب؛ لا ترسله مرتين.');
+ const prompts=r.form.productionLanguage==='en'?r.promptPreparation?.state==='completed'&&r.promptPreparation.prompts:clipPrompts(r.form,a.count);if(!prompts||prompts.length!==a.count)throw new ConvexError('يجب تجهيز وصف التوليد باللغة المعتمدة أولًا.');
  const billing=await walletPlan(ctx,owner.subject,a.option,a.count);
- const id=await ctx.db.insert('pipelines',{billing,continuationSource:source,key:a.key,requestId:r._id,mode:'generate',form:r.form,logoId:r.logoId,referenceIds:r.referenceIds,option:a.option,template:a.template,clips:clipPrompts(r.form,a.count).map((prompt,index)=>({index,prompt,state:'pending' as const})),stage:'queued',authorizedAt:Date.now(),updatedAt:Date.now(),stopRequested:false,paused:false});
+ const id=await ctx.db.insert('pipelines',{billing,continuationSource:source,key:a.key,requestId:r._id,mode:'generate',form:r.form,logoId:r.logoId,referenceIds:r.referenceIds,option:a.option,template:a.template,clips:prompts.map((prompt,index)=>({index,prompt,state:'pending' as const})),stage:'queued',authorizedAt:Date.now(),updatedAt:Date.now(),stopRequested:false,paused:false});
  await ctx.db.patch(r._id,{status:'بانتظار التشغيل',estimatedPoints:a.option.cost*a.count,error:undefined,updatedAt:Date.now()});return id;
 }});
 export const assembleExisting=mutation({args:{requestId:v.id('requests'),key:v.string(),template:templateValidator},handler:async(ctx,a)=>{

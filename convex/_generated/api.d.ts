@@ -33,6 +33,7 @@ import type * as runner from "../runner.js";
 import type * as runnerHttp from "../runnerHttp.js";
 import type * as studio from "../studio.js";
 import type * as validators from "../validators.js";
+import type * as videoLanguage from "../videoLanguage.js";
 import type * as walletBilling from "../walletBilling.js";
 import type * as wallets from "../wallets.js";
 
@@ -68,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   runnerHttp: typeof runnerHttp;
   studio: typeof studio;
   validators: typeof validators;
+  videoLanguage: typeof videoLanguage;
   walletBilling: typeof walletBilling;
   wallets: typeof wallets;
 }>;

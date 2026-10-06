@@ -1,3 +1,4 @@
+import {defaultLanguage,spokenLanguage} from '../shared/generation-language';
 import {defaultFlowOption} from '../shared/flow-options';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {useMutation,useQuery} from 'convex/react';
@@ -15,7 +16,7 @@ const imageModels=['Nano Banana Pro','Nano Banana 2','Nano Banana 2 Lite'];
 const modelNames:Record<string,string>={'Omni Flash':'Omni 1.1 Flash','Veo 3.1 Fast':'Veo 3.1 · Fast','Veo 3.1 Quality':'Veo 3.1 · Quality'};
 export function VideoChat({hidden,renderProgress}:{hidden:boolean;renderProgress:(id:Id<'requests'>)=>ReactNode}){
  const imageJobs=useQuery(api.images.list),authorizeImage=useMutation(api.images.authorize);
- const cloud=useCloud()!,worker=useQuery(api.pipeline.worker),wallet=useQuery(api.wallets.mine),rates=useQuery(api.wallets.pricing);
+ const branding=useQuery(api.studio.branding);const cloud=useCloud()!,worker=useQuery(api.pipeline.worker),wallet=useQuery(api.wallets.mine),rates=useQuery(api.wallets.pricing);
  const [kind,setKind]=useState<'video'|'image'>('video'),[prompt,setPrompt]=useState(''),[model,setModel]=useState(cloud.draftScope?'Omni Flash':'Veo 3.1 Fast'),[imageModel,setImageModel]=useState('Nano Banana 2'),[aspect,setAspect]=useState('9:16'),[imageAspect,setImageAspect]=useState('9:16'),[choice,setChoice]=useState<FlowOption|null>(null),[settings,setSettings]=useState(false),[files,setFiles]=useState<File[]>([]),[previews,setPreviews]=useState<string[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState(''),[sent,setSent]=useState(false),[key,setKey]=useState(()=>crypto.randomUUID()),[now,setNow]=useState(Date.now());
  const lock=useRef(false),input=useRef<HTMLInputElement>(null),panel=useRef<HTMLDivElement>(null),trigger=useRef<HTMLButtonElement>(null);
  const options=worker?.options.filter(o=>o.model===model&&o.aspect===aspect)??[],option=options.find(o=>o.resolution===choice?.resolution&&o.seconds===choice?.seconds)??defaultFlowOption(options,!!cloud.draftScope);
@@ -33,8 +34,8 @@ export function VideoChat({hidden,renderProgress}:{hidden:boolean;renderProgress
    if(!wallet.wallet.models.includes(imageModel))throw new Error('فعّل صلاحية موديل الصور لهذه المحفظة من الأدمن.');
    const referenceIds:Id<'_storage'>[]=[];for(const file of files)referenceIds.push(await cloud.uploadImage(file));
    await authorizeImage({key:`image-${key}`,prompt:prompt.trim(),referenceIds,option:imageOption});setSent(true);setSettings(false);return;
-  }if(!prompt.trim())throw new Error('اكتب وصف الفيديو أولًا.');if(!option||!fresh)throw new Error('خيارات Flow تحتاج تحديثًا من Worker قبل الإرسال.');if(points===undefined||wallet===undefined)throw new Error('انتظر تحميل تسعير المحفظة.');if(insufficient)throw new Error('رصيدك غير كافٍ؛ اشحن حسابك عبر واتساب.');
-  const draft:Draft={id:key,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),status:'مسودة',clipCount:1,logo:null,references:files,form:{name:prompt.trim().slice(0,80),address:'غير مذكور',phone:'غير مذكور',products:'فيديو من وصفك',prompt:prompt.trim(),instructions:'',model:option.model,aspect:option.aspect,duration:option.seconds,dialect:'العراقية'}};
+  }if(branding===undefined)throw new Error('انتظر تحميل إعدادات اللغة.');if(!prompt.trim())throw new Error('اكتب وصف الفيديو أولًا.');if(!option||!fresh)throw new Error('خيارات Flow تحتاج تحديثًا من Worker قبل الإرسال.');if(points===undefined||wallet===undefined)throw new Error('انتظر تحميل تسعير المحفظة.');if(insufficient)throw new Error('رصيدك غير كافٍ؛ اشحن حسابك عبر واتساب.');
+  const draft:Draft={id:key,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),status:'مسودة',clipCount:1,logo:null,references:files,form:{name:prompt.trim().slice(0,80),address:'غير مذكور',phone:'غير مذكور',products:'فيديو من وصفك',prompt:prompt.trim(),instructions:'',model:option.model,aspect:option.aspect,duration:option.seconds,dialect:spokenLanguage(branding?.generationLanguage??defaultLanguage),productionLanguage:'en'}};
   await draftRepository.save(draft);const template=defaultTemplate(draft.form,false);template.width=option.resolution==='360p'?360:720;template.text={...template.text,name:false,address:false,phone:false};await cloud.generate(draft,option,template);setSent(true);setSettings(false);
  }catch(e){setError(cloudError(e))}finally{lock.current=false;setBusy(false)}}
  function newMessage(){setKey(crypto.randomUUID());setSent(false);setPrompt('');setFiles([]);setError('');}

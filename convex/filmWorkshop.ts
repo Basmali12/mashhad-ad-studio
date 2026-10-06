@@ -1,6 +1,9 @@
 import {ConvexError,v} from 'convex/values';
 import {mutation,query,internalQuery,internalMutation,action} from './_generated/server';
 import {internal} from './_generated/api';
+import {optionValidator} from './pipelineValidators';
+import {filmOptions} from '../shared/film-experience';
+import {canonical} from '../shared/editing';
 import {owned,enqueue} from './films';
 import {filmSettings,filmPlan} from './filmValidators';
 import {previousPlans,validatePlan} from '../shared/film-plan';
@@ -9,8 +12,10 @@ export const state=query({args:{projectId:v.id('filmProjects')},handler:async(ct
  const project=await owned(ctx,a.projectId),references=await ctx.db.query('filmReferences').withIndex('by_project',q=>q.eq('projectId',a.projectId)).collect(),episodes=await ctx.db.query('filmEpisodes').withIndex('by_project',q=>q.eq('projectId',a.projectId)).collect();
  return {project,references,episodes:episodes.map(e=>({...e,stale:e.referenceRevision!==(project.referenceRevision??0)||e.brief!==project.brief||(e.previousPlans??'[]')!==previousPlans(episodes,e.episode)})),settings:project.settings??{style:'كارتوني',dialect:'العراقية',episodes:2,seconds:60}};
 }});
+export const productionSettings=mutation({args:{projectId:v.id('filmProjects'),option:optionValidator},handler:async(ctx,a)=>{const p=await owned(ctx,a.projectId),worker=await ctx.db.query('workers').withIndex('by_key',q=>q.eq('key','pipeline')).unique();if(!worker||Date.now()-worker.observedAt>3600000||!filmOptions(worker.options).some(o=>canonical(o)===canonical(a.option)))throw new ConvexError('اختر موديلًا ومقاسًا متاحين للأفلام.');if(canonical(p.productionOption??null)===canonical(a.option))return;const episodes=await ctx.db.query('filmEpisodes').withIndex('by_project',q=>q.eq('projectId',p._id)).collect();const changesUnit=p.productionOption?p.productionOption.seconds!==a.option.seconds:episodes.some(e=>!episodes.some(o=>o.episode===e.episode&&o.version>e.version)&&e.plan.scenes.some(scene=>scene.seconds!==a.option.seconds));await ctx.db.patch(p._id,{productionOption:a.option,...(changesUnit?{referenceRevision:(p.referenceRevision??0)+1}:{}),updatedAt:Date.now()});}});
 export const settings=mutation({args:{projectId:v.id('filmProjects'),settings:filmSettings},handler:async(ctx,a)=>{
  const p=await owned(ctx,a.projectId),s=a.settings;
+ if(s.requestedSeconds!==undefined&&(!Number.isInteger(s.requestedSeconds)||s.requestedSeconds<10||s.requestedSeconds>300))throw new ConvexError('مدة الحلقة المطلوبة غير صالحة.');
  if(!['واقعي','كارتوني','أنمي','ثلاثي الأبعاد'].includes(s.style)||!s.dialect.trim()||s.dialect.length>80||!Number.isInteger(s.episodes)||s.episodes<1||s.episodes>6||!Number.isInteger(s.seconds)||s.seconds<10||s.seconds>300)throw new ConvexError('تحقق من الأسلوب واللهجة وعدد الحلقات (1–6) ومدتها (10–300 ثانية).');
  if(JSON.stringify(p.settings)!==JSON.stringify(s))await ctx.db.patch(p._id,{settings:s,referenceRevision:(p.referenceRevision??0)+1,updatedAt:Date.now()});
 }});
@@ -25,13 +30,16 @@ export const reference=mutation({args:{projectId:v.id('filmProjects'),key:v.stri
  const id=old?old._id:await ctx.db.insert('filmReferences',values);if(old)await ctx.db.patch(id,{...values,fileId:a.fileId});
  await ctx.db.patch(p._id,{referenceRevision:(p.referenceRevision??0)+1,updatedAt:Date.now()});return id;
 }});
-export const draft=mutation({args:{projectId:v.id('filmProjects'),episode:v.number(),key:v.string()},handler:async(ctx,a)=>{
+export const draft=mutation({args:{projectId:v.id('filmProjects'),episode:v.number(),key:v.string(),clipSeconds:v.optional(v.number())},handler:async(ctx,a)=>{
+ if(a.clipSeconds!==undefined&&![8,10].includes(a.clipSeconds))throw new ConvexError('مدة الموديل غير متاحة.');
  const p=await owned(ctx,a.projectId),s=p.settings;if(!s||!Number.isInteger(a.episode)||a.episode<1||a.episode>s.episodes||!p.brief)throw new ConvexError('احفظ إعدادات الفيلم واتفق على القصة في المناقشة أولًا.');
- const refs=await ctx.db.query('filmReferences').withIndex('by_project',q=>q.eq('projectId',p._id)).collect();if(!refs.some(r=>r.kind==='character')||!refs.some(r=>r.kind==='place'))throw new ConvexError('أضف شخصية ومكانًا على الأقل قبل تخطيط الحلقة.');
+ const refs=await ctx.db.query('filmReferences').withIndex('by_project',q=>q.eq('projectId',p._id)).collect();if(!refs.some(r=>r.kind==='character'))throw new ConvexError('أضف شخصيات القصة أولًا.');
+ if(a.clipSeconds&&s.seconds%a.clipSeconds!==0)throw new ConvexError('مدة الحلقة لا تطابق الموديل المختار.');
+ if(!refs.some(r=>r.kind==='place')){const placeId=await ctx.db.insert('filmReferences',{projectId:p._id,key:`${p._id}:story-place`,kind:'place',name:'مكان القصة',description:p.brief.slice(0,1800),updatedAt:Date.now()});refs.push((await ctx.db.get(placeId))!);p.referenceRevision=(p.referenceRevision??0)+1;await ctx.db.patch(p._id,{referenceRevision:p.referenceRevision});}
  const episodes=await ctx.db.query('filmEpisodes').withIndex('by_project',q=>q.eq('projectId',p._id)).collect();
  const latest=episodes.filter(e=>!episodes.some(o=>o.episode===e.episode&&o.version>e.version));
  if(a.episode>1&&!latest.some(e=>e.episode===a.episode-1&&e.approved&&e.referenceRevision===(p.referenceRevision??0)&&e.brief===p.brief&&(e.previousPlans??'[]')===previousPlans(episodes,e.episode)))throw new ConvexError('اعتمد الحلقة السابقة حسب المراجع والاتفاق الحاليين أولًا.');
- const snapshot=JSON.stringify({agreement:p.brief,settings:s,episode:a.episode,requestedSeconds:s.seconds,references:refs.map(r=>({_id:r._id,kind:r.kind,name:r.name,description:r.description,hasImage:!!r.fileId})),previousEpisodes:latest.filter(e=>e.episode<a.episode).map(e=>({episode:e.episode,plan:e.plan}))});
+ const snapshot=JSON.stringify({agreement:p.brief,settings:s,episode:a.episode,requestedSeconds:s.seconds,...(a.clipSeconds?{clipSeconds:a.clipSeconds}:{}),references:refs.map(r=>({_id:r._id,kind:r.kind,name:r.name,description:r.description,hasImage:!!r.fileId,...(r.fileId?{fileId:r.fileId}:{})})),previousEpisodes:latest.filter(e=>e.episode<a.episode).map(e=>({episode:e.episode,plan:e.plan}))});
  return enqueue(ctx,{projectId:p._id,key:`plan:${a.key}`,text:`تخطيط الحلقة ${a.episode}`},{episode:a.episode,seconds:s.seconds,snapshot,revision:p.referenceRevision??0,brief:p.brief,previousPlans:previousPlans(episodes,a.episode)});
 }});
 export const save=mutation({args:{projectId:v.id('filmProjects'),episodeId:v.id('filmEpisodes'),plan:filmPlan,approve:v.boolean()},handler:async(ctx,a)=>{

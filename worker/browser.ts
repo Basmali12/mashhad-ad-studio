@@ -6,9 +6,12 @@ import { resolve } from 'node:path';
 import { root, sleep } from './runtime';
 import {platformConfig} from './platform';
 import {humanChallenge} from '../shared/flow-human';
+import {AsyncLocalStorage} from 'node:async_hooks';
+const jobPages=new AsyncLocalStorage<Page>(),reservedPages=new Set<Page>();
 const endpoint='http://127.0.0.1:9431';
 let connected:Awaited<ReturnType<typeof connectFlow>>|undefined;
 export async function browser(){
+ const isolated=jobPages.getStore();if(isolated){const context=isolated.context(),browser=context.browser();if(!browser||isolated.isClosed())throw new Error('Job browser disconnected');return {browser,context,page:isolated};}
  try{await fetch(`${endpoint}/json/version`,{signal:AbortSignal.timeout(1500)});}catch{
  if(process.platform==='linux'&&!process.env.DISPLAY)throw new Error('LOGIN_REQUIRED: Linux requires a private graphical display for headed Chrome.');
  const exe=platformConfig().chrome;await access(exe);
@@ -19,10 +22,11 @@ export async function browser(){
  }
  if(connected?.isConnected()&&!connected.contexts()[0]?.pages().length){await connected.close();connected=undefined;}
  const browser=connected?.isConnected()?connected:await connectFlow(endpoint);connected=browser;const context=browser.contexts()[0];if(!context)throw new Error('Chrome context unavailable');
- const pages=context.pages();const page=pages.find(p=>/^https:\/\/(?:flow\.google\.com|labs\.google)\//.test(p.url())&&new URL(p.url()).pathname.includes('/project/'))??pages.find(p=>p.url().startsWith('https://labs.google/')||p.url().startsWith('https://flow.google.com/'))??await context.newPage();
+ const pages=context.pages().filter(p=>!reservedPages.has(p));const page=pages.find(p=>/^https:\/\/(?:flow\.google\.com|labs\.google)\//.test(p.url())&&new URL(p.url()).pathname.includes('/project/'))??pages.find(p=>p.url().startsWith('https://labs.google/')||p.url().startsWith('https://flow.google.com/'))??await context.newPage();
  if(page.url()==='about:blank')await page.goto('https://labs.google/fx/tools/flow');
  return {browser,context,page};
 }
+export async function withFlowPage<T>(work:()=>Promise<T>){const base=await browser(),page=await base.context.newPage();reservedPages.add(page);try{await page.goto(base.page.url());return await jobPages.run(page,work);}finally{reservedPages.delete(page);await page.close().catch(()=>undefined);}}
 export async function workspace(page:Page){
  if(!/^https:\/\/(?:labs\.google\/fx\/tools\/flow|flow\.google\.com)\/project\/[a-zA-Z0-9-]+(?:[/?#]|$)/.test(page.url()))throw new Error('LOGIN_REQUIRED: افتح مشروع Flow حتى تظهر أدوات الفيديو.');
  const possible=page.getByText(/unusual traffic|verify you are human|captcha|تحقق.*بشري|حركة مرور غير معتادة/i);

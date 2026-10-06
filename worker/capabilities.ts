@@ -3,6 +3,7 @@ import {workspace} from './browser';
 import {configure,openSettings} from './flow';
 import {sleep} from './runtime';
 import type {FlowOption} from '../shared/pipeline';
+import {flowDurations,preferredFlowDurations} from '../shared/flow-options';
 const models:Record<string,string>={'Omni Flash':'Omni 1.1 Flash','Veo 3.1 Fast':'Veo 3.1 - Fast','Veo 3.1 Quality':'Veo 3.1 - Quality'};
 // Read settings only. There is deliberately no generation button in this module.
 export async function capabilities(page:Page):Promise<FlowOption[]>{
@@ -15,8 +16,7 @@ export async function capabilities(page:Page):Promise<FlowOption[]>{
   if(await choice.count()!==1){await page.keyboard.press('Escape');await page.keyboard.press('Escape');continue;}
   await choice.click();await sleep(250);
   const texts=await page.getByRole('radio').allTextContents(),header=await control.innerText();
-  const durations=[...new Set(texts.flatMap(t=>[...t.matchAll(/(?:^|\s)(\d+)\s*ث(?:\s|$)/g)].map(m=>Number(m[1]))))];
-  if(!durations.length){const fixed=header.match(/(\d+)\s*ث/);if(fixed)durations.push(Number(fixed[1]));}
+  const durations=preferredFlowDurations(model,flowDurations(texts,header));
   const resolutions=(['360p','720p'] as const).filter(r=>texts.some(t=>t.includes(r))||header.includes(r));
   const aspects=['9:16','16:9'].filter(a=>texts.some(t=>t.includes(a)));
   await page.keyboard.press('Escape');

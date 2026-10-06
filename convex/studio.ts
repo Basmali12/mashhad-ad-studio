@@ -1,3 +1,4 @@
+import {validateLanguage,spokenLanguage,defaultLanguage} from '../shared/generation-language';
 import {v,ConvexError} from 'convex/values';
 import {query,mutation,type MutationCtx} from './_generated/server';
 import {requireCustomer,owns} from './access';
@@ -11,12 +12,29 @@ async function validateReferences(ctx:MutationCtx,references:{slot:number;aspect
 }
 export const savePhotos=mutation({args:{references:referenceValidator,referenceNotes:v.optional(notesValidator)},handler:async(ctx,a)=>{const actor=await requireCustomer(ctx),key=actor.subject===process.env.OWNER_SUBJECT?'owner':actor.subject;checkNotes(a.referenceNotes);await validateReferences(ctx,a.references);const previous=await ctx.db.query('branding').withIndex('by_key',q=>q.eq('key',key)).unique();if(previous){await ctx.db.patch(previous._id,{references:a.references,referenceNotes:a.referenceNotes??previous.referenceNotes,updatedAt:Date.now()});return previous._id;}return ctx.db.insert('branding',{key,name:'',address:'',phone:'',logoEnabled:false,references:a.references,referenceNotes:a.referenceNotes,updatedAt:Date.now()});}});
 export const branding=query({args:{},handler:async ctx=>{const actor=await requireCustomer(ctx),key=actor.subject===process.env.OWNER_SUBJECT?'owner':actor.subject;return ctx.db.query('branding').withIndex('by_key',q=>q.eq('key',key)).unique();}});
-export const saveBranding=mutation({args:{name:v.string(),address:v.string(),phone:v.string(),logoId:v.optional(v.id('_storage')),logoEnabled:v.boolean(),referenceNotes:v.optional(notesValidator),references:v.optional(v.array(v.object({slot:v.number(),aspect:v.optional(v.union(v.literal('9:16'),v.literal('16:9'))),storageId:v.id('_storage')})))},handler:async(ctx,a)=>{
+export const saveBranding=mutation({args:{generationLanguage:v.optional(v.object({language:v.union(v.literal('ar'),v.literal('en')),dialect:v.string()})),name:v.string(),address:v.string(),phone:v.string(),logoId:v.optional(v.id('_storage')),logoEnabled:v.boolean(),referenceNotes:v.optional(notesValidator),references:v.optional(v.array(v.object({slot:v.number(),aspect:v.optional(v.union(v.literal('9:16'),v.literal('16:9'))),storageId:v.id('_storage')})))},handler:async(ctx,a)=>{
  const actor=await requireCustomer(ctx),key=actor.subject===process.env.OWNER_SUBJECT?'owner':actor.subject;checkNotes(a.referenceNotes);if(a.name.length>120||a.address.length>500||a.phone.length>40)throw new ConvexError('بيانات الهوية طويلة جدًا.');
  if(a.logoEnabled&&!a.logoId)throw new ConvexError('ارفع شعارًا أولًا.');
  if(a.logoId){await assertFileOwner(ctx,actor.subject,a.logoId);const f=await ctx.db.query('uploads').withIndex('by_storage',q=>q.eq('storageId',a.logoId)).unique();if(!f||f.kind!=='image'||!['image/png','image/webp'].includes(f.type))throw new ConvexError('الشعار يجب أن يكون PNG أو WebP محفوظًا.');}
  await validateReferences(ctx,a.references??[]);
- const previous=await ctx.db.query('branding').withIndex('by_key',q=>q.eq('key',key)).unique();const value={...a,referenceNotes:a.referenceNotes??previous?.referenceNotes,references:a.references??previous?.references??[],updatedAt:Date.now()};if(previous){await ctx.db.patch(previous._id,value);return previous._id;}return ctx.db.insert('branding',{key,...value});
+ if(a.generationLanguage){
+  validateLanguage(a.generationLanguage);
+  const previousLanguage=(await ctx.db.query('branding').withIndex('by_key',q=>q.eq('key',key)).unique())?.generationLanguage??defaultLanguage;
+  {
+   const changed=spokenLanguage(previousLanguage)!==spokenLanguage(a.generationLanguage);
+   const projects=await ctx.db.query('filmProjects').withIndex('by_subject',q=>q.eq('subject',actor.subject)).collect();
+   for(const p of projects){
+    const changesFilm=!!p.settings&&p.settings.dialect!==spokenLanguage(a.generationLanguage);
+    if(!changed&&!changesFilm)continue;
+    const turns=await ctx.db.query('filmTurns').withIndex('by_project',q=>q.eq('projectId',p._id)).collect();
+    if(turns.some(t=>['queued','running'].includes(t.status)))throw new ConvexError('انتظر انتهاء رد المساعد قبل تغيير اللغة.');
+    // Existing productions already carry an immutable language/plan snapshot.
+    // Invalidate approval of future episodes, never rewrite an authorized job.
+    if(p.settings&&changesFilm)await ctx.db.patch(p._id,{settings:{...p.settings,dialect:spokenLanguage(a.generationLanguage)},referenceRevision:(p.referenceRevision??0)+1,updatedAt:Date.now()});
+   }
+  }
+ }
+ const previous=await ctx.db.query('branding').withIndex('by_key',q=>q.eq('key',key)).unique();const value={...a,generationLanguage:a.generationLanguage??previous?.generationLanguage,referenceNotes:a.referenceNotes??previous?.referenceNotes,references:a.references??previous?.references??[],updatedAt:Date.now()};if(previous){await ctx.db.patch(previous._id,value);return previous._id;}return ctx.db.insert('branding',{key,...value});
 }});
 export const gallery=query({args:{},handler:async ctx=>{
  const actor=await requireCustomer(ctx);const requests=(await ctx.db.query('requests').order('desc').collect()).filter(r=>owns(actor.subject,r)),exports=await ctx.db.query('exports').order('desc').collect();
