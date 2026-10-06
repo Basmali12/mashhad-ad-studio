@@ -1,0 +1,27 @@
+{
+  "id": "./",
+  "name": "مشهد — استوديو الذكاء الاصطناعي",
+  "short_name": "مشهد",
+  "description": "استوديو عربي لإنشاء الإعلانات والفيديو والأفلام",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#12131b",
+  "theme_color": "#17182d",
+  "icons": [
+    {
+      "src": "app-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "app-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
