@@ -4,8 +4,10 @@ import { internal } from './_generated/api';
 import type { Id } from './_generated/dataModel';
 import { requireSigned } from './access';
 import { runnerRoutes } from './runnerHttp';
+import { socialRoutes } from './socialHttp';
 const http=httpRouter();
 runnerRoutes(http);
+socialRoutes(http);
 function headers(request:Request){const origin=request.headers.get('Origin');const allowed=(process.env.CLIENT_ORIGINS??'').split(',').map(v=>v.trim());const result=new Headers({'Cache-Control':'no-store','Vary':'Origin','X-Content-Type-Options':'nosniff'});if(origin&&allowed.includes(origin)){result.set('Access-Control-Allow-Origin',origin);result.set('Access-Control-Allow-Headers','Authorization');result.set('Access-Control-Expose-Headers','Content-Length, Content-Type');result.set('Access-Control-Allow-Methods','GET, OPTIONS');}return result;}
 http.route({path:'/files',method:'OPTIONS',handler:httpAction(async(_,request)=>new Response(null,{status:204,headers:headers(request)}))});
 http.route({path:'/files',method:'GET',handler:httpAction(async(ctx,request)=>{

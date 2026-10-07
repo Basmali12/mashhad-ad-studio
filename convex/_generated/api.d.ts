@@ -31,6 +31,8 @@ import type * as pipelineValidators from "../pipelineValidators.js";
 import type * as requests from "../requests.js";
 import type * as runner from "../runner.js";
 import type * as runnerHttp from "../runnerHttp.js";
+import type * as social from "../social.js";
+import type * as socialHttp from "../socialHttp.js";
 import type * as studio from "../studio.js";
 import type * as validators from "../validators.js";
 import type * as videoLanguage from "../videoLanguage.js";
@@ -67,6 +69,8 @@ declare const fullApi: ApiFromModules<{
   requests: typeof requests;
   runner: typeof runner;
   runnerHttp: typeof runnerHttp;
+  social: typeof social;
+  socialHttp: typeof socialHttp;
   studio: typeof studio;
   validators: typeof validators;
   videoLanguage: typeof videoLanguage;
