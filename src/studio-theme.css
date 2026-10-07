@@ -13,9 +13,6 @@
 [data-theme=light] .mashhad-account-card{background:linear-gradient(140deg,#e4f3ffed,#f5eeffef)!important;border-color:#8ab9dd!important;color:#252c49!important;box-shadow:0 10px 32px #24426a26!important}
 [data-theme=light] .mashhad-account-card :is(.cl-userPreviewMainIdentifier,.cl-userButtonPopoverActionButton){color:#252c49!important}
 [data-theme=light] .mashhad-account-card :is(.cl-userPreviewSecondaryIdentifier,.cl-userButtonPopoverActionButtonIcon){color:#526b94!important}
-.app-update{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100;max-width:calc(100vw - 24px);width:440px;padding:14px 18px;box-sizing:border-box;border:1px solid #bf8cff;border-radius:18px;background:#12172ff5;color:#f6efff;box-shadow:0 8px 32px #0008;display:flex;align-items:center;gap:12px;flex-wrap:wrap;direction:rtl;font-size:13px}
-.app-update button{display:flex;align-items:center;gap:7px;margin-right:auto;min-height:44px;border:1px solid #e0bcff;border-radius:12px;background:#ba85fa;color:#211332;padding:8px 12px;font-weight:700;cursor:pointer}
-.app-update small{width:100%;font-size:10px;line-height:1.8;color:#d0c5e5}
 .ad-studio :is(.studio-gallery,.video-chat,.film-studio){animation:ad-enter .35s ease both;min-width:0}
 .ad-studio :is(.gallery-heading,.film-heading){margin:12px 0 24px;gap:16px}
 .ad-studio :is(.gallery-heading h1,.film-heading h1,.chat-welcome h1){font-size:clamp(26px,3vw,40px);letter-spacing:-.7px;color:var(--text)}
