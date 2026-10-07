@@ -1,3 +1,4 @@
+import {authAppearance} from './auth-appearance';
 import {GuestStudio} from './guest-studio';
 import { Component, createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ClerkProvider, UserButton, useAuth } from '@clerk/react';
@@ -25,7 +26,7 @@ class Boundary extends Component<{children:ReactNode},{failed:boolean}>{state={f
 export function CloudRoot({children}:{children:ReactNode}){
  if(!hasConfig)return <><div className="setup-banner">الربط السحابي بانتظار إعداد Convex وتسجيل دخول المالك. المسودات المحلية الحالية محفوظة. راجع README و.env.example.</div>{children}</>;
  if(!client)return <div className="auth-screen"><h1>إعداد Development غير مكتمل</h1><p>أكمل متغيرات Convex وClerk في .env.local. يقبل المشروع مفتاح Clerk التجريبي فقط؛ لم تُفتح البيانات المحلية أو السحابية.</p></div>;
- return <ClerkProvider publishableKey={config.key!} localization={arSA} appearance={{variables:{colorPrimary:"#b58aff",colorBackground:"#13182c",colorForeground:"#f4efff",colorMutedForeground:"#b9bbd0",colorInput:"#0d1324",colorInputForeground:"#f4efff",borderRadius:"16px",fontFamily:"Tahoma, Arial, sans-serif"},elements:{card:"mashhad-signin-card",socialButtonsBlockButton:"mashhad-google-signin"}}}><MediaCacheSession/><ConvexProviderWithClerk client={client} useAuth={useAuth}><Boundary><OwnerGate>{children}</OwnerGate></Boundary></ConvexProviderWithClerk></ClerkProvider>;
+ return <ClerkProvider publishableKey={config.key!} localization={{...arSA,formFieldInputPlaceholder__emailAddress:'أدخل بريدك الإلكتروني',formFieldInputPlaceholder__password:'أدخل كلمة المرور',signIn:{...arSA.signIn,start:{...arSA.signIn?.start,title:'أهلًا بيك في مشهد',titleCombined:'أهلًا بيك في مشهد',subtitle:'سجّل دخولك وابدأ صناعة الفيديو',subtitleCombined:'سجّل دخولك وابدأ صناعة الفيديو'}}}} appearance={authAppearance}><MediaCacheSession/><ConvexProviderWithClerk client={client} useAuth={useAuth}><Boundary><OwnerGate>{children}</OwnerGate></Boundary></ConvexProviderWithClerk></ClerkProvider>;
 }
 function MediaCacheSession(){const {userId,isLoaded}=useAuth(),previous=useRef<string|null>(null);useEffect(()=>{if(!isLoaded)return;const old=previous.current;previous.current=userId??null;if(old&&old!==userId)void clearMediaScope(old)},[userId,isLoaded]);return null}
 function OwnerGate({children}:{children:ReactNode}){

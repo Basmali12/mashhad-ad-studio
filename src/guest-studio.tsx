@@ -1,6 +1,6 @@
 import {useClerk} from '@clerk/react';
 import {Film,Settings,Sun,Wallet,UserRound,Sparkles,Layers,Play,Plus,Minus,Store,UploadCloud,ArrowUpLeft} from 'lucide-react';
-import {AdAmbient,AdShortcuts,CreativeHero} from './ad-creative';
+import {AdAmbient,AdShortcuts} from './ad-creative';
 import './studio.css';
 import './ad-ai.css';
 import './studio-theme.css';
@@ -9,7 +9,7 @@ export function GuestStudio(){
  const login=()=>void openSignIn();
  return <div className="studio-shell ad-studio guest-studio" onClickCapture={e=>{if((e.target as HTMLElement).closest('button,a,input,textarea,select')){e.preventDefault();e.stopPropagation();login()}}}>
   <div className="studio-glow"/><AdAmbient/>
-  <header className="studio-header"><a className="studio-brand" href="#"><span><Film size={24}/></span><div>مشهد<small>فكرتك… تستحق مشهدًا</small></div></a><div className="header-actions"><button className="guest-login" type="button" aria-label="دخول / إنشاء حساب"><UserRound size={18}/><span>دخول / إنشاء حساب</span></button><button className="studio-icon studio-wallet" aria-label="محفظة النقاط"><Wallet size={17}/><span>—</span></button><button className="studio-icon" aria-label="الوضع الفاتح"><Sun size={19}/></button><button className="studio-icon" aria-label="إعدادات الاستوديو"><Settings size={21}/></button></div></header>
+  <header className="studio-header"><a className="studio-brand" href="#"><img className="studio-logo" src="./mashhad-logo.png" alt="شعار مشهد" width="80" height="80"/><div>مشهد<small>فكرتك… تستحق مشهدًا</small></div></a><div className="header-actions"><button className="guest-login" type="button" aria-label="دخول / إنشاء حساب"><UserRound size={18}/><span>دخول / إنشاء حساب</span></button><button className="studio-icon studio-wallet" aria-label="محفظة النقاط"><Wallet size={17}/><span>—</span></button><button className="studio-icon" aria-label="الوضع الفاتح"><Sun size={19}/></button><button className="studio-icon" aria-label="إعدادات الاستوديو"><Settings size={21}/></button></div></header>
   <main className="studio-main"><AdShortcuts onPrompt={login} onFilm={login} onPhotos={login} onClips={login} onResults={login}/>
    <div className="guest-welcome"><Sparkles size={22}/><div><strong>فكرتك تستحق أن تُشاهد</strong><p>اكتشف مشهد، وسجّل الدخول عبر Google لتبدأ صناعة الفيديو.</p></div><button type="button">ابدأ الآن <ArrowUpLeft size={18}/></button></div>
    <div className="studio-workspace"><section className="studio-form ad-form"><div className="studio-panel ad-form-panel"><div className="ad-form-grid">
@@ -22,7 +22,7 @@ export function GuestStudio(){
     <label className="ad-quality"><span className="field-title"><span>HQ</span>الجودة والمدة المتاحة</span><select defaultValue="choose"><option value="choose">اختر الجودة والمدة بعد الدخول</option></select></label>
    </div><section className="ad-upload"><div className="field-title"><span>08</span>صور الشارع والمحل</div><button type="button" className="ad-upload-action"><UploadCloud size={32}/><strong>أضف صور مكانك لتقوية الإعلان</strong><small>صور الشارع والمحل والشخصيات</small></button></section>
    <button type="button" className="studio-generate ad-generate"><Sparkles size={25}/>توليد الإعلان<ArrowUpLeft size={25}/></button><p className="studio-fine">سجّل الدخول لمشاهدة التكلفة واستخدام رصيدك. تصفح الواجهة لا يشغّل توليدًا.</p>
-   </div></section><CreativeHero/></div>
+   </div></section></div>
   </main><nav className="studio-bottom" aria-label="تبويبات مشهد">{[{name:'إعلان AI',icon:Sparkles},{name:'طلباتي',icon:Film},{name:'فيديو AI',icon:Play},{name:'أفلام AI',icon:Layers}].map((tab,i)=><button type="button" aria-current={i===0?'page':undefined} key={tab.name}><tab.icon size={25}/><span>{tab.name}</span></button>)}</nav>
  </div>;
 }

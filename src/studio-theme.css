@@ -90,3 +90,26 @@
 .guest-welcome{display:flex;align-items:center;gap:14px;padding:18px 22px;margin:18px 0;border:1px solid #8d70cf6b;border-radius:20px;background:linear-gradient(110deg,#1d2146c9,#181329d9);color:#e9d9ff}.guest-welcome strong{font-size:18px}.guest-welcome p{margin:7px 0 0;font-size:12px;color:#bcb9d4;line-height:1.8}.guest-welcome button,.guest-login{display:flex;align-items:center;justify-content:center;gap:8px;min-height:42px;border:1px solid #b087f699;border-radius:13px;background:linear-gradient(125deg,#453068,#252448);color:#f3eaff;padding:10px 16px;font:inherit;cursor:pointer}.guest-welcome button{margin-right:auto;white-space:nowrap}.guest-studio :is(button,input,select,textarea){cursor:pointer}.mashhad-signin-card{border:1px solid #a280df80!important;background:linear-gradient(140deg,#19243b,#171327)!important;box-shadow:0 20px 80px #0009,0 0 28px #9874df2b!important;direction:rtl}.mashhad-google-signin{border:1px solid #759cd773!important;background:#24324c80!important;color:#f5efff!important;min-height:48px!important;border-radius:14px!important}@media(max-width:600px){.guest-welcome{flex-wrap:wrap;padding:16px}.guest-welcome strong{font-size:15px}.guest-welcome button{width:100%;margin:0}.guest-login{font-size:11px;padding:8px 10px}.guest-studio .header-actions{gap:6px}}
 
 @media(max-width:600px){.guest-login{width:42px;padding:0}.guest-login span{display:none}}
+/* Transparent brand artwork, shared by the header and installation icons. */
+.studio-brand>.studio-logo{display:block;width:58px;height:58px;object-fit:contain;flex-shrink:0;background:transparent;border:0;box-shadow:none;transform:none}
+.ad-studio .studio-brand>.studio-logo{width:80px;height:80px}
+@media(max-width:760px){.studio-brand>.studio-logo,.ad-studio .studio-brand>.studio-logo{width:52px;height:52px}}
+@media(max-width:420px){.studio-brand>.studio-logo,.ad-studio .studio-brand>.studio-logo{width:44px;height:44px}}
+/* Keep the generation fields first, without a decorative hero taking their space. */
+.ad-studio .studio-workspace{display:flex;flex-direction:column;gap:16px}
+.ad-studio .studio-workspace>.studio-form{width:100%;min-width:0}
+.ad-studio .studio-progress-column{width:100%}
+.mashhad-auth-box{width:400px!important;max-width:calc(100vw - 28px)!important;border:1px solid #9c78dd70;border-radius:24px!important;overflow:hidden;box-shadow:0 24px 90px #0009!important;direction:rtl}
+.mashhad-signin-card{padding:24px!important;gap:22px!important;border:0!important;box-shadow:none!important}
+.mashhad-auth-logo{width:70px!important;height:70px!important;object-fit:contain}
+.mashhad-auth-title{font-size:24px!important;font-weight:800!important}
+.mashhad-auth-subtitle{font-size:13px!important;line-height:1.8!important;color:#bfb7d5!important}
+.mashhad-auth-input{min-height:46px!important;border:1px solid #8574bb66!important;border-radius:12px!important;font-size:14px!important;text-align:start}
+.mashhad-auth-submit{min-height:46px!important;border-radius:12px!important;font-size:14px!important;box-shadow:none!important}
+.mashhad-auth-footer{background:transparent!important;background-image:none!important;padding:0 24px 20px!important}
+.mashhad-auth-footer>:not(.mashhad-auth-account){display:none!important}
+.mashhad-auth-account{padding:12px 0 0!important;font-size:12px!important;border-top:1px solid #8574bb33}
+@media(max-width:420px){.mashhad-signin-card{padding:22px 20px!important}.mashhad-auth-title{font-size:22px!important}}
+.mashhad-auth-box{background:linear-gradient(145deg,#19243b,#171327)!important}
+.mashhad-auth-footer{background:#171327!important}
+.mashhad-auth-title::before{content:"";display:block;width:64px;height:64px;margin:0 auto 12px;background:url('/mashhad-logo.png') center/contain no-repeat}
