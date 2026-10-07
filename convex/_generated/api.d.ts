@@ -11,6 +11,8 @@
 import type * as access from "../access.js";
 import type * as adminCode from "../adminCode.js";
 import type * as adminGate from "../adminGate.js";
+import type * as buffer from "../buffer.js";
+import type * as bufferHttp from "../bufferHttp.js";
 import type * as continuation from "../continuation.js";
 import type * as customerFiles from "../customerFiles.js";
 import type * as editValidators from "../editValidators.js";
@@ -49,6 +51,8 @@ declare const fullApi: ApiFromModules<{
   access: typeof access;
   adminCode: typeof adminCode;
   adminGate: typeof adminGate;
+  buffer: typeof buffer;
+  bufferHttp: typeof bufferHttp;
   continuation: typeof continuation;
   customerFiles: typeof customerFiles;
   editValidators: typeof editValidators;

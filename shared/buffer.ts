@@ -1,0 +1,10 @@
+export type BufferChannel={id:string;name:string;service:string;organizationId:string;type:string;isDisconnected:boolean;isLocked:boolean};
+export const bufferChannelsQuery='query Channels($input: ChannelsInput!){channels(input:$input){id name service organizationId type isDisconnected isLocked}}';
+export const bufferAccountQuery='query {account{id organizations{id}}}';
+export const bufferCreateQuery='mutation Publish($input: CreatePostInput!){createPost(input:$input){... on PostActionSuccess{post{id status externalLink}} ... on MutationError{message}}}';
+export function supportedBufferChannel(c:BufferChannel){return !c.isDisconnected&&!c.isLocked&&((c.service==='facebook'&&c.type==='page')||c.service==='instagram'||c.service==='tiktok');}
+export function bufferServiceLabel(service:string){return ({facebook:'فيسبوك',instagram:'إنستغرام',tiktok:'تيك توك'} as Record<string,string>)[service]??service;}
+export function bufferVideoInput(channel:BufferChannel,url:string,caption:string,dueAt?:number){if(!supportedBufferChannel(channel))throw new Error('Unsupported Buffer channel');return {channelId:channel.id,text:caption,schedulingType:'automatic',mode:dueAt?'customScheduled':'shareNow',...(dueAt?{dueAt:new Date(dueAt).toISOString()}:{}),assets:[{video:{url}}],metadata:channel.service==='instagram'?{instagram:{type:'reel',shouldShareToFeed:true,isAiGenerated:true}}:channel.service==='tiktok'?{tiktok:{isAiGenerated:true}}:{facebook:{type:'reel'}}};}
+export function bufferRateLimits(value:string|null){return (value??'').split(/,\s*(?=")/).flatMap(p=>{const match=p.match(/"([^"\n]{1,80})"\s*;\s*r=(\d+)\s*;\s*t=(\d+)/);return match?[{policy:match[1],remaining:Number(match[2]),resetSeconds:Number(match[3])}]:[]});}
+export function base64url(data:Uint8Array){return btoa(String.fromCharCode(...data)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+export async function pkceChallenge(verifier:string){return base64url(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))));}
