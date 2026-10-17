@@ -1,0 +1,1 @@
+import{j as o}from"./auth-BSpfLDIE.js";import{CloudSubscription as r}from"./cloud-subscription-Bqx475Fv.js";import"./index-blbdR5Nn.js";import"./convex-XusNso-1.js";import"./auth-arabic-DVh29meS.js";function n(){return o.jsx(r,{})}export{n as ReelsSubscription};
