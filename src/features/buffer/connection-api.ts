@@ -1,0 +1,3 @@
+import {studioConnections} from '../../studio-api';
+import {publishingSaasMode} from '../../shared/api/publishing-session';
+export async function connectionOperation(body:{op:string;provider?:string;accountId?:string}){if(publishingSaasMode)throw Error('ربط قنوات الزبون يتجهز في المهمة 7. لا نستخدم حساب المالك بدلًا منه.');if(!import.meta.env.DEV)return studioConnections(body);const response=await fetch('/api/series-connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const result=await response.json();if(!response.ok||result.error)throw new Error(result.error??'تعذر إكمال الربط.');return result;}

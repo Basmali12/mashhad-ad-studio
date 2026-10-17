@@ -1,0 +1,1 @@
+export function freshWorkerBalance<T extends {at:number}>(balance:T|undefined,now=Date.now()):T|undefined{return balance&&Number.isSafeInteger(balance.at)&&balance.at<=now+60000&&balance.at>=now-3600000?balance:undefined;}

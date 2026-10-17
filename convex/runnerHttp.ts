@@ -5,6 +5,7 @@ import type { Id } from './_generated/dataModel';
 // A dedicated worker capability is stored only on this Windows device. Convex keeps its hash.
 export function runnerRoutes(http:HttpRouter){
  http.route({path:'/runner',method:'POST',handler:httpAction(async(ctx,request)=>{
+ if(process.env.REELS_ONLY_MODE==='true')return new Response('Legacy worker disabled',{status:410});
  const token=request.headers.get('Authorization')?.replace(/^Bearer /,'');
  const hash=token?Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token)))).map(n=>n.toString(16).padStart(2,'0')).join(''):'';
  if(!process.env.WORKER_KEY_SHA256||hash!==process.env.WORKER_KEY_SHA256)return new Response('Unauthorized',{status:401});
@@ -12,6 +13,11 @@ export function runnerRoutes(http:HttpRouter){
  try{const {op,args}=await request.json();let value:unknown;
  switch(op){
  case 'filmNext':value=await ctx.runQuery(internal.filmProduction.next,{});break;
+ case 'flowPause':value=await ctx.runMutation(internal.flowAccounts.pauseJob,args);break;
+ case 'flowAccount':value=await ctx.runQuery(internal.flowAccounts.workerAccount,args);break;
+ case 'flowObserved':value=await ctx.runMutation(internal.flowAccounts.observed,args);break;
+ case 'flowBalanceNext':value=await ctx.runQuery(internal.flowBalances.next,{});break;
+ case 'flowBalanceRecord':value=await ctx.runMutation(internal.flowBalances.record,args);break;
  case 'filmGet':value=await ctx.runQuery(internal.filmProduction.get,args);break;
  case 'filmClaim':value=await ctx.runMutation(internal.filmProduction.claim,args);break;
  case 'filmHeartbeat':value=await ctx.runMutation(internal.filmProduction.heartbeat,args);break;

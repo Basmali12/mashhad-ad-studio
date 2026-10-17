@@ -1,3 +1,4 @@
+import {withInspectionFlow} from './personal-flow';
 import {mkdir,readFile,writeFile,rename,stat} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {randomUUID} from 'node:crypto';
@@ -8,6 +9,7 @@ import type {FlowOption} from '../shared/pipeline';
 import {canonical} from '../shared/editing';
 import {root,read,persist,rpc,connection,exclusive,sleep} from './runtime';
 import {browser,workspace,screenshot,withFlowPage} from './browser';
+import {withAccountFlow} from './account-flow';
 import {flowConcurrency,SerialStage} from '../shared/concurrency';
 const montageStage=new SerialStage(),capacity=flowConcurrency(process.env.FLOW_CONCURRENCY);
 import {configure,attachments,startFrame,media,waitAssets,download} from './flow';
@@ -16,6 +18,7 @@ import {newProject} from './projects';
 import {probe,decode,hashFile,alpha,wrapped,tools,command as mediaCommand} from './montage-media';
 import {imageCapabilities} from './image-flow';
 import {executeImage} from './image-service';
+import {freshWorkerBalance} from '../shared/worker-balance';
 import {executeFilm} from './film-service';
 import {readFlowBalance} from './flow-balance';
 type Job=Doc<'pipelines'>;
@@ -35,12 +38,15 @@ process.on('SIGINT',()=>{stopping=true;});process.on('SIGTERM',()=>{stopping=tru
 // eslint-disable-next-line no-control-regex
 const safe=(e:unknown)=>String(e instanceof Error?e.message:e).replace(/\u001b\[[0-9;]*m/g,'').replace(/(?:https?|wss?):\/\/\S+/g,'[URL]').replace(/Bearer\s+\S+/gi,'[secret]').slice(0,1000);
 let flowBalance:Awaited<ReturnType<typeof readFlowBalance>>|undefined;
-async function refreshBalance(){try{const b=await browser();flowBalance=await readFlowBalance(b.page);}catch{flowBalance={at:Date.now(),error:'تعذرت قراءة رصيد Flow.'};}await presence();}
-async function presence(){await rpc('pipePresence',{workerId,state,filmReady:true,flowBalance,options,observedAt,error});await persist('service-status.json',{pid:process.pid,running:!stopping,state,capacity,activeJobs:[...running.keys()],error,observedAt,updatedAt:new Date().toISOString()});}
+async function privateLoginFailure(e:unknown,kind:'filmProductions'|'imageJobs'|'pipelines',id:string,subject:string|undefined,personal:boolean|undefined,owner:boolean|undefined){if(!personal||owner||!subject||!safe(e).startsWith('LOGIN_REQUIRED:'))return false;await rpc('flowPause',{kind,id,subject});return true;}
+async function refreshBalance(){return withInspectionFlow(refreshBalanceSelected);}
+async function refreshBalanceSelected(){try{const b=await browser();flowBalance=await readFlowBalance(b.page);}catch{flowBalance={at:Date.now(),error:'تعذرت قراءة رصيد Flow.'};}await presence();}
+async function presence(){await rpc('pipePresence',{workerId,state,filmReady:true,flowBalance:freshWorkerBalance(flowBalance),options,observedAt,error});await persist('service-status.json',{pid:process.pid,running:!stopping,state,capacity,activeJobs:[...running.keys()],error,observedAt,updatedAt:new Date().toISOString()});}
 const transient=(e:unknown)=>/fetch failed|Convex refused.*\((?:5\d\d|408|429)\)/i.test(safe(e))||(e instanceof Error&&['TimeoutError','AbortError'].includes(e.name)&&!e.message.includes('locator.'));
 async function disconnected(e:unknown){if(!connectionLost)console.log('Convex connection lost; no generation retries:',safe(e));connectionLost=true;await persist('service-status.json',{pid:process.pid,running:true,state:'offline',error:safe(e),reconnecting:true,updatedAt:new Date().toISOString()});}
 await presence();let pulsing=false;const pulse=setInterval(()=>{if(pulsing||connectionLost)return;pulsing=true;void presence().catch(async e=>{await disconnected(e);if(!transient(e))stopping=true;}).finally(()=>{pulsing=false;});},10000);
-async function scan(){state='inspecting';await presence();try{const b=await browser();await b.page.keyboard.press('Escape');await b.page.keyboard.press('Escape');const editorPath=new URL(b.page.url()).pathname.match(/^(\/project\/[a-zA-Z0-9-]+)\/edit\/[a-zA-Z0-9-]+$/);if(editorPath){await b.page.goto(new URL(b.page.url()).origin+editorPath[1]);await b.page.locator('textarea:visible, [contenteditable="true"]:visible').waitFor({timeout:15000});}if(!new URL(b.page.url()).pathname.includes('/project/')){const last=await read<{projectPath:string}>('last-options.json');if(last&&/^\/project\/[a-zA-Z0-9-]+$/.test(last.projectPath)){await b.page.goto(new URL(b.page.url()).origin+last.projectPath);await b.page.locator('textarea:visible, [contenteditable="true"]:visible').waitFor({timeout:15000});}}options=await capabilities(b.page);observedAt=Date.now();flowBalance=await readFlowBalance(b.page);try{const imageOptions=await imageCapabilities(b.page);await rpc('imagePresence',{options:imageOptions,observedAt:Date.now()});}catch(imageError){await rpc('imagePresence',{options:[],observedAt:Date.now(),error:safe(imageError)});console.log('Image settings unavailable:',safe(imageError));}state='online';error=undefined;await persist('capabilities.json',{options,observedAt});}catch(e){state='login';error=safe(e);console.log('Options unavailable:',error);}await presence();}
+async function scan(){return withInspectionFlow(scanSelected);}
+async function scanSelected(){state='inspecting';await presence();try{console.log('Flow inspection: connect');const b=await browser();console.log('Flow inspection: page selected');await b.page.keyboard.press('Escape');await b.page.keyboard.press('Escape');console.log('Flow inspection: navigation');const editorPath=new URL(b.page.url()).pathname.match(/^(\/(?:u\/[0-9]+\/)?project\/[a-zA-Z0-9-]+)\/edit\/[a-zA-Z0-9-]+$/);if(editorPath){await b.page.goto(new URL(b.page.url()).origin+editorPath[1]);await b.page.locator('textarea:visible, [contenteditable="true"]:visible').waitFor({timeout:15000});}if(!new URL(b.page.url()).pathname.includes('/project/')){const last=await read<{projectPath:string}>('last-options.json');if(last&&/^\/(?:u\/[0-9]+\/)?project\/[a-zA-Z0-9-]+$/.test(last.projectPath)){await b.page.goto(new URL(b.page.url()).origin+last.projectPath);await b.page.locator('textarea:visible, [contenteditable="true"]:visible').waitFor({timeout:15000});}}if(process.env.MASHHAD_OWNER_ONLY==='true'){const balanceRequest=await rpc<{subject:string;owner:boolean}|null>('flowBalanceNext',{});if(balanceRequest?.owner){flowBalance=await readFlowBalance(b.page);await rpc('flowBalanceRecord',{subject:balanceRequest.subject,...flowBalance});}}console.log('Flow inspection: video options');options=await capabilities(b.page);console.log('Flow inspection: video options ready');observedAt=Date.now();flowBalance=await readFlowBalance(b.page);try{const imageOptions=await imageCapabilities(b.page);await rpc('imagePresence',{options:imageOptions,observedAt:Date.now()});}catch(imageError){await rpc('imagePresence',{options:[],observedAt:Date.now(),error:safe(imageError)});console.log('Image settings unavailable:',safe(imageError));}state='online';error=undefined;await persist('capabilities.json',{options,observedAt});}catch(e){state='login';error=safe(e);console.log('Options unavailable:',error);}await presence();}
 async function execute(jobId:Id<'pipelines'>){
  let releaseMontage:(()=>void)|undefined;
  const identity={jobId,workerId,fence:randomUUID()};let j=await rpc<Job>('pipeClaim',identity),halt=false;
@@ -97,7 +103,7 @@ async function execute(jobId:Id<'pipelines'>){
     }else{
      const path=c.projectPath??cp.projectPath;if(!path)throw new Error('FOLLOW_UP_REQUIRED: معرّف المشروع مفقود؛ لا إعادة توليد تلقائية.');const assetId=c.assetId??cp.assetId;await b.page.goto(new URL(b.page.url()).origin+path+(assetId?`/edit/${assetId}`:''));await b.page.locator('textarea:visible, [contenteditable="true"]:visible').waitFor({timeout:15000});await stage('generating');
     }
-    const assets=await waitAssets(b.page,c.assetId?[c.assetId]:cp.assetId?[cp.assetId]:[],[],1,stopped,promptText,percent=>rpc('pipeClip',{...identity,index:i,state:'submitted',percent}).then(()=>undefined)),asset=assets[0];cp.assetId=asset.id;await save();await rpc('pipeClip',{...identity,index:i,state:'submitted',assetId:asset.id});await stage('downloading');
+    const assets=await waitAssets(b.page,c.assetId?[c.assetId]:cp.assetId?[cp.assetId]:[],[],1,stopped,promptText,percent=>rpc('pipeClip',{...identity,index:i,state:'submitted',percent}).then(()=>undefined),c.projectPath??cp.projectPath),asset=assets[0];cp.assetId=asset.id;await save();await rpc('pipeClip',{...identity,index:i,state:'submitted',assetId:asset.id});await stage('downloading');
     const path=resolve(dir,`clip-${i+1}.mp4`);await download(b.context,asset,path+'.part',b.page);check();await probe(path+'.part');await decode(path+'.part');await rename(path+'.part',path);cp.path=path;cp.hash=await hashFile(path);await save();await rpc('pipeClip',{...identity,index:i,state:'downloaded',assetId:asset.id});
    }
    if(!cp.path||!cp.hash||await hashFile(cp.path)!==cp.hash)throw new Error('LOCAL_FILE_MISSING: استرجع الملف الأصلي؛ لا توليد جديد.');
@@ -136,11 +142,13 @@ try{
   if(testDisconnect){testDisconnect=false;throw new TypeError('fetch failed (intentional idle connection test)');}
   if(connectionLost){await presence();connectionLost=false;backoff=3000;console.log('Convex reconnected; continuing saved queue only.');}
   if(running.size===0&&balanceDirty){await refreshBalance();balanceDirty=false;}
-  if(running.size===0){const filmId=await rpc<Id<'filmProductions'>|null>('filmNext',{});if(filmId){await executeFilm(filmId,workerId,()=>stopping||connectionLost);if(!stopping&&!connectionLost)await refreshBalance();continue;}}
+  if(running.size===0){const filmId=await rpc<Id<'filmProductions'>|null>('filmNext',{});if(filmId){const job=await rpc<Doc<'filmProductions'>>('filmGet',{jobId:filmId});try{await withAccountFlow(job.subject,job.ownerFlow,job.personalFlow,()=>executeFilm(filmId,workerId,()=>stopping||connectionLost));}catch(e){if(!await privateLoginFailure(e,'filmProductions',filmId,job.subject,job.personalFlow,job.ownerFlow))throw e;}if(!stopping&&!connectionLost)await refreshBalance();continue;}}
   if(state==='online'&&running.size<capacity){const id=await rpc<Id<'pipelines'>|null>('pipeNext',{});if(id&&!running.has(id)){
-   const task=withFlowPage(()=>execute(id)).catch(async e=>{console.log('Job stopped before execution:',safe(e));if(transient(e))await disconnected(e);}).finally(()=>{running.delete(id);balanceDirty=true;});running.set(id,task);continue;
+   const job=await rpc<Job>('pipeGet',{jobId:id});const task=withAccountFlow(job.billing?.personalSubject,job.billing?.ownerFlow,job.billing?.personalFlow,()=>withFlowPage(()=>execute(id))).catch(async e=>{console.log('Job stopped before execution:',safe(e));await privateLoginFailure(e,'pipelines',id,job.billing?.personalSubject,job.billing?.personalFlow,job.billing?.ownerFlow);if(transient(e))await disconnected(e);}).finally(()=>{running.delete(id);balanceDirty=true;});running.set(id,task);continue;
   }}
-  if(running.size===0){const imageId=await rpc<Id<'imageJobs'>|null>('imageNext',{});if(imageId){await executeImage(imageId,workerId,()=>stopping||connectionLost);if(!stopping&&!connectionLost)await refreshBalance();continue;}
+  if(running.size===0){const imageId=await rpc<Id<'imageJobs'>|null>('imageNext',{});if(imageId){const job=await rpc<Doc<'imageJobs'>>('imageGet',{jobId:imageId});try{await withAccountFlow(job.subject,job.ownerFlow,job.personalFlow,()=>executeImage(imageId,workerId,()=>stopping||connectionLost));}catch(e){if(!await privateLoginFailure(e,'imageJobs',imageId,job.subject,job.personalFlow,job.ownerFlow))throw e;}if(!stopping&&!connectionLost)await refreshBalance();continue;}
+   const balanceRequest=await rpc<{subject:string;owner:boolean}|null>('flowBalanceNext',{});
+   if(balanceRequest){let result:Awaited<ReturnType<typeof readFlowBalance>>;try{result=await withAccountFlow(balanceRequest.subject,balanceRequest.owner,true,async()=>readFlowBalance((await browser()).page),true);}catch{result={at:Date.now(),error:'تعذرت قراءة حساب Flow الخاص؛ أكمل الربط أو انتظر انتهاء الطلب الجاري.'};}await rpc('flowBalanceRecord',{subject:balanceRequest.subject,...result});continue;}
    const exportId=await rpc<string|null>('editPending',{});if(exportId)await standalone(exportId);
    if(state==='online'&&Date.now()-lastScan>20*60*1000){await scan();lastScan=Date.now();}
   }

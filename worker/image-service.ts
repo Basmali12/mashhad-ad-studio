@@ -5,11 +5,12 @@ import type {Doc,Id} from '../convex/_generated/dataModel';
 import {root,read,persist,rpc,connection} from './runtime';
 import {browser,workspace,screenshot} from './browser';
 import {newProject} from './projects';
-import {configureImage,imageAssets,attachImageReferences,waitImage,downloadImage} from './image-flow';
+import {configureImage,imageAssetIds,attachImageReferences,assertImageReferencesAttached,waitImage,downloadImage} from './image-flow';
+import {imageEditPrompt} from '../shared/image-edit-prompt';
 import {command,tools,decode,hashFile} from './montage-media';
 import {canonical} from '../shared/editing';
 import {validateFile,validateSignature} from '../shared/validation';
-type Journal={intent?:boolean;submitted?:boolean;path?:string;hash?:string;type?:string;assetId?:string};
+type Journal={intent?:boolean;submitted?:boolean;path?:string;hash?:string;type?:string;assetId?:string;effectivePrompt?:string};
 const safe=(e:unknown)=>String(e instanceof Error?e.message:e).replace(/(?:https?|wss?):\/\/\S+/g,'[URL]').replace(/Bearer\s+\S+/gi,'[secret]').slice(0,900);
 export async function executeImage(jobId:Id<'imageJobs'>,workerId:string,stopping:()=>boolean){
  const identity={jobId,workerId,fence:randomUUID()},cfg=await connection();let job=await rpc<Doc<'imageJobs'>>('imageClaim',identity),halt=false;
@@ -22,7 +23,7 @@ export async function executeImage(jobId:Id<'imageJobs'>,workerId:string,stoppin
   if(!localValid){const b=await browser();
    if(!job.intentAt){if(cp.intent)throw new Error('IMAGE_INTENT_UNCERTAIN: server identity missing; never resubmit');const path=await newProject(b.page),actual=await configureImage(b.page,job.option.model,job.option.aspect);if(canonical(actual)!==canonical(job.option))throw new Error('IMAGE_COST_CHANGED: new authorization required');
     const paths:string[]=[];for(const id of job.referenceIds){check();const response=await fetch(`${cfg.site}/runner`,{method:'POST',headers:{Authorization:`Bearer ${cfg.token}`,'Content-Type':'application/json'},body:JSON.stringify({op:'imageFile',args:{jobId,storageId:id}}),signal:AbortSignal.timeout(30000)});if(!response.ok)throw new Error('IMAGE_REFERENCE_FORBIDDEN');const bytes=Buffer.from(await response.arrayBuffer()),type=response.headers.get('Content-Type')?.split(';')[0]??'';validateFile(type,bytes.length,'image');validateSignature(bytes,type);const f=resolve(dir,`${id}.${type==='image/png'?'png':type==='image/webp'?'webp':'jpg'}`);await writeFile(f,bytes,{mode:0o600});paths.push(f);}
-    await attachImageReferences(b.page,paths);await (await workspace(b.page)).fill(`معرف صورة مشهد: ${jobId}\n${job.prompt}`);const baselineIds=(await imageAssets(b.page)).map(a=>a.id);check();await progress('generating',{intent:true,projectPath:path,baselineIds});cp.intent=true;await save();
+    await attachImageReferences(b.page,paths);cp.effectivePrompt=paths.length?imageEditPrompt(job.prompt):job.prompt;await (await workspace(b.page)).fill(`معرف صورة مشهد: ${jobId}\n${cp.effectivePrompt}`);await assertImageReferencesAttached(b.page,paths.length);const baselineIds=await imageAssetIds(b.page);check();await progress('generating',{intent:true,projectPath:path,baselineIds});cp.intent=true;await save();
     const permission=await rpc<{stop:boolean;paused:boolean}>('imageHeartbeat',identity);if(permission.stop||permission.paused)halt=true;check();
     // The only paid click. An intent is never sent a second time.
     await b.page.getByRole('button',{name:'بدء الإنشاء',exact:true}).click({timeout:2000});cp.submitted=true;await save();await progress('generating',{submitted:true});job=await rpc<Doc<'imageJobs'>>('imageGet',{jobId});

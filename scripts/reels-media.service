@@ -1,0 +1,15 @@
+[Unit]
+Description=Mashhad signed reels media streaming (not enabled during local acceptance)
+After=network-online.target
+[Service]
+WorkingDirectory=/opt/mashhad/reels
+EnvironmentFile=/etc/mashhad/reels-runner.env
+ExecStart=/usr/bin/node worker/dist/reels-media-server.js
+Restart=on-failure
+RestartSec=15
+MemoryMax=192M
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+[Install]
+WantedBy=multi-user.target

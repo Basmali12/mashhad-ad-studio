@@ -1,0 +1,4 @@
+import {expect,it,vi} from 'vitest';
+import {collectImageOptions} from './image-capabilities';
+it('retains verified models when an old model disappears and reads 2.1 independently',async()=>{const reset=vi.fn().mockResolvedValue(undefined);const read=vi.fn(async(model:string,aspect:string)=>{if(model==='Nano Banana 2')throw new Error('IMAGE_MODEL_UNAVAILABLE');return {model,aspect,cost:model==='Nano Banana Pro'?2:0}});const options=await collectImageOptions(read,reset);expect(options).toHaveLength(15);expect(options.some(o=>o.model==='Nano Banana 2')).toBe(false);expect(options.some(o=>o.model==='Nano Banana 2.1')).toBe(true);expect(reset).toHaveBeenCalledTimes(1);});
+it('fails closed on an unknown cost rather than publishing invented pricing',async()=>{await expect(collectImageOptions(async()=>{throw new Error('IMAGE_COST_UNKNOWN')},async()=>{})).rejects.toThrow('IMAGE_COST_UNKNOWN');});

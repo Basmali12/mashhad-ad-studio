@@ -1,6 +1,7 @@
 import {v,ConvexError} from 'convex/values';
 import {query,mutation} from './_generated/server';
 import {requireSigned} from './access';
+import {pointsDisabled} from './personalFlow';
 import {requireWalletAdmin} from './adminGate';
 const key='new-customer-points';
 const defaultPoints=10;
@@ -28,7 +29,7 @@ export const enter=mutation({args:{},handler:async ctx=>{
    await ctx.db.patch(wallet._id,{onboardedAt:now});return wallet._id;
   }
  }
- const config=await ctx.db.query('signupSettings').withIndex('by_key',q=>q.eq('key',key)).unique(),points=config?.points??defaultPoints;
+ const config=await ctx.db.query('signupSettings').withIndex('by_key',q=>q.eq('key',key)).unique(),points=pointsDisabled()?0:config?.points??defaultPoints;
  if(!wallet){
   const name=(identity.name??identity.nickname??'مستخدم مشهد').slice(0,120);
   const id=await ctx.db.insert('pointWallets',{subject:identity.subject,publicId:'pending',name,balance:0,enabled:false,models:[],maxClips:1,createdAt:now,updatedAt:now});

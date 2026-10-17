@@ -1,0 +1,20 @@
+[Unit]
+Description=Mashhad personal Flow project worker
+After=network-online.target mashhad-flow-trial-display.service mashhad-flow-trial-chrome.service
+Wants=network-online.target
+Requires=mashhad-flow-trial-display.service mashhad-flow-trial-chrome.service
+StartLimitIntervalSec=300
+StartLimitBurst=3
+[Service]
+User=mashhad
+Group=mashhad
+WorkingDirectory=/opt/mashhad/worker
+EnvironmentFile=/etc/mashhad-worker.env
+UMask=0077
+ExecStart=/usr/local/bin/node --import /opt/mashhad/worker/node_modules/tsx/dist/loader.mjs /opt/mashhad/worker/service.ts start
+Restart=on-failure
+RestartSec=15
+TimeoutStopSec=90
+KillMode=control-group
+[Install]
+WantedBy=multi-user.target

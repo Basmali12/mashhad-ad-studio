@@ -1,0 +1,7 @@
+import {afterEach,expect,it,vi} from 'vitest';
+import {convexTest} from 'convex-test';
+import schema from './schema';
+import {api,internal} from './_generated/api';
+const modules=import.meta.glob('./**/*.{ts,js}');
+afterEach(()=>vi.unstubAllEnvs());
+it('binds profiles to authenticated customers and only trusts worker confirmation',async()=>{vi.stubEnv('CLERK_JWT_ISSUER_DOMAIN','https://fixture.clerk');vi.stubEnv('OWNER_SUBJECT','owner');const t=convexTest(schema,modules);for(const subject of ['alice','bob'])await t.run(c=>c.db.insert('pointWallets',{subject,publicId:subject,name:subject,balance:0,enabled:true,models:[],maxClips:1,createdAt:1,updatedAt:1}));const alice=t.withIdentity({subject:'alice',issuer:'https://fixture.clerk'}),bob=t.withIdentity({subject:'bob',issuer:'https://fixture.clerk'}),a=await alice.mutation(api.flowAccounts.begin,{}),b=await bob.mutation(api.flowAccounts.begin,{});expect(a.key).not.toBe(b.key);expect(await alice.mutation(api.flowAccounts.begin,{})).toEqual(a);expect(await alice.query(api.flowAccounts.state,{})).toMatchObject({connected:false});await expect(t.mutation(internal.flowAccounts.observed,{subject:'alice',key:b.key,ready:true})).rejects.toThrow('mismatch');await t.mutation(internal.flowAccounts.observed,{subject:'alice',key:a.key,ready:true});expect(await alice.query(api.flowAccounts.state,{})).toMatchObject({connected:true});expect(await bob.query(api.flowAccounts.state,{})).toMatchObject({connected:false});await expect(t.mutation(api.flowAccounts.begin,{})).rejects.toThrow();});

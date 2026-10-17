@@ -1,0 +1,109 @@
+<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>مشهد — حساب Flow الخاص</title>
+<style>
+:root{color-scheme:dark;font-family:Tahoma,Arial,sans-serif;color:#f4efff;background:#0b1021}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#40326666,transparent 65%);min-height:100dvh;line-height:1.8}main{max-width:920px;margin:auto;padding:28px 20px 48px}a{color:#d4bbff;text-decoration:none}button,a.action{font:inherit;min-height:48px;padding:11px 20px;border-radius:14px;border:1px solid #ae87ec;background:#b58aff;color:#15102a;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center}button:disabled{opacity:.55;cursor:wait}button.secondary,a.secondary{background:#171d35;color:#dfd2fb;border-color:#62547e}button:focus-visible,a:focus-visible{outline:3px solid #dfc8ff;outline-offset:4px}[hidden]{display:none!important}.brand{display:flex;justify-content:space-between;gap:16px;margin-bottom:30px}.brand strong{font-size:22px}.brand a{font-size:14px}.hero{text-align:center;margin:0 auto 24px;max-width:620px}.eyebrow{font-size:13px;background:#a77de91a;color:#d4bbff;border:1px solid #9276bd55;border-radius:50px;padding:6px 14px}h1{font-size:clamp(25px,5vw,36px);line-height:1.4;margin:18px 0 10px}p{margin:10px 0;color:#bbbfd3}h2{font-size:21px;margin:0 0 8px}.steps{list-style:none;padding:0;display:flex;justify-content:center;gap:12px;margin:24px auto;max-width:600px}.steps li{flex:1;display:flex;gap:8px;align-items:center;justify-content:center;color:#aeb3cc;font-size:14px}.steps b{border:1px solid #6c5a8c;border-radius:50%;width:28px;height:28px;display:inline-flex;justify-content:center;align-items:center}.steps [aria-current="step"]{color:#eadcff}.steps [aria-current="step"] b{background:#b58aff;color:#15102a;border-color:#b58aff}.panel{border:1px solid #8670aa66;border-radius:24px;background:linear-gradient(145deg,#242b4655,#12182e);padding:26px;box-shadow:0 16px 50px #0004;max-width:530px;margin:auto}.panel-header{text-align:center;margin-bottom:20px}#signin{min-width:0}#signin .cl-rootBox,#signin .cl-cardBox{width:100%;max-width:100%;box-shadow:none}#signin .cl-card{box-shadow:none;background:transparent;width:100%;padding:8px 0 20px}#signin .cl-header{display:none}#signin .cl-formFieldInput{min-height:50px;border:1px solid #766591;border-radius:13px;font-size:16px;background:#0e1427;color:#f4efff}#signin .cl-formFieldLabel{color:#ded3f2}#signin .cl-formButtonPrimary{min-height:49px;border-radius:13px;background:#b58aff;color:#15102a}#signin .cl-socialButtonsBlockButton{min-height:50px;border-radius:13px;border:1px solid #766591;background:#242c46;color:#fff}#signin .cl-footer{background:transparent}#signin .cl-footerActionText{color:#b9bbd0}#signin .cl-footerActionLink{color:#cfafff}#status{font-size:14px;border-radius:14px;padding:12px 16px;background:#b58aff12;border:1px solid #9276bd44;margin:20px auto;max-width:700px;color:#e0d0fb;overflow-wrap:anywhere}#status[data-error="true"]{color:#ffd1d8;border-color:#a6597055;background:#a6597014}.note{font-size:13px;text-align:center;max-width:570px;margin:18px auto;color:#aeb3cc}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.viewer-panel{max-width:100%}#screen{height:74dvh;min-height:460px;border:1px solid #8a69cf77;border-radius:18px;background:#050816;overflow:hidden}iframe{width:100%;height:100%;border:0}.viewer-note{font-size:13px}.return{text-align:center;margin-top:24px}@media(max-width:560px){main{padding:20px 14px 32px}.brand{margin-bottom:22px}.panel{padding:20px 16px;border-radius:20px}.steps{gap:4px}.steps li{font-size:12px;gap:5px}.toolbar button,.toolbar a{flex:1 1 45%;padding:10px;font-size:14px}#screen{height:68dvh;min-height:400px}.viewer-panel{padding:18px 10px}.hero p{font-size:14px}}
+#google-panel input:not([type="checkbox"]){width:100%;min-height:52px;background:#0e1427;border:1px solid #766591;color:#f4efff;border-radius:13px;padding:13px;font:inherit;margin:8px 0 18px}#google-panel label{display:block;color:#ded3f2}#google-panel .consent{font-size:13px;line-height:1.9;margin:16px 0}#google-panel input[type="checkbox"]{width:18px;height:18px;vertical-align:middle;accent-color:#b58aff;margin-left:7px}#google-next,#google-start{width:100%}#google-status{font-size:14px;color:#d5c4f5}
+</style>
+<main>
+<header class="brand"><strong>مشهد ✦</strong><a href="https://iraqaistudio.com/">العودة إلى الاستوديو ←</a></header>
+<div class="hero"><span class="eyebrow">حسابك الخاص · رصيدك في Flow</span><h1>اربط حسابك وابدأ الإبداع</h1><p>دخول بسيط، وجلسة خاصة بك لتوليد صورك وفيديواتك.</p></div>
+<ol class="steps" aria-label="خطوات ربط الحساب"><li id="step-signin" aria-current="step"><b>1</b> دخول مشهد</li><li id="step-google"><b>2</b> ربط Google</li><li id="step-ready"><b>3</b> جاهز للتوليد</li></ol>
+<section id="auth-panel" class="panel" aria-labelledby="signin-title"><div class="panel-header"><h2 id="signin-title">تسجيل الدخول إلى مشهد</h2><p>استخدم Google أو إيميل وكلمة سر حسابك في مشهد.</p></div><div id="signin" dir="ltr"></div></section>
+<p id="signed-in-account" class="note" hidden></p><p id="status" role="status" aria-live="polite">جارٍ تجهيز تسجيل الدخول…</p>
+<section id="google-panel" class="panel" hidden aria-labelledby="flow-title">
+<div class="panel-header"><h2 id="flow-title">اربط حساب Flow</h2><p>أكمل تسجيل Google في جلسة متصفح خاصة بحسابك.</p></div>
+<label for="flow-email">إيميل حساب Flow الذي تريد ربطه</label><input id="flow-email" type="email" dir="ltr" autocomplete="email" placeholder="name@gmail.com" required><p id="google-status" role="status">اضغط بدء الربط لفتح تسجيل Google.</p>
+<label class="consent"><input id="google-consent" type="checkbox"> أوافق على إرسال بيانات الدخول مؤقتًا عبر سيرفر مشهد إلى Google داخل جلستي الخاصة. لا تُسجّل كلمة السر في قاعدة بيانات مشهد.</label>
+<button id="google-start" type="button">بدء ربط Google</button>
+<form id="google-form" hidden autocomplete="off">
+<label id="google-label" for="google-value">إيميل Google</label>
+<input id="google-value" name="google-login-value" autocapitalize="none" spellcheck="false" type="email" placeholder="name@gmail.com" autocomplete="off" required maxlength="1024" dir="ltr">
+<button id="google-next" type="submit">متابعة إلى Google</button>
+</form>
+<div class="toolbar"><button id="google-refresh" type="button" class="secondary">تحديث حالة الدخول</button><button id="google-manual" type="button" class="secondary">فتح شاشة Google / إنشاء حساب</button><button id="google-confirm" type="button" class="secondary">تأكيد حساب Flow والمتابعة</button></div>
+<p class="viewer-note">إذا Google طلب رمزًا أو اختيار رقم مثل 3 أو 5 أو 10، تظهر شاشته الأصلية هنا. أكمل الطلب بنفسك على هاتفك ثم حدّث حالة الدخول. أي تحقق أو استرجاع كلمة سر أو إنشاء حساب يتم بيدك في شاشة Google الأصلية. لا يبدأ توليد أثناء الربط.</p>
+</section>
+<section id="connected-panel" class="panel" hidden><h2>حساب Flow جاهز ✓</h2><p>تم تأكيد حسابك الخاص. تستطيع الآن استخدامه من مشهد.</p><a href="https://iraqaistudio.com/" class="action">العودة إلى الاستوديو</a></section>
+<section id="viewer" class="panel viewer-panel" hidden aria-labelledby="google-title"><h2 id="google-title">إكمال التحقق من Google</h2><p>أكمل الرمز أو الموافقة المطلوبة من Google. بعد ظهور حسابك في Flow تتم مطابقة الإيميل وإكمال الربط تلقائيًا؛ لا تحتاج فتح مشروع.</p><div class="toolbar"><button id="confirm" type="button">تأكيد الربط والمتابعة</button><button id="lock" class="secondary" type="button">إخفاء شاشة التحقق</button></div><p class="viewer-note">تبقى جلسة حسابك محفوظة عند إخفاء الشاشة.</p><div id="screen"></div></section>
+<p class="note">دخول مشهد يختلف عن ربط Google. بيانات Google تُرسل لجلسة حسابك الخاصة فقط، والتحقق البشري يبقى بيدك.</p><p class="return"><a href="https://iraqaistudio.com/">العودة إلى مشهد</a></p>
+</main>
+<script type="module">
+const status=document.querySelector('#status'),viewer=document.querySelector('#viewer'),screen=document.querySelector('#screen');
+function message(text,error=false){status.textContent=text;status.dataset.error=String(error);}
+function step(id){for(const item of document.querySelectorAll('.steps li'))item.removeAttribute('aria-current');document.querySelector('#step-'+id).setAttribute('aria-current','step');}
+const googlePanel=document.querySelector('#google-panel'),googleForm=document.querySelector('#google-form'),googleValue=document.querySelector('#google-value'),googleStatus=document.querySelector('#google-status');
+let googleStage='manual',googleBusy=false,googlePolling=false,googleTask=Promise.resolve();
+function renderGoogle(state){
+ if(state.stage!==googleStage)googleValue.value='';
+ googleStage=state.stage;googleStatus.textContent=state.message;
+ googleForm.hidden=!['email','password'].includes(state.stage);
+ if(!googleForm.hidden)hideGoogleScreen();
+ document.querySelector('#google-start').hidden=!googleForm.hidden;
+ if(!googleForm.hidden){const password=state.stage==='password';googleValue.type=password?'password':'email';googleValue.placeholder=password?'كلمة سر Google':'name@gmail.com';document.querySelector('#google-label').textContent=password?'كلمة سر Google':'إيميل Google';document.querySelector('#google-next').textContent=password?'تسجيل الدخول إلى Google':'متابعة';}
+}
+async function googleRequest(path,options){const r=await fetch('./'+path,options),j=await r.json();if(!r.ok)throw Error(j.error??'تعذر متابعة تسجيل Google.');return j;}
+function connected(messageText){googleValue.value='';message(messageText);step('ready');hideGoogleScreen();googlePanel.hidden=true;document.querySelector('#connected-panel').hidden=false;}
+async function refreshGoogle(){const state=await googleRequest('google-state');if(googlePanel.hidden){hideGoogleScreen();return;}if(state.stage==='ready'){connected(state.message);return;}renderGoogle(state);if(['manual','flow'].includes(state.stage)&&document.querySelector('#google-consent').checked)showGoogleScreen();else hideGoogleScreen();}
+async function googleOperation(action,{background=false}={}){
+ if(background?(googleBusy||googlePolling):googleBusy)return;
+ if(background)googlePolling=true;else googleBusy=true;
+ const buttons=[...googlePanel.querySelectorAll('button'),document.querySelector('#confirm')];
+ if(!background)for(const button of buttons)button.disabled=true;
+ const task=googleTask.catch(()=>undefined).then(action);googleTask=task;
+ try{await task;}catch(e){googleStatus.textContent=e.message??'تعذر متابعة الدخول. افتح شاشة Google الأصلية.';if(!background)message(googleStatus.textContent,true);}
+ finally{if(background)googlePolling=false;else{googleBusy=false;for(const button of buttons)button.disabled=false;}}
+}
+function consent(){if(!document.querySelector('#google-consent').checked)throw Error('وافق على إرسال بيانات الدخول إلى جلستك الخاصة قبل المتابعة.');}
+document.querySelector('#google-start').onclick=()=>googleOperation(async()=>{consent();await selectEmail();renderGoogle(await googleRequest('google-open',{method:'POST'}));});
+document.querySelector('#google-refresh').onclick=()=>googleOperation(refreshGoogle);
+googleForm.onsubmit=e=>{e.preventDefault();void googleOperation(async()=>{
+ consent();const submittedStage=googleStage;
+ try{const result=await googleRequest('google-input',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({stage:submittedStage,value:googleValue.value})});googleStatus.textContent=result.message;}
+ catch(error){const state=await googleRequest('google-state').catch(()=>null);if(state&&state.stage!==submittedStage){renderGoogle(state);return;}throw error;}
+ finally{if(submittedStage==='password')googleValue.value='';}
+ // Allow Google's navigation to finish, then read state; never resend credentials.
+ await new Promise(resolve=>setTimeout(resolve,1200));await refreshGoogle();
+ });};
+async function selectEmail(){const input=document.querySelector('#flow-email');if(!input.reportValidity())throw Error('اكتب إيميل Flow المطلوب.');await googleRequest('account-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:input.value})});}
+function showGoogleScreen(){viewer.hidden=false;if(!screen.firstChild){const frame=document.createElement('iframe');frame.src='./vnc.html?autoconnect=true&resize=scale&path=flow-account/websockify';frame.title='شاشة Google الأصلية داخل جلستك الخاصة';screen.replaceChildren(frame);}}
+function hideGoogleScreen(){screen.replaceChildren();viewer.hidden=true;}
+document.querySelector('#google-manual').onclick=()=>googleOperation(async()=>{consent();await selectEmail();showGoogleScreen();viewer.scrollIntoView({behavior:'smooth',block:'start'});});
+function confirmFlow(){
+ if(googleBusy)return;
+ const buttons=[document.querySelector('#google-confirm'),document.querySelector('#confirm')],labels=buttons.map(button=>button.textContent);
+ for(const button of buttons)button.textContent='جارٍ تأكيد حسابك…';
+ googleStatus.textContent='جارٍ مطابقة حساب Flow؛ انتظر نتيجة التأكيد.';
+ return googleOperation(async()=>{
+  try{const result=await googleRequest('confirm',{method:'POST'});googleStatus.textContent=result.message;message(result.message,!result.ready);if(result.ready)connected(result.message);else googleStatus.scrollIntoView({behavior:'smooth',block:'center'});}
+  finally{buttons.forEach((button,index)=>button.textContent=labels[index]);}
+ });
+}
+document.querySelector('#google-confirm').onclick=confirmFlow;
+document.querySelector('#confirm').onclick=confirmFlow;
+ document.querySelector('#lock').onclick=async e=>{
+ e.target.disabled=true;
+ try{const r=await fetch('./logout',{method:'POST'}),j=await r.json();if(!r.ok)throw Error(j.error??'تعذر قفل الشاشة.');screen.replaceChildren();viewer.hidden=true;message('تم قفل الشاشة. تسجيل Google محفوظ في حسابك الخاص.');}
+ catch(e){message(e.message??'تعذر قفل الشاشة؛ أعد المحاولة.',true);}
+ finally{e.target.disabled=false;}
+};
+try{
+ const {publishableKey:key}=await fetch('./identity').then(r=>r.json());
+ const domain=atob(key.split('_').slice(2).join('_').replace(/-/g,'+').replace(/_/g,'/')).replace(/\$$/,'');
+ const script=document.createElement('script');script.src='https://'+domain+'/npm/@clerk/clerk-js@5/dist/clerk.browser.js';script.dataset.clerkPublishableKey=key;script.crossOrigin='anonymous';
+ const returnUrl=location.origin+'/flow-account/';
+ await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=reject;document.head.append(script);});await window.Clerk.load({signInForceRedirectUrl:returnUrl,signUpForceRedirectUrl:returnUrl});
+ if(location.hash.startsWith('#/sso-callback')){
+  message('جارٍ إكمال تسجيل الدخول والعودة إلى ربط حسابك…');
+  await window.Clerk.handleRedirectCallback({signInForceRedirectUrl:returnUrl,signUpForceRedirectUrl:returnUrl,signInUrl:returnUrl,signUpUrl:returnUrl});
+ }else if(!window.Clerk.session){
+  message('سجّل بحسابك في مشهد للمتابعة إلى ربط Google.');
+  window.Clerk.mountSignIn(document.querySelector('#signin'),{forceRedirectUrl:location.origin+'/flow-account/',appearance:{variables:{colorPrimary:'#b58aff',colorBackground:'#13182c',colorText:'#f4efff',colorTextSecondary:'#b9bbd0',colorInputBackground:'#0e1427',colorInputText:'#f4efff',borderRadius:'13px',fontFamily:'Tahoma, Arial, sans-serif'}}});
+ }else{
+  const account=document.querySelector('#signed-in-account');account.hidden=false;account.textContent='حساب مشهد: '+(window.Clerk.user?.primaryEmailAddress?.emailAddress??'حسابك المسجّل');const change=document.createElement('button');change.type='button';change.className='secondary';change.textContent='تغيير حساب مشهد';change.onclick=()=>window.Clerk.signOut({redirectUrl:location.href});account.append(' ',change);document.querySelector('#auth-panel').hidden=true;step('google');message('جارٍ فتح حسابك الخاص…');
+  const token=await window.Clerk.session.getToken(),r=await fetch('./login',{method:'POST',body:new URLSearchParams({token})}),data=await r.json();
+  if(!r.ok)throw Error(data.error??'تعذر فتح حسابك الخاص.');
+  if(data.owner){message('جلسة المالك محفوظة مسبقًا.');const link=document.createElement('a');link.href='/flow-trial/';link.className='action';link.textContent='فتح حساب Flow الخاص';viewer.before(link);}
+  else{document.querySelector('#flow-email').value=window.Clerk.user?.primaryEmailAddress?.emailAddress??'';document.querySelector('#google-panel').hidden=false;message('جلستك الخاصة جاهزة. أكمل الربط من البطاقة أدناه.');await refreshGoogle();}
+ }
+setInterval(()=>{if(document.hidden||googlePanel.hidden||!document.querySelector('#google-consent').checked)return;void googleOperation(refreshGoogle,{background:true});},4000);
+}catch(e){message(e.message??'تعذر فتح الربط. أعد فتح الصفحة للمحاولة مجددًا.',true);}
+</script></html>

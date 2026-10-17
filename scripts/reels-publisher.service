@@ -1,0 +1,22 @@
+[Unit]
+Description=Mashhad owner-scoped Buffer reels publisher
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=simple
+User=mashhad
+Group=mashhad
+WorkingDirectory=/opt/mashhad/reels/current
+EnvironmentFile=/etc/mashhad/reels-runner.env
+ExecStart=/usr/local/bin/node /opt/mashhad/reels/current/worker/dist/reels-runner.js
+Restart=on-failure
+RestartSec=15
+TimeoutStopSec=75
+UMask=0077
+MemoryMax=256M
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+[Install]
+WantedBy=multi-user.target

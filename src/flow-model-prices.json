@@ -1,0 +1,75 @@
+{
+  "observedAt": 1791707868083,
+  "options": [
+    {
+      "model": "Omni Flash",
+      "actualModel": "Omni 1.1 Flash",
+      "seconds": 10,
+      "resolution": "360p",
+      "cost": 7
+    },
+    {
+      "model": "Omni Flash",
+      "actualModel": "Omni 1.1 Flash",
+      "seconds": 10,
+      "resolution": "720p",
+      "cost": 15
+    },
+    {
+      "model": "Omni Flash",
+      "actualModel": "Omni 1.1 Flash",
+      "seconds": 4,
+      "resolution": "360p",
+      "cost": 4
+    },
+    {
+      "model": "Omni Flash",
+      "actualModel": "Omni 1.1 Flash",
+      "seconds": 4,
+      "resolution": "720p",
+      "cost": 7
+    },
+    {
+      "model": "Omni Flash",
+      "actualModel": "Omni 1.1 Flash",
+      "seconds": 6,
+      "resolution": "360p",
+      "cost": 5
+    },
+    {
+      "model": "Omni Flash",
+      "actualModel": "Omni 1.1 Flash",
+      "seconds": 6,
+      "resolution": "720p",
+      "cost": 10
+    },
+    {
+      "model": "Omni Flash",
+      "actualModel": "Omni 1.1 Flash",
+      "seconds": 8,
+      "resolution": "360p",
+      "cost": 6
+    },
+    {
+      "model": "Omni Flash",
+      "actualModel": "Omni 1.1 Flash",
+      "seconds": 8,
+      "resolution": "720p",
+      "cost": 12
+    },
+    {
+      "model": "Veo 3.1 Fast",
+      "actualModel": "Veo 3.1 - Fast",
+      "seconds": 8,
+      "resolution": "720p",
+      "cost": 20
+    },
+    {
+      "model": "Veo 3.1 Quality",
+      "actualModel": "Veo 3.1 - Quality",
+      "seconds": 8,
+      "resolution": "720p",
+      "cost": 100
+    }
+  ]
+}

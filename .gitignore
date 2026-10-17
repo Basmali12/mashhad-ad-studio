@@ -23,3 +23,5 @@ worker/runtime/
 
 # Local generated media, diagnostics, and private verification artifacts.
 /outputs/
+
+dist-admin/

@@ -3,8 +3,9 @@ import {convexTest} from 'convex-test';
 import schema from './schema';
 import {api} from './_generated/api';
 const modules=import.meta.glob('./**/*.{ts,js}'),issuer='https://onboard.clerk.accounts.dev';
-beforeEach(()=>{vi.stubEnv('OWNER_SUBJECT','owner');vi.stubEnv('CLERK_JWT_ISSUER_DOMAIN',issuer);vi.stubEnv('ADMIN_CODE_VERIFIER','test')});
+beforeEach(()=>{vi.stubEnv('PLATFORM_POINTS_DISABLED','false');vi.stubEnv('OWNER_SUBJECT','owner');vi.stubEnv('CLERK_JWT_ISSUER_DOMAIN',issuer);vi.stubEnv('ADMIN_CODE_VERIFIER','test')});
 async function setup(){const t=convexTest(schema,modules),a=t.withIdentity({subject:'owner',issuer}),u=t.withIdentity({subject:'new-user',issuer,name:'علي'});await t.run(ctx=>ctx.db.insert('adminGates',{subject:'owner',expiresAt:Date.now()+60000,attempts:0,windowStart:0,lockedUntil:0,version:'1'}));return {t,a,u};}
+it('does not recreate retired points through signup or admin credits',async()=>{const {t,a,u}=await setup();vi.stubEnv('PLATFORM_POINTS_DISABLED','true');const id=await u.mutation(api.onboarding.enter,{});expect((await u.query(api.wallets.mine,{}))?.wallet).toMatchObject({balance:0,enabled:true});await expect(a.mutation(api.wallets.adjust,{walletId:id,key:'retired-credit',amount:100,note:'test'})).rejects.toThrow('ملغية');expect(await t.run(c=>c.db.query('pointLedger').collect())).toHaveLength(0);});
 it('automatically grants 10 once, creates a stable ID, enables homepage access and isolates users',async()=>{
  const {t,u}=await setup();const [first,second]=await Promise.all([u.mutation(api.onboarding.enter,{}),u.mutation(api.onboarding.enter,{})]);expect(first).toBe(second);
  expect((await u.query(api.wallets.mine,{}))?.wallet).toMatchObject({publicId:`MS-${first}`,balance:10,enabled:true,name:'علي'});expect(await u.query(api.access.customer,{})).toBe(true);

@@ -32,7 +32,7 @@ export const finish = action({args:{key:v.string(),storageId:v.id('_storage')},h
  validateFile(blob.type,blob.size,row.kind);if(blob.type!==row.type||blob.size!==row.size)throw new ConvexError('بيانات الملف لا تطابق طلب الرفع.');
  validateSignature(new Uint8Array(await blob.slice(0,32).arrayBuffer()),blob.type);
  // Bind the idempotency key to actual content, not the caller's filename.
- const metadata=await ctx.runQuery(internal.runner.metadata,{storageId:args.storageId});
+ const metadata=await ctx.runQuery(internal.fileMetadata.metadata,{storageId:args.storageId});
  const hash=metadata?.hash;
  if(args.key!==`${row.kind}:${hash}`)throw new ConvexError('بصمة الملف غير مطابقة.');
  return ctx.runMutation(internal.files.register,{...args,key});

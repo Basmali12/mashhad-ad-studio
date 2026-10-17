@@ -1,0 +1,3 @@
+import {it,expect} from 'vitest';import {personalQuota} from './buffer-personal-quota';
+it('matches official policy windows regardless of name, spacing or ordering',()=>{expect(personalQuota(new Headers({RateLimit:'"custom"; r=97; t=12', 'RateLimit-Policy':'"custom"; q=100; w=900'}))).toEqual([{windowSeconds:900,remaining:97,resetSeconds:12,capacity:100}]);});
+it('does not invent limits missing in headers or use one customer quota for another',()=>{expect(personalQuota(new Headers())).toEqual([]);expect(personalQuota(new Headers({RateLimit:'"unknown";r=1;t=2'}))).toEqual([]);expect(personalQuota(new Headers({RateLimit:'"250-in-1day";r=3;t=4'}))).toEqual([{windowSeconds:86400,remaining:3,resetSeconds:4}]);});

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true
+  },
+  "files": [
+    "scripts/reels-runner.ts",
+    "scripts/reels-media-server.ts",
+    "scripts/reels-storage-server.ts"
+  ]
+}

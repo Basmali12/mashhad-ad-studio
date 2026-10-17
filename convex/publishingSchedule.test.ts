@@ -1,0 +1,20 @@
+import {it,expect,vi,afterEach} from 'vitest';
+import {convexTest} from 'convex-test';
+import schema from './schema';
+import {api} from './_generated/api';
+const modules=import.meta.glob('./**/!(*.test).ts');
+afterEach(()=>{vi.unstubAllEnvs();vi.restoreAllMocks();});
+it('persists the automatic/manual cadence for the owner only and rejects dates that conflict with server jobs',async()=>{
+ vi.stubEnv('PUBLISHING_SAAS_ENABLED','true');vi.stubEnv('CLERK_JWT_ISSUER_DOMAIN','https://fixture');
+ const t=convexTest(schema,modules),a=t.withIdentity({subject:'a',issuer:'https://fixture'}),b=t.withIdentity({subject:'b',issuer:'https://fixture'});
+ await a.mutation(api.publishingUsers.register,{});await b.mutation(api.publishingUsers.register,{});
+ vi.spyOn(Date,'now').mockReturnValue(Date.parse('2026-10-17T06:00:00Z'));await t.run(c=>c.db.insert('reelsSubscriptions',{subject:'a',planCode:'fixture',startsAt:Date.now(),expiresAt:Date.now()+30*86400000,videoLimit:60,platformLimit:3,platforms:['facebook','instagram','tiktok'],enabled:true}));const key='a'.repeat(64),assetId=await t.run(c=>c.db.insert('mediaAssets',{subject:'a',key,zone:'fixture',objectPath:'fixture',sha256:key,size:16,type:'video/mp4',createdAt:1,verifiedAt:1}));
+ const collection={id:'queue',name:'Queue',publishTasks:[{id:'task',name:'Reels',createdAt:1,timezone:'Asia/Baghdad' as const,times:['08:00','14:00'],mode:'automatic' as const,intervalDays:3 as const,startDate:'2026-10-22'}],libraryVideos:[{id:'video',title:'Title',createdAt:1,bunnyAssetId:key,metadata:{title:'Title',description:'Description',hashtags:[],categoryId:'22',madeForKids:false,privacy:'public' as const,isAiGenerated:false},taskId:'task',publishAt:'2026-10-22T05:00:00.000Z'}]};
+ await a.mutation(api.publishingCollections.save,{collection,expectedVersion:0});expect((await a.query(api.publishingCollections.get,{id:'queue'}))?.publishTasks[0].intervalDays).toBe(3);expect(await b.query(api.publishingCollections.get,{id:'queue'})).toBeNull();
+ const job=await t.run(c=>c.db.insert('reelsJobs',{subject:'a',key:'fixture-job',assetId,collectionId:'queue',videoId:'video',metadata:{},authMode:'personal',connectionRevision:'fixture',dueAt:1,dryRun:true,createdAt:1,cancelled:false}));
+ const changed={...collection,libraryVideos:collection.libraryVideos.map(v=>({...v,publishAt:'2026-10-25T05:00:00.000Z'}))};
+ await expect(a.mutation(api.publishingCollections.save,{collection:changed,expectedVersion:1})).rejects.toThrow('السيرفر');
+ expect((await a.query(api.publishingCollections.get,{id:'queue'}))?.libraryVideos[0].publishAt).toBe(collection.libraryVideos[0].publishAt);
+ await t.run(c=>c.db.patch(job,{cancelled:true}));await a.mutation(api.publishingCollections.save,{collection:{...changed,publishTasks:changed.publishTasks.map(s=>({...s,mode:'manual' as const}))},expectedVersion:1});
+ expect((await a.query(api.publishingCollections.get,{id:'queue'}))?.publishTasks[0].mode).toBe('manual');expect(await t.run(c=>c.db.query('reelsJobs').collect())).toHaveLength(1);
+});

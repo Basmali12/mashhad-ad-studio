@@ -1,0 +1,13 @@
+# Private customer Flow sessions
+
+The owner keeps the existing profile on CDP 9432. Enabled customers authenticate with Clerk at `/flow-account/`. Convex derives their subject and a private, stable profile key. Browser cookies and screens cannot select a different subject/key.
+
+The 4 GB pilot keeps eight persistent OS profiles, with one customer desktop active at a time (CDP 9433, display 101, VNC 5903, noVNC 6082). All four ports listen only on loopback. Browsers open on demand and close after ten minutes without activity or a worker lease. Closing the screen persists the Google session. This limit is explicit; it does not guarantee zero queue delay or eight simultaneous browsers.
+
+After Mashhad sign-in, a separate, explicitly labelled Google/Flow form mirrors the actual Google identifier or password step. The customer consents to transient forwarding through the server to their own desktop. It is not Google OAuth. Field values are POST bodies, never URLs, saved account metadata, logs, or response data. The password field clears after submission. Only HTTPS accounts.google.com identifier/password steps are supported; verification, recovery, account creation, ambiguous tabs and changed steps remain in the original screen. Access is derived from the HttpOnly session and current profile, with Origin checks, a request limit and worker-lease exclusion. Do not add body logging or browser tracing to these operations.
+
+After Google login the customer opens a Flow project and clicks confirm. The server checks a Flow project editor before marking the account ready, then the interface hides the form and screen. No API endpoint accepts a customer assertion that the account is connected. Generation uses that customer's profile. An unavailable desktop pauses the saved request, without shared-account fallback. Disconnecting the gateway invalidates leases; a 65-second restart gate prevents the old worker from attaching to a replacement profile.
+
+During generation the customer screen disconnects to prevent conflicting clicks. A paused job releases its lease, allowing the customer to complete human verification. No automated CAPTCHA solving or password persistence is implemented. Flow credits remain provider credits, separate from the AI analysis wallet.
+
+Run `node --test scripts/flow-accounts/server.check.mjs` and the Convex/worker tests. Install only after an idle-job inventory. The installer provisions account OS users, installs the gateway, validates the Caddy route, and leaves the owner browser intact. Do not dump either identity config or `connection.secret` into diagnostics.

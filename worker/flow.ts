@@ -1,12 +1,22 @@
 import type { Page, BrowserContext } from 'playwright';
 import { workspace,screenshot } from './browser';
 import { persist, sleep } from './runtime';
-import { writeFile } from 'node:fs/promises';
 import { basename } from 'node:path';
+import {fetchFlowVideo} from './video-download';
+import {saveSelectedOriginal} from './original-video';
 export interface Plan{model:string;aspect:string;seconds:number;resolution:'360p'|'720p';outputs:number;cost:number;projectPath:string}
 export interface Asset{id:string;url:string;duration:number;width:number;height:number}
 const labels:Record<string,string>={'Omni Flash':'Omni 1.1 Flash','Veo 3.1 Fast':'Veo 3.1 - Fast','Veo 3.1 Quality':'Veo 3.1 - Quality'};
-export async function openSettings(page:Page){await workspace(page);const control=page.getByRole('button',{name:'مشغِّل الإعدادات',exact:true});if(await control.count()!==1)throw new Error('UI_CHANGED: اختر وضع الإنشاء المباشر.');const video=page.getByRole('radio').filter({hasText:'فيديو'});if(!await video.isVisible()){await control.click();await sleep(500);if(!await video.isVisible())await control.press('Space');}await video.waitFor({state:'visible',timeout:8000});return control;}
+export async function openSettings(page:Page){await workspace(page);const control=page.getByRole('button',{name:'مشغِّل الإعدادات',exact:true});if(await control.count()!==1)throw new Error('UI_CHANGED: اختر وضع الإنشاء المباشر.');
+ const visibleBackdrops=page.locator('.cdk-overlay-backdrop.cdk-overlay-backdrop-showing').filter({visible:true});
+ // Normal backdrop dismissal also handles nested account/model popovers.
+ for(let n=0;n<3&&await visibleBackdrops.count();n++)await visibleBackdrops.last().click({timeout:5000});
+ const video=page.getByRole('radio').filter({hasText:'فيديو'});if(!await video.isVisible()){
+ // A dismissed model menu can leave its backdrop covering the settings trigger.
+ // Close that overlay through its normal dismissal surface before reopening settings.
+ const backdrop=page.locator('.cdk-overlay-backdrop.cdk-overlay-backdrop-showing');
+ if(await backdrop.count()){await page.keyboard.press('Escape');await page.keyboard.press('Escape');if(await backdrop.count()===1&&await backdrop.isVisible())await backdrop.click();}
+ await control.click();await sleep(500);if(!await video.isVisible())await control.press('Space');}await video.waitFor({state:'visible',timeout:8000});return control;}
 async function radio(page:Page,text:string){const choice=page.getByRole('radio').filter({hasText:text});if(await choice.count()!==1||!await choice.isEnabled())throw new Error(`UNSUPPORTED: ${text}`);await choice.click();for(let n=0;n<15;n++){if(await choice.getAttribute('aria-checked')==='true')return;await sleep(100);}throw new Error(`UI_CHANGED: ${text} not selected`);}
 export async function configure(page:Page,model:string,aspect:string,seconds:number,resolution:'360p'|'720p',outputs:number,mode:'ingredients'|'frames'='ingredients'):Promise<Plan>{
  await page.bringToFront();await workspace(page);
@@ -58,16 +68,23 @@ export async function attachments(page:Page,files:string[]){if(!files.length)ret
  }
  if(await chips.count()<initial+files.length)throw new Error('REFERENCE_UNSUPPORTED: تحقق من المراجع المرفقة قبل إرسال الطلب.');
 }
-export async function waitAssets(page:Page,ids:string[],baseline:string[],count:number,signal:()=>boolean,expectedPrompt:string,onProgress?:(percent:number)=>Promise<void>):Promise<Asset[]>{
- const deadline=Date.now()+15*60*1000;let lastProgress=-1;
+export function selectedResultId(before:string,after:string,projectPath:string|undefined){
+ if(!projectPath)return undefined;
+ const source=new URL(before),target=new URL(after);
+ if(source.origin!=='https://flow.google.com'||target.origin!==source.origin||source.pathname!==projectPath)return undefined;
+ const editor=target.pathname.match(/^(\/(?:u\/[0-9]+\/)?project\/[a-zA-Z0-9-]+)\/edit\/([a-zA-Z0-9-]+)$/);
+ return editor?.[1]===projectPath?editor[2]:undefined;
+}
+export async function waitAssets(page:Page,ids:string[],baseline:string[],count:number,signal:()=>boolean,expectedPrompt:string,onProgress?:(percent:number)=>Promise<void>,expectedProjectPath?:string):Promise<Asset[]>{
+ const deadline=Date.now()+15*60*1000;let lastProgress=-1,selectedEditorId:string|undefined;
  while(Date.now()<deadline){if(signal())throw new Error('STOPPED: متابعة محفوظة؛ لم تُعد عملية التوليد.');await workspace(page);
  const body=(await page.locator('body').innerText()).slice(-12000);if(/ينتهك هذا الطلب سياساتنا|prominent people|violates.*polic/i.test(body))throw new Error('FLOW_BLOCKED: رفض Flow الطلب بسبب سياسة المحتوى أو صور الشخصيات. راجع المراجع؛ لا إعادة توليد تلقائية.');if(/تعذّر الإنشاء|فشل الإنشاء|غير متاحة.*بلد|وحدات غير كافية|generation failed|unusual traffic/i.test(body))throw new Error('FLOW_BLOCKED: توقف Flow؛ لا إعادة توليد تلقائية.');
  const all=await media(page);const result=ids.length?all.filter(a=>ids.includes(a.id)):all.filter(a=>!baseline.includes(a.id));
  const editor=new URL(page.url()).pathname.match(/\/project\/([a-f0-9-]+)\/edit\/([a-f0-9-]+)$/);
- if(editor){const marker=expectedPrompt.match(/معرّف المشهد:\s*[a-zA-Z0-9-]+/)?.[0];if(count!==1||(ids.length&&!ids.includes(editor[2]))||(!ids.length&&!body.includes(expectedPrompt.trim())&&!(marker&&body.includes(marker))))throw new Error('IDENTITY_AMBIGUOUS: محرر الفيديو لا يطابق الطلب المحفوظ.');const downloadControl=page.getByRole('button',{name:'تنزيل الوسائط',exact:true});if(await downloadControl.count()===1&&await downloadControl.isEnabled())return [{id:editor[2],url:'',duration:0,width:0,height:0}];await sleep(2000);continue;}
+ if(editor){const marker=expectedPrompt.match(/معرّف المشهد:\s*[a-zA-Z0-9-]+/)?.[0];if(count!==1||(ids.length&&!ids.includes(editor[2]))||(!ids.length&&selectedEditorId!==editor[2]&&!body.includes(expectedPrompt.trim())&&!(marker&&body.includes(marker))))throw new Error('IDENTITY_AMBIGUOUS: محرر الفيديو لا يطابق الطلب المحفوظ.');const downloadControl=page.getByRole('button',{name:'تنزيل الوسائط',exact:true});if(await downloadControl.count()===1&&await downloadControl.isEnabled())return [{id:editor[2],url:'',duration:0,width:0,height:0}];await sleep(2000);continue;}
  const tiles=page.locator('flow-video-tile');
  if(onProgress&&await tiles.count()===1){const text=await tiles.innerText();const match=text.match(/(?:%|٪)\s*(\d{1,3})|(\d{1,3})\s*(?:%|٪)/);if(match){const observed=Number(match[1]??match[2]);if(observed>=0&&observed<=99&&observed>lastProgress){await onProgress(observed);lastProgress=observed;}}}
- if(!ids.length&&!baseline.length&&count===1&&await tiles.count()===1&&await tiles.getByText('play_circle',{exact:true}).count()>0){await tiles.click();await sleep(1000);continue;}
+ if(!ids.length&&!baseline.length&&count===1&&await tiles.count()===1&&await tiles.getByText('play_circle',{exact:true}).count()>0){const before=page.url();await tiles.click();await sleep(1000);selectedEditorId=selectedResultId(before,page.url(),expectedProjectPath);continue;}
  // Fresh empty dedicated project + baseline + one submit are required; no arbitrary gallery fallback.
  if(result.length===count)return result;if(result.length>count)throw new Error('IDENTITY_AMBIGUOUS: أكثر من نتيجة جديدة؛ لا اختيار عشوائي.');await sleep(2000);
  }
@@ -78,7 +95,6 @@ export async function download(context:BrowserContext,asset:Asset,destination:st
  const original=page.getByRole('menuitem').filter({hasText:'الحجم الأصلي'});
  if(!await original.isVisible())await page.getByRole('button',{name:'تنزيل الوسائط',exact:true}).click();
  await original.waitFor({timeout:10000});if(await original.count()!==1)throw new Error('DOWNLOAD_UNSUPPORTED: Original only; no upscale.');
- const waiting=page.waitForEvent('download',{timeout:120000});await original.click();const file=await waiting;if(await file.failure())throw new Error('DOWNLOAD_FAILED: original file');await file.saveAs(destination);return;}
- const url=new URL(asset.url);if(url.protocol!=='https:'||!['googleusercontent.com','googlevideo.com','googleapis.com','google.com'].some(host=>url.hostname===host||url.hostname.endsWith(`.${host}`)))throw new Error('DOWNLOAD_UNSUPPORTED: مصدر الفيديو ليس HTTPS معروفًا؛ لا تنزيل بديل.');
- const response=await context.request.get(asset.url,{timeout:120000});try{if(!response.ok()||!response.headers()['content-type']?.startsWith('video/'))throw new Error('DOWNLOAD_FAILED: لم يُرجع Flow فيديو.');const bytes=await response.body();if(bytes.length===0)throw new Error('EMPTY_VIDEO');await writeFile(destination,bytes);}finally{await response.dispose();}
+ await saveSelectedOriginal(page,async()=>{const waiting=page.waitForEvent('download',{timeout:120000});await original.click();return waiting;},destination);return;}
+ await fetchFlowVideo(context,asset.url,destination);
 }

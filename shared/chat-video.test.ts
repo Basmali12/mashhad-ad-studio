@@ -1,0 +1,5 @@
+import {it,expect} from 'vitest';
+import {requestsVideoGeneration,videoOptions} from './chat-video';
+import {requestsImageGeneration} from '../src/redesign-image-intent';
+it('routes explicit video commands with an image reference to video, not paid image work',()=>{expect(requestsVideoGeneration('ولد فيديو من الصورة')).toBe(true);expect(requestsImageGeneration('ولد فيديو من الصورة')).toBe(false);expect(requestsVideoGeneration('لا تولد فيديو')).toBe(false);expect(requestsVideoGeneration('ولد صورة مرجعية للفيديو')).toBe(false);});
+it('quotes exact duration and 720p plans without rounding or silently inventing continuation prompts',()=>{const p={prompt:'مشهد',durationSeconds:8,aspect:'16:9' as const,continuationPrompts:[]};const option={model:'Veo 3.1 Fast',actualModel:'Fast',seconds:8,resolution:'720p' as const,aspect:'16:9',cost:20};expect(videoOptions(p,[option])[0]).toEqual(option);expect(videoOptions({...p,durationSeconds:10},[option])).toEqual([]);expect(videoOptions({...p,durationSeconds:16},[option])).toEqual([]);});

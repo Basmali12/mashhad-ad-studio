@@ -31,7 +31,7 @@ export const progress=internalMutation({args:{...identity,status:statusValidator
  const attempted=(await ctx.db.query('requests').collect()).some(r=>r.runner&&r.runner.phase!=='prepared');
  if(attempted)throw new ConvexError('The single authorized trial has already been attempted. No second generation.');
  }
- if(args.projectPath&&!/^(?:\/fx\/tools\/flow)?\/project\/[a-zA-Z0-9-]+$/.test(args.projectPath))throw new ConvexError('Invalid project path');
+ if(args.projectPath&&!/^(?:\/fx\/tools\/flow|\/u\/[0-9]+)?\/project\/[a-zA-Z0-9-]+$/.test(args.projectPath))throw new ConvexError('Invalid project path');
  for(const n of [args.estimatedPoints,args.actualPoints,args.clipSeconds,args.requiredClips])if(n!==undefined&&(!Number.isFinite(n)||n<0))throw new ConvexError('Invalid numeric value');
  if((args.error?.length??0)>1200||(args.taskId?.length??0)>200)throw new ConvexError('Invalid diagnostic');
  await ctx.db.patch(row._id,{status:args.status,error:args.error,updatedAt:Date.now(),...(args.estimatedPoints!==undefined?{estimatedPoints:args.estimatedPoints}:{}),...(args.actualPoints!==undefined?{actualPoints:args.actualPoints}:{}),...(args.taskId?{externalTaskId:args.taskId}:{}),runner:{...row.runner!,phase:args.phase,projectPath:args.projectPath??row.runner!.projectPath,clipSeconds:args.clipSeconds??row.runner!.clipSeconds,requiredClips:args.requiredClips??row.runner!.requiredClips,leaseUntil:Date.now()+60000}});return true;

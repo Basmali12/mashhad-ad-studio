@@ -8,9 +8,11 @@ export async function connectFlow(endpoint:string){
  if(!selected)throw new Error('LOGIN_REQUIRED: افتح Flow في Chrome المخصص ثم افتح مشروعًا.');
  // The dedicated VPS has one page. Use Playwright's native transport there;
  // selective attachment is needed only when unrelated pages could suspend it.
- if(targets.filter(t=>t.type==='page').length===1)return chromium.connectOverCDP(endpoint,{timeout:20000});
+ // In the owner's dedicated VPS browser the native transport also handles
+ // multiple tabs. Only browser.ts selects a Flow page for actual operations.
+ if(targets.filter(t=>t.type==='page').length===1||process.env.MASHHAD_OWNER_ONLY==='true')return chromium.connectOverCDP(endpoint,{timeout:20000,noDefaults:true});
  const version=await (await fetch(`${endpoint}/json/version`)).json() as {webSocketDebuggerUrl:string};
- if(!version.webSocketDebuggerUrl.startsWith('ws://127.0.0.1:9431/'))throw new Error('Invalid local Chrome endpoint');
+ if(!['http://127.0.0.1:9431','http://127.0.0.1:9432','http://127.0.0.1:9433'].includes(endpoint)||!version.webSocketDebuggerUrl.startsWith(endpoint.replace('http:','ws:')+'/'))throw new Error('Invalid local Chrome endpoint');
  const ws=new WebSocket(version.webSocketDebuggerUrl);await new Promise<void>((resolve,reject)=>{ws.onopen=()=>resolve();ws.onerror=()=>reject(new Error('Local Chrome connection failed'));});
  let ignoredId=1000000000;const ignoredSessions=new Set<string>();
  const transport:ConnectOverCDPTransport={send(message){ws.send(JSON.stringify(message));},close(){ws.close();}};

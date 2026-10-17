@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 43130 --strictPort",
-    "typecheck": "tsc --noEmit && tsc -p convex/tsconfig.json --noEmit && tsc -p worker/tsconfig.json --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p convex/tsconfig.json --noEmit && tsc -p worker/tsconfig.json --noEmit && tsc -p tsconfig.services.json --noEmit",
     "build": "npm run typecheck && vite build",
     "lint": "eslint .",
     "test": "vitest run",
@@ -26,11 +26,14 @@
     "montage:status": "npm --prefix worker run montage:status --",
     "montage:stop": "npm --prefix worker run montage:stop --",
     "film:existing": "npm --prefix worker run film:existing --",
-    "worker:start": "npm --prefix worker run service:start --"
+    "worker:start": "npm --prefix worker run service:start --",
+    "build:admin": "npm run typecheck && vite build --config vite.admin.config.ts",
+    "dev:preview": "vite --config vite.preview.config.ts"
   },
   "dependencies": {
     "@clerk/localizations": "^4.21.2",
     "@clerk/react": "^6.17.5",
+    "@imgly/background-removal": "^1.7.0",
     "convex": "^1.46.0",
     "lucide-react": "^0.468.0",
     "motion": "^14.0.0",

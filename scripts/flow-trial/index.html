@@ -1,0 +1,24 @@
+<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>مشهد — تجربة حساب Flow الخاص</title>
+<style>body{margin:0;background:#0c1024;color:#eee;font:17px system-ui}main{max-width:700px;margin:24px auto;padding:20px}h1{font-size:25px}input,button{font:inherit;padding:14px;border-radius:12px;border:1px solid #8a69cf}input{background:#151a32;color:white;width:100%;box-sizing:border-box}button{background:#a77de9;color:#111;cursor:pointer;margin:12px 0}#screen{height:76dvh;border:1px solid #8a69cf;border-radius:15px;background:#050816;overflow:hidden}#screen iframe{width:100%;height:100%;border:0}#error{color:#ffb6bd}small{color:#bbb}a{color:#cbb2ff}</style>
+<main><h1>تجربة حساب Flow الخاص</h1><p>متصفح مستقل على السيرفر. سجّل Google وأكمل أي تحقق بنفسك داخل الشاشة. التجربة لا تولّد فيديو تلقائيًا.</p>
+<p>الحساب الشخصي المطلوب في مشهد وFlow: <b dir="ltr">basm1998ali@gmail.com</b>. سجّل بهذا الحساب، ثم افتح Flow داخل الشاشة وتأكد من حسابه.</p><button id="change-account" hidden>تغيير حساب مشهد</button><div id="signin" dir="ltr"></div><p id="error" role="status">جارٍ فتح تسجيل الدخول…</p>
+<section id="viewer" hidden><button id="lock">قفل الشاشة</button><p><small>من الهاتف، استخدم لوحة noVNC الجانبية لفتح لوحة المفاتيح أو تكبير الشاشة. قفل الشاشة لا يحذف جلسة Google.</small></p><div id="screen"></div><p><a href="./vnc.html?autoconnect=true&amp;resize=scale&amp;path=flow-trial/websockify" target="_blank" rel="noopener">فتح الشاشة بحجم كامل</a></p></section></main>
+<script type="module">
+const signin=document.querySelector('#signin'),error=document.querySelector('#error'),viewer=document.querySelector('#viewer'),screen=document.querySelector('#screen');
+try{
+ const config=await fetch('./identity').then(r=>r.json()),key=config.publishableKey;
+ const encoded=key.split('_').slice(2).join('_'),domain=atob(encoded.replace(/-/g,'+').replace(/_/g,'/')).replace(/\$$/,'');
+ const script=document.createElement('script');script.src='https://'+domain+'/npm/@clerk/clerk-js@5/dist/clerk.browser.js';script.dataset.clerkPublishableKey=key;script.crossOrigin='anonymous';
+ await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=reject;document.head.append(script);});await window.Clerk.load();
+ if(window.Clerk.session){
+  document.querySelector('#change-account').hidden=false;
+  // Mashhad already sets aud=convex on its default session token.
+  // Use the existing session; requesting a missing named template fails before login.
+  const token=await window.Clerk.session.getToken(),r=await fetch('./login',{method:'POST',body:new URLSearchParams({token})});
+  if(!r.ok)throw Error('هذه التجربة خاصة بمالك مشهد. تأكد من حساب تسجيل الدخول.');
+  error.textContent='المتصفح جاهز. أكمل تسجيل Google داخل الشاشة.';viewer.hidden=false;const frame=document.createElement('iframe');frame.src='./vnc.html?autoconnect=true&resize=scale&path=flow-trial/websockify';frame.title='متصفح Flow الخاص على السيرفر';screen.replaceChildren(frame);
+ }else{error.textContent='سجّل بحسابك في مشهد أولًا.';window.Clerk.mountSignIn(signin,{forceRedirectUrl:location.origin+'/flow-trial/'});}
+}catch(e){error.textContent=e instanceof Error?e.message:'تعذر فتح تسجيل الدخول.';}
+document.querySelector('#lock').onclick=async()=>{await fetch('./logout',{method:'POST'});screen.replaceChildren();viewer.hidden=true;error.textContent='تم قفل الشاشة. أعد فتح الرابط عندما تحتاجه.';};
+document.querySelector('#change-account').onclick=async()=>{await fetch('./logout',{method:'POST'});await window.Clerk.signOut({redirectUrl:location.origin+'/flow-trial/'});};
+</script></html>

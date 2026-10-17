@@ -1,0 +1,7 @@
+import {afterEach,expect,it,vi} from 'vitest';
+import {withAccountFlow} from './account-flow';
+import {personalFlowEndpoint} from './personal-flow';
+vi.mock('./runtime',()=>({connection:async()=>({token:'test-only',site:'fixture',workerId:'fixture'})}));
+afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();vi.useRealTimers();});
+it('uses the broker lease for customers and invalidates it even when the worker event loop was suspended',async()=>{vi.useFakeTimers();const calls:object[]=[];vi.stubGlobal('fetch',vi.fn(async(_url:unknown,init:RequestInit)=>{const args=JSON.parse(String(init.body));calls.push(args);return Response.json(args.op==='open'?{endpoint:'http://127.0.0.1:9433',lease:'fixture-lease'}:{ok:true});}));await withAccountFlow('customer',false,true,async()=>{expect(personalFlowEndpoint()).toBe('http://127.0.0.1:9433');vi.setSystemTime(Date.now()+46000);expect(()=>personalFlowEndpoint()).toThrow('انتهى');});expect(calls).toEqual([{op:'open',subject:'customer'},{op:'release',lease:'fixture-lease'}]);expect(personalFlowEndpoint()).toBeUndefined();});
+it('keeps the owner route separate and rejects a missing customer identity',async()=>{vi.stubEnv('OWNER_FLOW_ENDPOINT','http://127.0.0.1:9432');expect(await withAccountFlow('owner',true,true,async()=>personalFlowEndpoint())).toBe('http://127.0.0.1:9432');await expect(withAccountFlow(undefined,false,true,async()=>undefined)).rejects.toThrow('غير محدد');});

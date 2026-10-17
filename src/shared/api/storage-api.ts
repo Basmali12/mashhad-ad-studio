@@ -1,0 +1,1 @@
+export function storageApi(path:string){const base=import.meta.env.VITE_STORAGE_API_URL as string|undefined;if(!base){if(import.meta.env.DEV)return path;throw Error('خدمة التخزين غير مهيأة.');}if(!/^https:\/\/[^/?#]+\/reels-api$/.test(base)||!path.startsWith('/api/'))throw Error('عنوان التخزين غير صالح.');return base+path;}

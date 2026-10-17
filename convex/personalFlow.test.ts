@@ -1,0 +1,8 @@
+import {afterEach,expect,it,vi} from 'vitest';
+import {personalFlow,personalFlowConnected,requirePersonalAccount} from './personalFlow';
+afterEach(()=>vi.unstubAllEnvs());
+it('only the configured owner is exempt, with explicit server opt-in',()=>{vi.stubEnv('OWNER_SUBJECT','owner');vi.stubEnv('OWNER_PERSONAL_FLOW_FREE_POINTS_ENABLED','true');vi.stubEnv('OWNER_PERSONAL_FLOW_ENABLED','true');expect(personalFlow('owner')).toBe(true);expect(personalFlow('customer')).toBe(false);vi.stubEnv('OWNER_PERSONAL_FLOW_ENABLED','false');expect(personalFlow('owner')).toBe(false);vi.stubEnv('OWNER_SUBJECT','');vi.stubEnv('OWNER_PERSONAL_FLOW_FREE_POINTS_ENABLED','true');vi.stubEnv('OWNER_PERSONAL_FLOW_ENABLED','true');expect(personalFlow('')).toBe(false);});
+
+it('connecting the owner browser keeps platform points enabled by default',()=>{vi.stubEnv('OWNER_SUBJECT','owner');vi.stubEnv('OWNER_PERSONAL_FLOW_ENABLED','true');vi.stubEnv('OWNER_PERSONAL_FLOW_FREE_POINTS_ENABLED','false');expect(personalFlowConnected('owner')).toBe(true);expect(personalFlow('owner')).toBe(false);expect(personalFlowConnected('customer')).toBe(false);});
+
+it('removes platform billing only for connected accounts and refuses shared-account fallback',()=>{vi.stubEnv('PLATFORM_POINTS_DISABLED','true');vi.stubEnv('OWNER_SUBJECT','owner');vi.stubEnv('OWNER_PERSONAL_FLOW_ENABLED','true');vi.stubEnv('OWNER_PERSONAL_FLOW_FREE_POINTS_ENABLED','false');expect(personalFlow('owner')).toBe(true);expect(()=>requirePersonalAccount('owner')).not.toThrow();expect(()=>requirePersonalAccount('customer')).toThrow('Flow');expect(personalFlow('customer')).toBe(false);});

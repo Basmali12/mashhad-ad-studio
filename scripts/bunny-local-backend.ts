@@ -1,0 +1,13 @@
+import {readFile} from 'node:fs/promises';
+import {openSync,closeSync} from 'node:fs';
+import {join} from 'node:path';
+import {spawn} from 'node:child_process';
+import {privateStorageDirectory} from './bunny-local-store.ts';
+const fixture=join(privateStorageDirectory,'local-convex-04'),data=join(fixture,'.convex','local','default');
+const config=JSON.parse(await readFile(join(data,'config.json'),'utf8')) as {ports:{cloud:number;site:number};instanceSecret:string;deploymentName:string};
+const executable=(await readFile(join(privateStorageDirectory,'local-convex-executable.private.txt'),'utf8')).trim();
+if(config.ports.cloud!==43240||config.ports.site!==43241||!executable.endsWith('convex-local-backend.exe'))throw Error('إعداد المحرك التجريبي غير مطابق.');
+const log=openSync(join(privateStorageDirectory,'local-convex-backend.private.log'),'a',0o600);
+const child=spawn(executable,['--interface','127.0.0.1','--port','43240','--site-proxy-port','43241','--instance-name',config.deploymentName,'--instance-secret',config.instanceSecret,'--local-storage',join(data,'convex_local_storage'),'--disable-beacon','--redact-logs-to-client',join(data,'convex_local_backend.sqlite3')],{stdio:['ignore',log,log],windowsHide:true});closeSync(log);
+console.log('Convex test backend restricted to 127.0.0.1:43240 / 43241');
+for(const signal of ['SIGINT','SIGTERM'] as const)process.on(signal,()=>child.kill());await new Promise<void>((resolve,reject)=>{child.on('error',reject);child.on('exit',code=>code===0?resolve():reject(Error('تعذر تشغيل المحرك التجريبي.')));});

@@ -1,0 +1,7 @@
+.subscription-screen{min-height:100dvh;display:grid;place-items:center;padding:28px 16px;background:radial-gradient(ellipse at top,#30204e 0%,#101326 50%,#090c19 100%);color:#f7f3ff}
+.subscription-card{width:min(100%,520px);padding:42px 32px;text-align:center;border:1px solid #715895;border-radius:28px;background:linear-gradient(145deg,#24243ce8,#121528f2);box-shadow:0 24px 80px #0005;box-sizing:border-box}
+.subscription-brand{font-size:15px;color:#ded0f6;font-weight:700;letter-spacing:.5px}
+.subscription-icon{margin:28px auto 18px;display:grid;place-items:center;width:76px;height:76px;border-radius:24px;font-size:44px;background:linear-gradient(135deg,#b880ff,#6950c5);box-shadow:0 8px 32px #a36ef34a}
+.subscription-label{color:#c49aff;font-size:14px}.subscription-card h1{font-size:clamp(28px,6vw,36px);margin:12px 0 20px}.subscription-card p{color:#d0cce1;line-height:1.9;font-size:16px;margin:10px 0}
+.subscription-contact{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:28px;padding:17px 12px;border-radius:16px;background:linear-gradient(115deg,#c49aff,#a479ed);color:#171028;text-decoration:none;font-weight:800;font-size:16px;min-height:54px;box-sizing:border-box}.subscription-contact:hover{filter:brightness(1.08)}.subscription-contact:focus-visible{outline:3px solid white;outline-offset:4px}.subscription-card small{display:block;margin-top:15px;color:#aaa3c0}
+@media(max-width:480px){.subscription-card{padding:30px 20px}.subscription-contact{font-size:15px}}

@@ -1,4 +1,5 @@
 import { ConvexError } from 'convex/values';
+import {assertSubscriptionAccess,subscriptionsClosed,subscriptionContact} from './subscriptionPolicy';
 import type { QueryCtx, MutationCtx, ActionCtx } from './_generated/server';
 import { query, internalQuery } from './_generated/server';
 import type { Id } from './_generated/dataModel';
@@ -10,6 +11,8 @@ export async function requireOwner(ctx: Pick<QueryCtx | MutationCtx | ActionCtx,
 }
 export const allowed = query({args:{},handler:async(ctx)=>{try{await requireOwner(ctx);return true;}catch{return false;}}});
 export async function requireSigned(ctx: Pick<QueryCtx | MutationCtx | ActionCtx,'auth'>) {
+ if(process.env.PERSONAL_STUDIO_ONLY==='true')return requireOwner(ctx);
+ assertSubscriptionAccess();
  const identity=await ctx.auth.getUserIdentity();
  if(!process.env.OWNER_SUBJECT||!process.env.CLERK_JWT_ISSUER_DOMAIN||!identity||identity.issuer!==process.env.CLERK_JWT_ISSUER_DOMAIN)throw new ConvexError('الوصول متاح للمستخدم المصرح له فقط.');
  return identity;
@@ -23,3 +26,4 @@ export function owns(subject:string,row:{subject?:string}){return (row.subject??
 export async function ownedRequest(ctx:QueryCtx|MutationCtx,id:Id<'requests'>){const identity=await requireCustomer(ctx),row=await ctx.db.get(id);if(!row||!owns(identity.subject,row))throw new ConvexError('الطلب غير موجود أو غير مصرح له.');return row;}
 export const customerAllowed=internalQuery({args:{},handler:async ctx=>{await requireCustomer(ctx);return true;}});
 export const customer=query({args:{},handler:async ctx=>{try{await requireCustomer(ctx);return true;}catch{return false;}}});
+export const subscriptionStatus=query({args:{},handler:async()=>({closed:subscriptionsClosed(),contact:subscriptionContact})});
