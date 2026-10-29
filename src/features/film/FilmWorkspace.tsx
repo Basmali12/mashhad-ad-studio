@@ -47,8 +47,8 @@ export default function FilmWorkspace({request,onClose,preview=false,view='chat'
 
  {view==='projects'&&<section className="film-projects-list"><h1>أفلامي</h1><button onClick={()=>{setProject(null);setChat('');setImageFile(null);setCanvas(false);onNavigate?.('chat');}}>+ فيلم جديد</button>{projects.map(p=><button className="film-project-link" key={p.id} onClick={()=>edit(p)}>{p.name}<small>{stateLabel(p.state)}</small></button>)}{!projects.length&&<p className="film-empty">المحادثات والأفلام المحفوظة تظهر هنا.</p>}</section>}
  {tab==='film'&&view!=='projects'&&(canvas&&project?<FilmGeneration request={request} project={project} rental={rental} onBack={()=>setCanvas(false)} onStop={()=>setStopConfirm(true)} busy={busy}/>:<>
- <main className="film-chat-stream" aria-label="محادثة الفيلم" aria-live="polite">
- {!project&&<div className="film-chat-empty"><span>✦</span><h1>شنو قصة فيلمك؟</h1><p>احچي الفكرة والمدة، ونرتّب المشاهد والحوار سوا.</p></div>}
+ <main className={"film-chat-stream"+(!project?" is-empty":"")} aria-label="محادثة الفيلم" aria-live="polite">
+ {!project&&<div className="film-chat-empty"><div className="film-chat-logo"><img src="./mashhad-logo-128.webp" srcSet="./mashhad-logo-128.webp 128w, ./mashhad-logo-192.webp 192w" sizes="112px" width="112" height="112" alt="شعار مشهد" decoding="async"/></div><h1>شنو قصة فيلمك؟</h1><p>احچي الفكرة والمدة، ونرتّب المشاهد والحوار سوا.</p></div>}
  {project?.messages.map((m,i)=><article className={'film-chat-bubble '+m.role} key={i}><small>{m.role==='user'?'أنت':'مخرجك'}</small>{m.hasReference&&project.reference&&<ChatReferenceImage request={request} projectId={project.id} uploadedAt={project.reference.uploadedAt}/>}<p>{m.content}</p></article>)}
  {project?.reference&&!project.messages.some(m=>m.hasReference)&&<p className="film-attachment-note">الصورة المحفوظة جاهزة للإرسال مع رسالتك.</p>}
  {project?.preview&&<SceneImagePreview request={request} projectId={project.id} preview={project.preview} busy={pending} onApprove={()=>void approveImage()}/>}
