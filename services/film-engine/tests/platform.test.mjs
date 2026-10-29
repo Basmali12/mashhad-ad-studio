@@ -369,3 +369,30 @@ test('a mapped but unprepared account stays visible locked and cannot be opened 
  const entry=(await f.invoke(alice,'servers.list'))[0];assert.equal(entry.state,'locked');assert.match(entry.availability,/تجهيز/);assert.equal(f.provider.calls.length,0);
  const metadata=await f.invoke(admin,'admin.accounts.list');assert.equal(metadata.find(a=>a.id===backup.id).files[0].present,false);
 });
+
+test('discussion duration is persisted in the hidden project and explicit ready-to-write prepares scenes without GPU',async t=>{
+ const f=await fixture(t,{text:true}),p=await draft(f);const original=f.engine.invoke;let current,details=0,discussions=0;
+ f.engine.invoke=async(route,b,...rest)=>{
+  if(route==='llm/calls'){current=b;if(b.mode==='details')details++;else discussions++;return {status:'queued'};}
+  if(route.startsWith('llm/calls/'))return current.mode==='discuss'?{status:'completed',discussion:{reply:'نرتب قصة عشرين ثانية، تريد أكتبها؟',proposed_duration_seconds:20,style:'realistic',ready_to_write:discussions>1},text:'unused'}:{status:'completed',text:JSON.stringify({scenes:[1,2].map(()=>({prompt:'Ali speaks while Zainab listens in an old Iraqi courtyard. No lettering.',audioContract:{language:'ar',dialect:'iraqi',mode:'dialogue',lines:[{speaker:'علي',text:'شلونج زينب؟'}]}}))})};
+  return original(route,b,...rest);
+ };
+ await f.invoke(alice,'chat.submit',{projectId:p.id,message:'اريد قصة عشرين ثانية',approved:true});await waitFor(()=>!f.store.get('film-project',p.id).textPending);
+ assert.equal(f.store.get('film-project',p.id).seconds,20);assert.equal(details,0);assert.equal(f.provider.calls.length,0);
+ await f.invoke(alice,'chat.submit',{projectId:p.id,message:'ابدا اكتب القصة',approved:true});await waitFor(()=>f.store.get('film-project',p.id).state==='planned'&&!f.store.get('film-project',p.id).textPending);
+ assert.equal(details,1);assert.equal((await f.invoke(alice,'project.get',{id:p.id})).scenes.length,2);assert.equal(f.provider.calls.length,0);
+});
+
+test('single production approval durably claims one launch; repeated requests cannot allocate a second session',async t=>{
+ const f=await fixture(t,{text:true}),p=await draft(f);await f.credit(alice);
+ const planned=f.store.get('film-project',p.id);planned.state='planned';planned.scenes=[{prompt:'An Iraqi courtyard',audioContract:{language:'ar',dialect:'iraqi',mode:'dialogue',lines:[{speaker:'علي',text:'شلونك اليوم؟'}]},status:'pending',attempted:false}];f.store.put('film-project',planned);
+ const q=await f.invoke(alice,'rental.quote',{serverId:f.slot.id}),input={projectId:p.id,...q,approved:true,requestId:'launch-once'};
+ await assert.rejects(f.invoke(alice,'project.launch',{...input,approved:false}),/APPROVAL_REQUIRED/);
+ await assert.rejects(f.invoke(bob,'project.launch',input),/NOT_FOUND/);
+ const results=await Promise.all([f.invoke(alice,'project.launch',input),f.invoke(alice,'project.launch',{...input,requestId:'double-click'})]);
+ assert.equal(results[0].id,results[1].id);await waitFor(()=>f.store.all('rental').length===1);await waitFor(()=>f.provider.sessions.size===1);
+ await f.invoke(alice,'project.launch',{...input,requestId:'reload'});assert.equal(f.store.all('rental').length,1);assert.equal(f.provider.sessions.size,1);
+ const saved=f.store.get('film-project',p.id);assert.equal(saved.launch.started,true);assert.equal(saved.launch.serverId,f.slot.id);
+ // No external provider or GPU exists in this local fixture. Close before generation dispatch.
+ await f.platform.close();
+});

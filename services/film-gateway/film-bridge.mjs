@@ -27,6 +27,7 @@ const fields = {
     'plan.submit': { projectId: id, approved: yes },
     'review.submit': { projectId: id, approved: yes },
     'text.status': { projectId: id }, 'plan.status': { projectId: id },
+    'project.launch': { projectId: id, serverId: id, revision: integer, priceMicroUSD: integer, approved: yes, requestId: id },
     'project.generate': { projectId: id, rentalId: id, approved: yes, 'directorFollow?': bool },
     'project.resume': { projectId: id, rentalId: id, approved: yes, 'directorFollow?': bool },
     'project.merge': { projectId: id }, 'media.ticket': { projectId: id, index: x => x === 'merged' || (integer(x) && x < 30) },
@@ -61,13 +62,14 @@ const wallet = { balanceMicroUSD: 'value', expiresAt: 'value', reservedMicroUSD:
 const server = { id: 'id', name: 'text', gpu: 'text', ram: 'value', cpu: 'value', pricePerHourUSD: 'value', state: 'text', availability: 'text' };
 const rental = { id: 'id', serverId: 'id', state: 'text', elapsedSeconds: 'value', billedMicroUSD: 'value', hourPriceUSD: 'value', lowFunds: 'value', phase: 'text', completed: 'value', total: 'value', stopReason: 'text', message: 'text' };
 const visualReview={index:'value',model:'text',summary:'text',visibleText:'text',continuity:'text',causalOrder:'text',audioAssessment:'text',findings:['text'],suggestedCorrections:['text'],sampleCount:'value',computedUSD:'value',invoiceUSD:'value'};
-const project = {directorFollow:'value',reviewPending:'value',reviewState:'text',visualReviews:[visualReview], id: 'id', name: 'text', story: 'text', messages: [{ role: 'text', content: 'text' }], seconds: 'value', orientation: 'text', state: 'text', reference: { mime: 'text', size: 'value', width: 'value', height: 'value', uploadedAt: 'value' }, textPending: 'value', textUncertain: 'value', textCostPolicy: 'text', planningCompletedScenes: 'value', merge: { status: 'text', error: 'text', duration: 'value', width: 'value', height: 'value', nativeAudio: 'value' }, scenes: [{ index: 'value', title: 'text', status: 'text', dialogue: [{ speaker: 'text', text: 'text' }], phase: 'text', completed: 'value', total: 'value', ready: 'value' }], error: 'text' };
+const project = {discussion:{readyToWrite:'value',seconds:'value',style:'text'},launch:{state:'text',approvedAt:'value',finishedAt:'value'},directorFollow:'value',reviewPending:'value',reviewState:'text',visualReviews:[visualReview], id: 'id', name: 'text', story: 'text', messages: [{ role: 'text', content: 'text' }], seconds: 'value', orientation: 'text', state: 'text', reference: { mime: 'text', size: 'value', width: 'value', height: 'value', uploadedAt: 'value' }, textPending: 'value', textUncertain: 'value', textCostPolicy: 'text', planningCompletedScenes: 'value', merge: { status: 'text', error: 'text', duration: 'value', width: 'value', height: 'value', nativeAudio: 'value' }, scenes: [{ index: 'value', title: 'text', visualPrompt:'text', status: 'text', dialogue: [{ speaker: 'text', text: 'text' }], phase: 'text', completed: 'value', total: 'value', ready: 'value' }], error: 'text' };
 const customerShapes = {
     session: { user: { id: 'id', name: 'text' }, wallet, servers: [server], enabled: 'value', planningEnabled: 'value', capabilities: { referenceUpload: 'value', ingredients: 'value', voiceCloning: 'value', lastFrameContinuity: 'value', nativeAudio: 'value', wholeFilmMerge: 'value' } },
     wallet, 'servers.list': [server], 'rental.quote': { serverId: 'id', revision: 'value', priceMicroUSD: 'value', pricePerHourUSD: 'value', minimumCreditUSD: 'value', warning: 'text', canStart: 'value' },
     'rental.start': rental, 'rental.status': rental, 'rental.stop': rental, 'projects.list': [project],
     'project.reference.view': { url: 'referenceUrl', expires: 'value' }, 'project.reference.ticket': { url: 'uploadUrl', expires: 'value', maxBytes: 'value' }, 'project.reference.remove': project, 'project.save': project, 'project.get': project, 'project.follow': project, 'text.status': project, 'plan.status': project, 'project.merge': project,
     'chat.submit': { accepted: 'value', textCostPolicy: 'text' }, 'plan.submit': { accepted: 'value', textCostPolicy: 'text' }, 'review.submit': { accepted: 'value', textCostPolicy: 'text' },
+    'project.launch': project,
     'project.generate': { accepted: 'value' }, 'project.resume': { accepted: 'value' }, 'media.ticket': { url: 'url', expires: 'value' },
 };
 function safeText(value, secrets, customer) {

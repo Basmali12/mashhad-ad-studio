@@ -101,3 +101,15 @@ test('real local MP4 extraction produces six timestamped JPEGs and detects chang
  const images=await extractReviewFrames({folder,job,ffmpeg});assert.equal(images.length,6);assert.equal(images[0].timestamp,0);assert.equal(images[5].timestamp,9.75);assert.ok(images.every(i=>i.data.startsWith('data:image/jpeg;base64,/9j/')));
  await writeFile(file,Buffer.from('changed'));await assert.rejects(extractReviewFrames({folder,job,ffmpeg}),/ARTIFACT_CHANGED/);
 });
+
+test('chat planning receives only the current project opening image and never persists inline image bytes',async t=>{
+ const {store,folder,cleanup}=await fixture(t);const {deflateSync,crc32}=await import('node:zlib');
+ const chunk=(type,data)=>{const b=Buffer.alloc(data.length+12);b.writeUInt32BE(data.length);b.write(type,4);data.copy(b,8);b.writeUInt32BE(crc32(b.subarray(4,-4)),b.length-4);return b;};
+ const header=Buffer.alloc(13);header.writeUInt32BE(2);header.writeUInt32BE(2,4);header[8]=8;header[9]=6;
+ const bytes=Buffer.concat([Buffer.from('89504e470d0a1a0a','hex'),chunk('IHDR',header),chunk('IDAT',deflateSync(Buffer.alloc(18))),chunk('IEND',Buffer.alloc(0))]);
+ await mkdir(path.join(folder,'film-references','portrait-project'),{recursive:true});await writeFile(path.join(folder,'film-references','portrait-project','portrait-one.image'),bytes);
+ store.put('film-project',{id:'portrait-project',customerId:'owner',reference:{id:'portrait-one',mime:'image/png',sha256:createHash('sha256').update(bytes).digest('hex')}});
+ let calls=0;const director=new OpenAIDirector(store,{fetcher:async(url,opt)=>{calls++;const payload=JSON.parse(opt.body);assert.ok(payload.input.at(-1).content.some(c=>c.type==='input_image'&&c.image_url==='data:image/png;base64,'+bytes.toString('base64')));return Response.json({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({reply:'نستخدم صورة البداية، من الشخصية؟',proposed_duration_seconds:20,style:'realistic',ready_to_write:false,missing:[],portrait_prompt:null,continuity_notes:'Opening image supplied.'})}]}]});}});cleanup.push(()=>director.close());
+ const input={requestId:'portrait-discuss',projectId:'portrait-project',mode:'discuss',approvedTextCost:true,messages:[{role:'user',content:'هذه زينب، نريد عشرين ثانية'}]};await director.submit(input);await finish(director);assert.equal((await director.get(input.requestId)).status,'completed');await director.submit(input);assert.equal(calls,1);assert.equal(JSON.stringify(store.all('text-call')).includes(bytes.toString('base64')),false);
+ const p=store.get('film-project','portrait-project');p.reference.sha256='bad';store.put('film-project',p);await assert.rejects(director.submit({...input,requestId:'broken-image'}),/REFERENCE_INVALID/);assert.equal(calls,1);
+});

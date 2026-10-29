@@ -61,3 +61,12 @@ test('Pages preflight permits only the exact configured origin, POST and bounded
  assert.equal(f.calls.length,0);
  const denied=await f.post(undefined,{Authorization:''});assert.equal(denied.status,401);assert.equal(denied.headers.get('access-control-allow-origin'),env.MASHHAD_FILM_ORIGIN);
 });
+
+test('single film launch accepts only an explicit scoped price approval and never accepts a client account route',async t=>{
+ const f=await fixture(t),base={projectId:'project-one',serverId:'server-one',revision:2,priceMicroUSD:3000000,requestId:'launch-one'};
+ await f.post({operation:'project.launch',input:{...base,approved:false},requestId:'req-no-consent'});
+ await f.post({operation:'project.launch',input:{...base,approved:true,accountId:'other-account'},requestId:'req-wrong-route'});
+ assert.equal(f.calls.filter(c=>c.url.includes('film.example')).length,0);
+ const response=await f.post({operation:'project.launch',input:{...base,approved:true},requestId:'req-approved'});assert.equal(response.status,200);
+ const dispatched=f.calls.filter(c=>c.url.includes('film.example'));assert.equal(dispatched.length,1);const envelope=JSON.parse(dispatched[0].options.body);assert.equal(envelope.operation,'project.launch');assert.equal(envelope.input.serverId,'server-one');assert.equal(envelope.actor.id,'mashhad-convexuser01');
+});
