@@ -1,4 +1,5 @@
 import {providerFetch as fetch} from './network.mjs';
+import {mayDispatchPaidWork} from '../../shared/film-request-policy.ts';
 import { createHmac, randomUUID } from 'node:crypto';
 import { FILM_OPERATIONS } from "../../shared/film-contracts.ts";
 // Browser consumers import the frozen type-only contract from services/film-engine/engine/film-contracts.
@@ -18,6 +19,8 @@ const date = x => x === null || (integer(x) && x > 0);
 const short = x => text(x, 120);
 const fields = {
     'files.list': {}, 'files.ticket': {id,'download?':bool}, 'files.delete': { id, approved: yes },
+    'projects.list': {'archived?':bool},
+    'project.organize': {id,'name?':short,'pinned?':bool,'archived?':bool},
     'rental.quote': { serverId: id },
     'rental.start': { serverId: id, revision: integer, priceMicroUSD: integer, approved: yes, requestId: id },
     'rental.status': { id }, 'rental.stop': { id },
@@ -64,12 +67,13 @@ const wallet = { balanceMicroUSD: 'value', expiresAt: 'value', reservedMicroUSD:
 const server = { id: 'id', name: 'text', gpu: 'text', ram: 'value', cpu: 'value', pricePerHourUSD: 'value', state: 'text', availability: 'text' };
 const rental = { stages:[{phase:'text',state:'text'}], id: 'id', serverId: 'id', state: 'text', elapsedSeconds: 'value', billedMicroUSD: 'value', hourPriceUSD: 'value', lowFunds: 'value', phase: 'text', completed: 'value', total: 'value', stopReason: 'text', message: 'text' };
 const visualReview={index:'value',model:'text',summary:'text',visibleText:'text',continuity:'text',causalOrder:'text',audioAssessment:'text',findings:['text'],suggestedCorrections:['text'],sampleCount:'value',computedUSD:'value',invoiceUSD:'value'};
-const project = {preview:{id:'id',status:'text',estimatedUSD:'value',computedUSD:'value',invoiceUSD:'value',expiresAt:'value',error:'text',model:'text'},discussion:{readyToWrite:'value',seconds:'value',style:'text'},launch:{state:'text',approvedAt:'value',finishedAt:'value'},directorFollow:'value',reviewPending:'value',reviewState:'text',visualReviews:[visualReview], id: 'id', name: 'text', story: 'text', messages: [{ role: 'text', content: 'text', hasReference:'value' }], seconds: 'value', orientation: 'text', state: 'text', reference: { mime: 'text', size: 'value', width: 'value', height: 'value', uploadedAt: 'value' }, textPending: 'value', textUncertain: 'value', textCostPolicy: 'text', planningCompletedScenes: 'value', merge: { status: 'text', error: 'text', duration: 'value', width: 'value', height: 'value', nativeAudio: 'value' }, scenes: [{ durationSeconds:'value',stages:[{phase:'text',state:'text'}],index: 'value', title: 'text', mediaExpired:'value', visualPrompt:'text', status: 'text', dialogue: [{ speaker: 'text', text: 'text' }], phase: 'text', completed: 'value', total: 'value', ready: 'value' }], error: 'text' };
+const project = {pinned:'value',archived:'value',preview:{id:'id',status:'text',estimatedUSD:'value',computedUSD:'value',invoiceUSD:'value',expiresAt:'value',error:'text',model:'text'},discussion:{readyToWrite:'value',seconds:'value',style:'text'},launch:{state:'text',approvedAt:'value',finishedAt:'value'},directorFollow:'value',reviewPending:'value',reviewState:'text',visualReviews:[visualReview], id: 'id', name: 'text', story: 'text', messages: [{ role: 'text', content: 'text', hasReference:'value' }], seconds: 'value', orientation: 'text', state: 'text', reference: { mime: 'text', size: 'value', width: 'value', height: 'value', uploadedAt: 'value' }, textPending: 'value', textUncertain: 'value', textCostPolicy: 'text', planningCompletedScenes: 'value', merge: { status: 'text', error: 'text', duration: 'value', width: 'value', height: 'value', nativeAudio: 'value' }, scenes: [{ durationSeconds:'value',stages:[{phase:'text',state:'text'}],index: 'value', title: 'text', mediaExpired:'value', visualPrompt:'text', status: 'text', dialogue: [{ speaker: 'text', text: 'text' }], phase: 'text', completed: 'value', total: 'value', ready: 'value' }], error: 'text' };
 const customerShapes = {
     session: { user: { id: 'id', name: 'text' }, wallet, servers: [server], enabled: 'value', planningEnabled: 'value', capabilities: { referenceUpload: 'value', ingredients: 'value', voiceCloning: 'value', lastFrameContinuity: 'value', nativeAudio: 'value', wholeFilmMerge: 'value' } },
     'files.list': [{id:'id',projectId:'id',index:'fileIndex',kind:'text',name:'text',createdAt:'value',expiresAt:'value',bytes:'value'}], 'files.delete': {removed:'value'}, 'files.ticket': {url:'url',expires:'value'},
     wallet, 'servers.list': [server], 'rental.quote': { serverId: 'id', revision: 'value', priceMicroUSD: 'value', pricePerHourUSD: 'value', minimumCreditUSD: 'value', warning: 'text', canStart: 'value' },
     'rental.start': rental, 'rental.status': rental, 'rental.stop': rental, 'projects.list': [project],
+    'project.organize':project,
     'project.preview.execute':project, 'project.preview.view':{url:'previewUrl',expires:'value'},
     'project.reference.view': { url: 'referenceUrl', expires: 'value' }, 'project.reference.ticket': { url: 'uploadUrl', expires: 'value', maxBytes: 'value' }, 'project.reference.remove': project, 'project.save': project, 'project.get': project, 'project.follow': project, 'text.status': project, 'plan.status': project, 'project.merge': project,
     'chat.submit': { accepted: 'value', textCostPolicy: 'text' }, 'plan.submit': { accepted: 'value', textCostPolicy: 'text' }, 'review.submit': { accepted: 'value', textCostPolicy: 'text' },
@@ -153,6 +157,7 @@ function adminDTO(value, secrets, depth = 0) {
     return typeof value === 'boolean' || typeof value === 'number' || value === null ? value : null;
 }
 const safeErrors = {
+    PROJECT_BUSY:'المحادثة قيد التنفيذ؛ أوقف المهمة وتأكد من توقفها قبل حذفها.',
     PREVIEW_PENDING:'معاينة الصورة قيد التنفيذ أو تحتاج متابعة؛ لا تشغيل إضافي.',PREVIEW_LIMIT:'وصل هذا الفيلم إلى حد معاينات الصور.',PREVIEW_NOT_AVAILABLE:'عرض معاينة الصورة غير متاح؛ حدّث المحادثة.',
     MEDIA_EXPIRED: 'انتهت مدة حفظ الفيديو أو حُذف. لا يعاد توليده تلقائياً.',
     MEDIA_IN_USE: 'الفيديو مستخدم في إنتاج أو دمج جارٍ؛ انتظر اكتمال العملية قبل الحذف.',
@@ -245,12 +250,12 @@ export async function requestFilm(actor, args, env) {
         if (!ok || (record(data) && data.error && !('id' in data))) {
             if (typeof data.error === 'string' && Object.hasOwn(safeErrors, data.error))
                 return fail(data.error, safeErrors[data.error]);
-            return fail('REQUEST_STATE_UNKNOWN', 'النتيجة تحتاج متابعة آمنة.', true);
+            return mayDispatchPaidWork(operation)?fail('REQUEST_STATE_UNKNOWN', 'النتيجة تحتاج متابعة آمنة.', true):fail('SERVICE_UNAVAILABLE','تعذر الاتصال حالياً؛ أعد الاتصال دون بدء توليد.');
         }
         return operation.startsWith('admin.') ? adminDTO(data, secrets) : projectShape(data, customerShapes[operation], secrets, publicMediaOrigin);
     }
     catch {
-        return fail('REQUEST_STATE_UNKNOWN', 'تعذر تأكيد نتيجة الطلب.', true);
+        return mayDispatchPaidWork(operation)?fail('REQUEST_STATE_UNKNOWN', 'تعذر تأكيد نتيجة الطلب.', true):fail('SERVICE_UNAVAILABLE','تعذر الاتصال حالياً؛ أعد الاتصال دون بدء توليد.');
     }
     finally {
         clearTimeout(timer);

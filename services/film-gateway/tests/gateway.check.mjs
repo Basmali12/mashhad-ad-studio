@@ -47,7 +47,7 @@ test('existing owner can retain film identity; customer identity cannot use that
 });
 test('paid requests require approval, errors are opaque, and bridge requests are never retried',async t=>{
  const f=await fixture(t);await f.post({operation:'rental.start',input:{serverId:'s',revision:1,priceMicroUSD:1,requestId:'rental-one',approved:false},requestId:'test-request-001'});assert.equal(f.calls.filter(c=>c.url.includes('film.example')).length,0);
- const bad=await fixture(t,{bridgeFailure:true});const r=await bad.post();const result=await r.json();assert.equal(result.error,'REQUEST_STATE_UNKNOWN');assert.equal(result.followExisting,true);assert.equal(JSON.stringify(result).includes('private'),false);assert.equal(bad.calls.filter(c=>c.url.includes('film.example')).length,1);
+ const bad=await fixture(t,{bridgeFailure:true});const r=await bad.post({operation:'chat.submit',input:{projectId:'project-one',message:'hello',approved:true},requestId:'paid-failure'});const result=await r.json();assert.equal(result.error,'REQUEST_STATE_UNKNOWN');assert.equal(result.followExisting,true);assert.equal(JSON.stringify(result).includes('private'),false);assert.equal(bad.calls.filter(c=>c.url.includes('film.example')).length,1);
 });
 test('access endpoint reveals only verified role and health never contacts providers',async t=>{
  const f=await fixture(t);assert.equal((await fetch(f.base+'/health')).status,200);assert.equal(f.calls.length,0);const r=await f.post({}, {},'/api/mashhad-film/access');assert.deepEqual(await r.json(),{id:'mashhad-convexuser01',isAdmin:false});assert.equal(f.calls.length,1);
@@ -92,7 +92,7 @@ test('signed image upload/view URLs use explicitly trusted public origin, indepe
   const f=await fixture(t,{publicMediaOrigin:'https://media.example.test',bridgeResult:{url,expires:1234567890123,maxBytes:4000000}});
   const r=await f.post({operation,input:{projectId:'project-one'},requestId:'image-ticket-001'});assert.equal((await r.json()).url,url);
   const bad=await fixture(t,{publicMediaOrigin:'https://other.example.test',bridgeResult:{url,expires:1234567890123}});
-  const rejected=await bad.post({operation,input:{projectId:'project-one'},requestId:'image-ticket-002'});assert.equal((await rejected.json()).error,'REQUEST_STATE_UNKNOWN');
+  const rejected=await bad.post({operation,input:{projectId:'project-one'},requestId:'image-ticket-002'});assert.equal((await rejected.json()).error,'SERVICE_UNAVAILABLE');
  }
 });
 
@@ -101,4 +101,14 @@ test('image preview cannot start without explicit scoped approval; private promp
  const f=await fixture(t,{bridgeResult:{id:'project-one',preview:{id:'offer-one',status:'offered',model:'gpt-image-2-2026-04-21',estimatedUSD:.1,prompt:'PRIVATE',path:'/private',computedUSD:null,invoiceUSD:null}}});
  await f.post({operation:'project.preview.execute',input:{projectId:'project-one',quoteId:'offer-one',approved:false},requestId:'preview-denied'});assert.equal(f.calls.filter(c=>c.url.includes('film.example')).length,0);
  const r=await f.post({operation:'project.preview.execute',input:{projectId:'project-one',quoteId:'offer-one',approved:true},requestId:'preview-approved'});const dto=await r.json();assert.equal(dto.preview.status,'offered');assert.equal('prompt' in dto.preview,false);assert.equal('path' in dto.preview,false);assert.equal(f.calls.filter(c=>c.url.includes('film.example')).length,1);
+});
+
+test('read transport failures are recoverable but ambiguous paid commands retain the follow guard',async t=>{
+ const f=await fixture(t,{bridgeFailure:true});const read=await(await f.post()).json();assert.equal(read.followExisting,false);assert.equal(read.error,'SERVICE_UNAVAILABLE');
+ const paid=await(await f.post({operation:'chat.submit',input:{projectId:'project1',message:'hello',approved:true},requestId:'one-paid-request'})).json();assert.equal(paid.followExisting,true);assert.equal(paid.error,'REQUEST_STATE_UNKNOWN');
+});
+test('conversation management schema and DTO expose only owner-safe metadata',async t=>{
+ const f=await fixture(t,{bridgeResult:{id:'project1',name:'renamed',pinned:true,archived:false,customerId:'private',secret:'hidden'}});
+ const r=await f.post({operation:'project.organize',input:{id:'project1',name:'renamed',pinned:true},requestId:'organize-one'});assert.equal(r.status,200);assert.deepEqual(await r.json(),{id:'project1',name:'renamed',pinned:true,archived:false});
+ assert.equal((await f.post({operation:'project.organize',input:{id:'project1',pinned:'yes'},requestId:'bad-organize'})).status,400);
 });

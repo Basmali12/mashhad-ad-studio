@@ -458,3 +458,20 @@ test('verified legacy scene preview no longer fails solely due to stale submitte
  const f=await fixture(t),p=await draft(f),jid=randomUUID(),raw=f.store.get('film-project',p.id);raw.state='needs_review';raw.scenes=[{jobId:jid,status:'submitted',attempted:true}];f.store.put('film-project',raw);f.store.put('job',{id:jid,tenantId:f.users.alice,projectId:p.id,action:'generate',status:'needs_review',result:{videoVerified:true},finishedAt:f.now()});
  const ticket=await f.invoke(alice,'media.ticket',{projectId:p.id,index:0});assert.ok(ticket.url.startsWith('https://fixture.test/api/film-media/'));await assert.rejects(f.invoke(bob,'media.ticket',{projectId:p.id,index:0}),/NOT_FOUND/);assert.equal(f.store.get('film-project',p.id).scenes[0].status,'submitted');assert.deepEqual(await f.invoke(alice,'files.list'),[]);assert.equal(f.provider.calls.length,0);
 });
+
+test('conversation rename/pin/archive persists without generation or deleting media/history and enforces tenant boundaries',async t=>{
+ const f=await fixture(t);const make=name=>f.invoke(alice,'project.save',{name,story:'test story',seconds:20,orientation:'portrait'});
+ const first=await make('first'),second=await make('second');
+ await assert.rejects(f.invoke(bob,'project.organize',{id:first.id,name:'stolen'}),/NOT_FOUND/);
+ await assert.rejects(f.invoke(alice,'project.organize',{id:first.id,pinned:'true'}),/INVALID_INPUT/);
+ await f.invoke(alice,'project.organize',{id:first.id,pinned:true,name:'renamed'});
+ let rows=await f.invoke(alice,'projects.list');assert.equal(rows[0].id,first.id);assert.equal(rows[0].name,'renamed');assert.equal(rows[0].pinned,true);
+ const p=f.store.get('film-project',first.id);p.scenes=[{attempted:true,status:'done'}];p.state='completed';f.store.put('film-project',p);
+ const count=f.store.all('film-project').length;
+ await f.invoke(alice,'project.organize',{id:first.id,name:'finished renamed',archived:true});
+ assert.equal((await f.invoke(alice,'projects.list')).length,1);assert.equal((await f.invoke(alice,'projects.list',{archived:true}))[0].id,first.id);assert.equal(f.store.all('film-project').length,count);
+ await f.invoke(alice,'project.organize',{id:first.id,archived:false});assert.equal((await f.invoke(alice,'projects.list')).length,2);
+ const running=f.store.get('film-project',second.id);running.textPending='existing-request';f.store.put('film-project',running);
+ await assert.rejects(f.invoke(alice,'project.organize',{id:second.id,archived:true}),/PROJECT_BUSY/);
+ assert.equal(f.provider.calls.length,0);
+});

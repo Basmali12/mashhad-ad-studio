@@ -266,7 +266,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   catch(e){const latest=await store.get('film-project',p.id);if(latest.launch)latest.launch.finishedAt=now();latest.merge={status:e.message==='MERGE_UNAVAILABLE'?'unavailable':'failed',error:/^MERGE_[A-Z_]+$/.test(e.message)?e.message:'MERGE_FAILED',finishedAt:now()};await store.put('film-project',latest);}
  }
  async function projectDTO(p){
-  return {preview:imagePreview.publicDTO(p.preview),id:p.id,name:clean(p.name),story:clean(p.story),messages:(p.messages||[]).map(m=>({role:m.role,content:clean(m.content),hasReference:!!(m.referenceId&&m.referenceId===p.reference?.id)})),textPending:!!p.textPending,textUncertain:!!p.textUncertain,planningCompletedScenes:p.planningCompletedScenes||0,textCostPolicy:'administrator_funded_separate_from_gpu_wallet',seconds:p.seconds,orientation:p.orientation,state:p.state,discussion:p.discussion||null,launch:p.launch?{state:p.launch.state,approvedAt:p.launch.approvedAt,finishedAt:p.launch.finishedAt||null}:null,reference:p.reference?{mime:p.reference.mime,size:p.reference.size,width:p.reference.width,height:p.reference.height,uploadedAt:p.reference.uploadedAt}:null,merge:p.merge?{status:p.merge.status,error:p.merge.error||null,duration:p.merge.duration||null,width:p.merge.width||null,height:p.merge.height||null,nativeAudio:p.merge.audio===true}:null,
+  return {pinned:!!p.pinned,archived:!!p.archived,preview:imagePreview.publicDTO(p.preview),id:p.id,name:clean(p.name),story:clean(p.story),messages:(p.messages||[]).map(m=>({role:m.role,content:clean(m.content),hasReference:!!(m.referenceId&&m.referenceId===p.reference?.id)})),textPending:!!p.textPending,textUncertain:!!p.textUncertain,planningCompletedScenes:p.planningCompletedScenes||0,textCostPolicy:'administrator_funded_separate_from_gpu_wallet',seconds:p.seconds,orientation:p.orientation,state:p.state,discussion:p.discussion||null,launch:p.launch?{state:p.launch.state,approvedAt:p.launch.approvedAt,finishedAt:p.launch.finishedAt||null}:null,reference:p.reference?{mime:p.reference.mime,size:p.reference.size,width:p.reference.width,height:p.reference.height,uploadedAt:p.reference.uploadedAt}:null,merge:p.merge?{status:p.merge.status,error:p.merge.error||null,duration:p.merge.duration||null,width:p.merge.width||null,height:p.merge.height||null,nativeAudio:p.merge.audio===true}:null,
    directorFollow:!!p.directorFollow,reviewPending:!!p.reviewPending,reviewState:p.reviewState||'not_requested',visualReviews:p.visualReviews||[],
    scenes:await Promise.all((p.scenes||[]).map(async(s,index)=>{const candidate=s.jobId?await store.get('job',s.jobId):null,j=candidate?.tenantId===p.customerId&&candidate?.projectId===p.id?candidate:null;const telemetry=observedProgress(j?.events||[]);
     return {index,title:'المشهد '+(index+1),visualPrompt:clean(s.prompt||''),status:s.status,dialogue:(s.audioContract?.lines||[]).map(l=>({speaker:clean(l.speaker),text:clean(l.text)})),...telemetry,durationSeconds:verifiedVideoSeconds(j),ready:await media.sceneAvailable(p,j),mediaExpired:!!j&&(!!j.mediaRemovedAt||await media.deadline(j)<=now())};})),error:p.error?'توقفت العملية وتحتاج مراجعة؛ لا إعادة تلقائية.':null};
@@ -295,13 +295,22 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   if(operation==='rental.start')return startRental(c,input);
   if(operation==='rental.status'){const r=await owned('rental',input.id,c.id);await inspectRental(r);return rentalDTO(await store.get('rental',r.id));}
   if(operation==='rental.stop'){const r=await owned('rental',input.id,c.id);await stopRental(r);return rentalDTO(await store.get('rental',r.id));}
-  if(operation==='projects.list')return Promise.all((await store.all('film-project')).filter(p=>p.customerId===c.id).map(projectDTO));
+  if(operation==='projects.list')return Promise.all((await store.all('film-project')).filter(p=>p.customerId===c.id&&!!p.archived===!!input.archived).sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)||(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0)).map(projectDTO));
   if(operation==='project.get'||operation==='project.follow')return projectDTO(await followProject(await owned('film-project',input.id,c.id)));
   if(operation==='project.preview.execute'){if(!textEnabled)throw Error('TEXT_DISABLED');const p=await owned('film-project',input.projectId,c.id);await imagePreview.execute(p,input.quoteId,input.approved,p.reference?await references.data(p):null);return projectDTO(await owned('film-project',p.id,c.id));}
   if(operation==='project.preview.view')return imagePreview.view(await owned('film-project',input.projectId,c.id));
   if(operation==='project.reference.view')return references.view(input.projectId,c.id);
   if(operation==='project.reference.ticket')return references.issue(input.projectId,c.id);
   if(operation==='project.reference.remove')return projectDTO(await references.remove(input.projectId,c.id));
+  if(operation==='project.organize')return store.transaction(async()=>{
+   if(Object.keys(input).some(k=>!['id','name','pinned','archived'].includes(k))||!['name','pinned','archived'].some(k=>k in input)||('pinned' in input&&typeof input.pinned!=='boolean')||('archived' in input&&typeof input.archived!=='boolean'))throw Error('INVALID_INPUT');
+   const p=await owned('film-project',input.id,c.id);
+   if(input.archived===true&&(p.state==='generating'||p.textPending||p.reviewPending||p.referenceUploading||p.launch?.state==='starting'||p.merge?.status==='running'||['queued','running','uncertain'].includes(p.preview?.status)||(await store.all('job')).some(j=>j.projectId===p.id&&!j.cloudStopped&&['queued','running','ready','stopping','uncertain','recovery_required'].includes(j.status))))throw Error('PROJECT_BUSY');
+   if('name' in input)p.name=label(input.name);
+   if('pinned' in input)p.pinned=input.pinned;
+   if('archived' in input)p.archived=input.archived;
+   p.updatedAt=now();await store.put('film-project',p);return projectDTO(p);
+  });
   if(operation==='project.save')return store.transaction(async()=>{
    const old=input.id?await owned('film-project',input.id,c.id):null;
    if(old?.launch?.state==='starting')throw Error('SCENE_ALREADY_ATTEMPTED');if(old?.state==='generating')throw Error('SCENE_ALREADY_ATTEMPTED');if(old?.referenceUploading)throw Error('REFERENCE_LOCKED');if(old?.textPending)throw Error('TEXT_ALREADY_PENDING');if(old?.scenes?.some(s=>s.attempted))throw Error('SCENE_ALREADY_ATTEMPTED');
