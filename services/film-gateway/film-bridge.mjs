@@ -19,12 +19,13 @@ const date = x => x === null || (integer(x) && x > 0);
 const short = x => text(x, 120);
 const fields = {
     'files.list': {}, 'files.ticket': {id,'download?':bool}, 'files.delete': { id, approved: yes },
+    'preferences.get': {},'preferences.save': {orientation:x=>x===null||['portrait','landscape'].includes(x)},
     'projects.list': {'archived?':bool},
     'project.organize': {id,'name?':short,'pinned?':bool,'archived?':bool},
     'rental.quote': { serverId: id },
     'rental.start': { serverId: id, revision: integer, priceMicroUSD: integer, approved: yes, requestId: id },
     'rental.status': { id }, 'rental.stop': { id },
-    'project.save': { 'id?': id, name: short, story: x => text(x), seconds: x => integer(x) && x >= 10 && x <= 300 && x % 10 === 0, orientation: x => ['portrait', 'landscape'].includes(x) },
+    'project.save': { 'id?': id, name: short, story: x => text(x), seconds: x => integer(x) && x >= 10 && x <= 300 && x % 10 === 0, orientation: x => x===null||['portrait', 'landscape'].includes(x) },
     'project.preview.execute': {projectId:id,quoteId:id,approved:yes}, 'project.preview.view': {projectId:id},
     'project.reference.view': { projectId: id }, 'project.reference.ticket': { projectId: id }, 'project.reference.remove': { projectId: id },
     'project.get': { id }, 'project.follow': { id },
@@ -67,8 +68,9 @@ const wallet = { balanceMicroUSD: 'value', expiresAt: 'value', reservedMicroUSD:
 const server = { id: 'id', name: 'text', gpu: 'text', ram: 'value', cpu: 'value', pricePerHourUSD: 'value', state: 'text', availability: 'text' };
 const rental = { stages:[{phase:'text',state:'text'}], id: 'id', serverId: 'id', state: 'text', elapsedSeconds: 'value', billedMicroUSD: 'value', hourPriceUSD: 'value', lowFunds: 'value', phase: 'text', completed: 'value', total: 'value', stopReason: 'text', message: 'text' };
 const visualReview={index:'value',model:'text',summary:'text',visibleText:'text',continuity:'text',causalOrder:'text',audioAssessment:'text',findings:['text'],suggestedCorrections:['text'],sampleCount:'value',computedUSD:'value',invoiceUSD:'value'};
-const project = {pinned:'value',archived:'value',preview:{id:'id',status:'text',estimatedUSD:'value',computedUSD:'value',invoiceUSD:'value',expiresAt:'value',error:'text',model:'text'},discussion:{readyToWrite:'value',seconds:'value',style:'text'},launch:{state:'text',approvedAt:'value',finishedAt:'value'},directorFollow:'value',reviewPending:'value',reviewState:'text',visualReviews:[visualReview], id: 'id', name: 'text', story: 'text', messages: [{ role: 'text', content: 'text', hasReference:'value' }], seconds: 'value', orientation: 'text', state: 'text', reference: { mime: 'text', size: 'value', width: 'value', height: 'value', uploadedAt: 'value' }, textPending: 'value', textUncertain: 'value', textCostPolicy: 'text', planningCompletedScenes: 'value', merge: { status: 'text', error: 'text', duration: 'value', width: 'value', height: 'value', nativeAudio: 'value' }, scenes: [{ durationSeconds:'value',stages:[{phase:'text',state:'text'}],index: 'value', title: 'text', mediaExpired:'value', visualPrompt:'text', status: 'text', dialogue: [{ speaker: 'text', text: 'text' }], phase: 'text', completed: 'value', total: 'value', ready: 'value' }], error: 'text' };
+const project = {orientationConfirmed:'value',pinned:'value',archived:'value',preview:{id:'id',status:'text',estimatedUSD:'value',computedUSD:'value',invoiceUSD:'value',expiresAt:'value',error:'text',model:'text'},discussion:{readyToWrite:'value',seconds:'value',style:'text'},launch:{state:'text',approvedAt:'value',finishedAt:'value'},directorFollow:'value',reviewPending:'value',reviewState:'text',visualReviews:[visualReview], id: 'id', name: 'text', story: 'text', messages: [{ role: 'text', content: 'text', hasReference:'value' }], seconds: 'value', orientation: 'text', state: 'text', reference: { mime: 'text', size: 'value', width: 'value', height: 'value', uploadedAt: 'value' }, textPending: 'value', textUncertain: 'value', textCostPolicy: 'text', planningCompletedScenes: 'value', merge: { status: 'text', error: 'text', duration: 'value', width: 'value', height: 'value', nativeAudio: 'value' }, scenes: [{ durationSeconds:'value',stages:[{phase:'text',state:'text'}],index: 'value', title: 'text', mediaExpired:'value', visualPrompt:'text', status: 'text', dialogue: [{ speaker: 'text', text: 'text' }], phase: 'text', completed: 'value', total: 'value', ready: 'value' }], error: 'text' };
 const customerShapes = {
+    'preferences.get':{orientation:'text'},'preferences.save':{orientation:'text'},
     session: { user: { id: 'id', name: 'text' }, wallet, servers: [server], enabled: 'value', planningEnabled: 'value', capabilities: { referenceUpload: 'value', ingredients: 'value', voiceCloning: 'value', lastFrameContinuity: 'value', nativeAudio: 'value', wholeFilmMerge: 'value' } },
     'files.list': [{id:'id',projectId:'id',index:'fileIndex',kind:'text',name:'text',createdAt:'value',expiresAt:'value',bytes:'value'}], 'files.delete': {removed:'value'}, 'files.ticket': {url:'url',expires:'value'},
     wallet, 'servers.list': [server], 'rental.quote': { serverId: 'id', revision: 'value', priceMicroUSD: 'value', pricePerHourUSD: 'value', minimumCreditUSD: 'value', warning: 'text', canStart: 'value' },
@@ -157,6 +159,7 @@ function adminDTO(value, secrets, depth = 0) {
     return typeof value === 'boolean' || typeof value === 'number' || value === null ? value : null;
 }
 const safeErrors = {
+    ORIENTATION_REQUIRED:'حدد عمودي أو أفقي في الدردشة قبل بدء الفيلم.',
     PROJECT_BUSY:'المحادثة قيد التنفيذ؛ أوقف المهمة وتأكد من توقفها قبل حذفها.',
     PREVIEW_PENDING:'معاينة الصورة قيد التنفيذ أو تحتاج متابعة؛ لا تشغيل إضافي.',PREVIEW_LIMIT:'وصل هذا الفيلم إلى حد معاينات الصور.',PREVIEW_NOT_AVAILABLE:'عرض معاينة الصورة غير متاح؛ حدّث المحادثة.',
     MEDIA_EXPIRED: 'انتهت مدة حفظ الفيديو أو حُذف. لا يعاد توليده تلقائياً.',

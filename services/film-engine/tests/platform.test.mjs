@@ -475,3 +475,11 @@ test('conversation rename/pin/archive persists without generation or deleting me
  await assert.rejects(f.invoke(alice,'project.organize',{id:second.id,archived:true}),/PROJECT_BUSY/);
  assert.equal(f.provider.calls.length,0);
 });
+
+test('account orientation defaults are private, persistent and never dispatch resources; unset direction blocks a plan or launch',async t=>{
+ const f=await fixture(t,{text:true});assert.deepEqual(await f.invoke(alice,'preferences.get'),{orientation:null});await f.invoke(alice,'preferences.save',{orientation:'landscape'});assert.deepEqual(await f.invoke(alice,'preferences.get'),{orientation:'landscape'});assert.deepEqual(await f.invoke(bob,'preferences.get'),{orientation:null});
+ const a=await f.invoke(alice,'project.save',{name:'landscape',story:'test',seconds:20,orientation:null});assert.equal(a.orientation,'landscape');assert.equal(a.orientationConfirmed,true);
+ const b=await f.invoke(bob,'project.save',{name:'unknown',story:'test',seconds:20,orientation:null});assert.equal(b.orientationConfirmed,false);
+ await assert.rejects(f.invoke(bob,'plan.submit',{projectId:b.id,approved:true}),/ORIENTATION_REQUIRED/);await assert.rejects(f.invoke(bob,'project.launch',{projectId:b.id,approved:true}),/ORIENTATION_REQUIRED/);await assert.rejects(f.invoke(alice,'preferences.save',{orientation:'square'}),/INVALID_INPUT/);assert.equal(f.provider.calls.length,0);assert.equal(f.store.all('film-text-reservation').length,0);
+ await f.invoke(alice,'preferences.save',{orientation:null});assert.equal((await f.invoke(alice,'preferences.get')).orientation,null);assert.equal((await f.invoke(alice,'project.get',{id:a.id})).orientation,'landscape');
+});

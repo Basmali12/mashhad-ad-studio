@@ -7,7 +7,7 @@ import {readFileSync} from 'node:fs';
 import FilmWorkspace from './FilmWorkspace';
 it('customer film UI retains story/orientation/native audio and cannot import administrator controls',()=>{
  let calls=0;const html=renderToStaticMarkup(<FilmWorkspace request={async()=>{calls++;throw Error('NO_CLOUD');}}/>);
- expect(calls).toBe(0);expect(html).toContain('صناعة الأفلام');expect(html).toContain('رسالتك للمخرج');expect(html).toContain('إعدادات وإرفاق صورة');expect(html).not.toContain('المدة بالثواني');expect(html).not.toContain('إعداد التقرير');expect(html).not.toContain('اسم الفيلم');expect(html).not.toContain('إدارة محركات الأفلام');expect(html).not.toContain('Token Secret');expect(html).not.toContain('IRAQ AI STUDIO');
+ expect(calls).toBe(0);expect(html).toContain('صناعة الأفلام');expect(html).toContain('رسالتك للمخرج');expect(html).toContain('إرفاق صورة');expect(html).not.toContain('المدة بالثواني');expect(html).not.toContain('إعداد التقرير');expect(html).not.toContain('اسم الفيلم');expect(html).not.toContain('إدارة محركات الأفلام');expect(html).not.toContain('Token Secret');expect(html).not.toContain('IRAQ AI STUDIO');
  const source=readFileSync(new URL('./FilmWorkspace.tsx',import.meta.url),'utf8');expect(source).not.toContain("import('./FilmAdmin')");expect(source).not.toContain("tab==='admin'");
 });
 it('administrator entry is separate, and the gateway transport does not use a second studio session',()=>{

@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import {initialOrientation,isOrientation,applyDiscussionOrientation} from './film-orientation.mjs';
 import {createFilmImagePreview} from './film-image-preview.mjs';
 import {observedProgress,verifiedVideoSeconds} from './film-progress.mjs';
 import {createFilmMediaLibrary} from './film-media-library.mjs';
@@ -266,7 +267,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   catch(e){const latest=await store.get('film-project',p.id);if(latest.launch)latest.launch.finishedAt=now();latest.merge={status:e.message==='MERGE_UNAVAILABLE'?'unavailable':'failed',error:/^MERGE_[A-Z_]+$/.test(e.message)?e.message:'MERGE_FAILED',finishedAt:now()};await store.put('film-project',latest);}
  }
  async function projectDTO(p){
-  return {pinned:!!p.pinned,archived:!!p.archived,preview:imagePreview.publicDTO(p.preview),id:p.id,name:clean(p.name),story:clean(p.story),messages:(p.messages||[]).map(m=>({role:m.role,content:clean(m.content),hasReference:!!(m.referenceId&&m.referenceId===p.reference?.id)})),textPending:!!p.textPending,textUncertain:!!p.textUncertain,planningCompletedScenes:p.planningCompletedScenes||0,textCostPolicy:'administrator_funded_separate_from_gpu_wallet',seconds:p.seconds,orientation:p.orientation,state:p.state,discussion:p.discussion||null,launch:p.launch?{state:p.launch.state,approvedAt:p.launch.approvedAt,finishedAt:p.launch.finishedAt||null}:null,reference:p.reference?{mime:p.reference.mime,size:p.reference.size,width:p.reference.width,height:p.reference.height,uploadedAt:p.reference.uploadedAt}:null,merge:p.merge?{status:p.merge.status,error:p.merge.error||null,duration:p.merge.duration||null,width:p.merge.width||null,height:p.merge.height||null,nativeAudio:p.merge.audio===true}:null,
+  return {orientationConfirmed:p.orientationConfirmed!==false,pinned:!!p.pinned,archived:!!p.archived,preview:imagePreview.publicDTO(p.preview),id:p.id,name:clean(p.name),story:clean(p.story),messages:(p.messages||[]).map(m=>({role:m.role,content:clean(m.content),hasReference:!!(m.referenceId&&m.referenceId===p.reference?.id)})),textPending:!!p.textPending,textUncertain:!!p.textUncertain,planningCompletedScenes:p.planningCompletedScenes||0,textCostPolicy:'administrator_funded_separate_from_gpu_wallet',seconds:p.seconds,orientation:p.orientation,state:p.state,discussion:p.discussion||null,launch:p.launch?{state:p.launch.state,approvedAt:p.launch.approvedAt,finishedAt:p.launch.finishedAt||null}:null,reference:p.reference?{mime:p.reference.mime,size:p.reference.size,width:p.reference.width,height:p.reference.height,uploadedAt:p.reference.uploadedAt}:null,merge:p.merge?{status:p.merge.status,error:p.merge.error||null,duration:p.merge.duration||null,width:p.merge.width||null,height:p.merge.height||null,nativeAudio:p.merge.audio===true}:null,
    directorFollow:!!p.directorFollow,reviewPending:!!p.reviewPending,reviewState:p.reviewState||'not_requested',visualReviews:p.visualReviews||[],
    scenes:await Promise.all((p.scenes||[]).map(async(s,index)=>{const candidate=s.jobId?await store.get('job',s.jobId):null,j=candidate?.tenantId===p.customerId&&candidate?.projectId===p.id?candidate:null;const telemetry=observedProgress(j?.events||[]);
     return {index,title:'المشهد '+(index+1),visualPrompt:clean(s.prompt||''),status:s.status,dialogue:(s.audioContract?.lines||[]).map(l=>({speaker:clean(l.speaker),text:clean(l.text)})),...telemetry,durationSeconds:verifiedVideoSeconds(j),ready:await media.sceneAvailable(p,j),mediaExpired:!!j&&(!!j.mediaRemovedAt||await media.deadline(j)<=now())};})),error:p.error?'توقفت العملية وتحتاج مراجعة؛ لا إعادة تلقائية.':null};
@@ -276,6 +277,8 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   if(typeof operation!=='string'||!input||typeof input!=='object'||Array.isArray(input))throw Error('INVALID_INPUT');
   const c=await customer(actor);if(operation.startsWith('admin.')&&actor.isAdmin!==true)throw Error('FORBIDDEN');
   if(operation==='session')return {user:{id:c.id,name:c.name},wallet:await wallet(c.id),servers:await listServers(),enabled,planningEnabled:textEnabled&&textBudgetMicroUSD>0,capabilities:{referenceUpload:mediaOrigins.length>0,ingredients:false,voiceCloning:false,lastFrameContinuity:true,nativeAudio:true,wholeFilmMerge:true}};
+  if(operation==='preferences.get')return {orientation:(await store.get('film-preferences',c.id))?.orientation??null};
+  if(operation==='preferences.save'){if(input.orientation!==null&&!isOrientation(input.orientation))throw Error('INVALID_INPUT');const pref={id:c.id,orientation:input.orientation};await store.put('film-preferences',pref);return {orientation:pref.orientation};}
   if(operation==='wallet')return wallet(c.id);
   if(operation==='files.list')return media.list(c.id,{finalOnly:true});
   if(operation==='files.ticket'){
@@ -314,15 +317,16 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   if(operation==='project.save')return store.transaction(async()=>{
    const old=input.id?await owned('film-project',input.id,c.id):null;
    if(old?.launch?.state==='starting')throw Error('SCENE_ALREADY_ATTEMPTED');if(old?.state==='generating')throw Error('SCENE_ALREADY_ATTEMPTED');if(old?.referenceUploading)throw Error('REFERENCE_LOCKED');if(old?.textPending)throw Error('TEXT_ALREADY_PENDING');if(old?.scenes?.some(s=>s.attempted))throw Error('SCENE_ALREADY_ATTEMPTED');
-   const seconds=Number(input.seconds);if(!Number.isInteger(seconds)||seconds<10||seconds>300||seconds%10||!['portrait','landscape'].includes(input.orientation))throw Error('INVALID_INPUT');
-   const name=label(input.name),story=prose(input.story,20000),changed=old&&(old.story!==story||old.seconds!==seconds||old.orientation!==input.orientation);
-   const p={...old,id:old?.id||id(),customerId:c.id,name,story,seconds,orientation:input.orientation,messages:old?.messages||[],scenes:changed?[]:(old?.scenes||[]),state:changed?'draft':(old?.state||'draft'),createdAt:old?.createdAt??now(),updatedAt:now()};
+   const seconds=Number(input.seconds);if(!Number.isInteger(seconds)||seconds<10||seconds>300||seconds%10||(input.orientation!==null&&!isOrientation(input.orientation)))throw Error('INVALID_INPUT');
+   const choice=initialOrientation(input.orientation,old,(await store.get('film-preferences',c.id))?.orientation);
+   const name=label(input.name),story=prose(input.story,20000),changed=old&&(old.story!==story||old.seconds!==seconds||old.orientation!==choice.orientation);
+   const p={...old,id:old?.id||id(),customerId:c.id,name,story,seconds,...choice,messages:old?.messages||[],scenes:changed?[]:(old?.scenes||[]),state:changed?'draft':(old?.state||'draft'),createdAt:old?.createdAt??now(),updatedAt:now()};
    if(changed){p.planningCompletedScenes=0;p.error=null;p.textUncertain=false;delete p.merge;}
    await store.put('film-project',p);return projectDTO(p);
   });
   if(operation==='project.launch'){
    await requireRentals();if(input.approved!==true)throw Error('APPROVAL_REQUIRED');
-   let p=await owned('film-project',input.projectId,c.id),intent;
+   let p=await owned('film-project',input.projectId,c.id),intent;if(p.orientationConfirmed===false)throw Error('ORIENTATION_REQUIRED');
    await store.transaction(async()=>{
     p=await owned('film-project',p.id,c.id);if(p.launch){intent=p.launch;return;}
     if(p.state!=='planned'||!p.scenes?.length||p.scenes.some(s=>s.attempted)||p.textPending)throw Error('PLAN_REQUIRED');
@@ -530,6 +534,8 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   await store.transaction(async()=>{
    p=await owned('film-project',p.id,c.id);
    if(p.scenes?.some(s=>s.attempted))throw Error('SCENE_ALREADY_ATTEMPTED');
+   const pref=(await store.get('film-preferences',c.id))?.orientation;if(p.orientationConfirmed===false&&isOrientation(pref)){p.orientation=pref;p.orientationConfirmed=true;}
+   if(operation==='plan.submit'&&p.orientationConfirmed===false)throw Error('ORIENTATION_REQUIRED');
    if(['queued','running','uncertain'].includes(p.preview?.status))throw Error('PREVIEW_PENDING');if(p.launch)throw Error('SCENE_ALREADY_ATTEMPTED');if(p.referenceUploading)throw Error('REFERENCE_LOCKED');if(p.textPending)throw Error('TEXT_ALREADY_PENDING');
    if((p.textCalls||0)+batches>30)throw Error('TEXT_LIMIT');
    const usage=(await store.all('film-text-reservation')).filter(x=>x.createdAt>now()-CREDIT_LIFETIME);
@@ -560,9 +566,10 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
       updated.planningCompletedScenes=scenes.length;
       if(batch===batches-1){updated.scenes=scenes;updated.state='planned';}
      }else {
-      updated.messages.push({role:'assistant',content:clean(response.discussion?.reply||response.text)});
       const d=response.discussion,seconds=d?.proposed_duration_seconds;
-      if(d?.intent==='image_preview'){await imagePreview.offer(updated,d.portrait_prompt);d.ready_to_write=false;}else if(updated.preview?.status==='offered')updated.preview=null;
+      if(d)applyDiscussionOrientation(updated,d,message||'');
+      updated.messages.push({role:'assistant',content:clean(d?.reply||response.text)});
+      if(d?.intent==='image_preview'&&updated.orientationConfirmed!==false){await imagePreview.offer(updated,d.portrait_prompt);d.ready_to_write=false;}else if(updated.preview?.status==='offered')updated.preview=null;
       if(Number.isInteger(seconds)&&seconds>=10&&seconds<=300&&seconds%10===0){
        if(updated.seconds!==seconds){updated.seconds=seconds;updated.scenes=[];updated.state='draft';delete updated.merge;}
        updated.discussion={readyToWrite:d.ready_to_write===true,seconds,style:clean(d.style||'')};
@@ -598,7 +605,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    let length=0,parts=[];for await(const part of req){length+=part.length;if(length>262144)throw Error('INVALID_INPUT');parts.push(part);}
    const raw=Buffer.concat(parts).toString(),nonce=verifyBridge(secret,req.headers,raw,now()),b=JSON.parse(raw);requireStore();
    if(!SAFE.test(b.requestId||''))throw Error('INVALID_INPUT');
-   const readOnly=/^(session|wallet|files.list|servers.list|rental.quote|rental.status|projects.list|project.get|project.follow|text.status|plan.status|admin\.(customers.list|accounts.list|rentals.list|billing.list|alerts.list|operation.status|text.config))$/.test(b.operation);
+   const readOnly=/^(session|preferences.get|wallet|files.list|servers.list|rental.quote|rental.status|projects.list|project.get|project.follow|text.status|plan.status|admin\.(customers.list|accounts.list|rentals.list|billing.list|alerts.list|operation.status|text.config))$/.test(b.operation);
    await store.transaction(async()=>{if(await store.get('film-bridge-nonce',nonce))throw Error('BRIDGE_UNAUTHORIZED');await store.put('film-bridge-nonce',{id:nonce,at:now()});for(const old of await store.all('film-bridge-nonce'))if(old.at<now()-120000)await store.delete('film-bridge-nonce',old.id);});
    const fingerprint=hash(raw),prior=readOnly?null:await store.get('film-bridge-request',b.requestId);
    if(prior){if(prior.hash!==fingerprint)throw Error('BRIDGE_UNAUTHORIZED');if(prior.finished){send(res,200,prior.result);return true;}throw Error('REQUEST_STATE_UNKNOWN');}

@@ -1,0 +1,6 @@
+import React from 'react';
+import {it,expect} from 'vitest';
+import {renderToStaticMarkup} from 'react-dom/server';
+import ChatComposer,{composerGeometry} from './ChatComposer';
+it('composer has a direct image picker and no settings overlay or helper paragraph',()=>{const html=renderToStaticMarkup(<ChatComposer value="نص طويل" onChange={()=>{}} onSend={()=>{throw Error('NO_PAID_CALL');}} onImage={()=>{}} disabled={false} imageDisabled={false} sendDisabled={false}/>);expect(html).toContain('type="file"');expect(html).toContain('aria-label="إرفاق صورة"');expect(html).toContain('نص طويل');expect(html).not.toContain('إعدادات الفيلم');expect(html).not.toContain('الجودة');expect(html).not.toContain('بتمويل');expect(html).not.toContain('<select');});
+it('keyboard geometry handles overlay and resized mobile viewports without treating an unfocused page as typing',()=>{expect(composerGeometry(844,844,0,844,true)).toEqual({keyboardOpen:false,inset:0});expect(composerGeometry(844,510,0,844,true)).toEqual({keyboardOpen:true,inset:334});expect(composerGeometry(510,510,0,844,true)).toEqual({keyboardOpen:true,inset:0});expect(composerGeometry(844,510,30,844,true)).toEqual({keyboardOpen:true,inset:304});expect(composerGeometry(844,510,0,844,false)).toEqual({keyboardOpen:false,inset:0});});

@@ -1,6 +1,8 @@
 // Frozen v1 transport contract. Detailed field semantics: ../BRIDGE-CONTRACT.md
 export const FILM_OPERATIONS = [
   "session",
+  "preferences.get",
+  "preferences.save",
   "wallet",
   "servers.list",
   "rental.quote",
@@ -71,7 +73,7 @@ export interface FilmRental {stages?:FilmStage[];id:string;serverId:string;state
 export interface FilmScene {durationSeconds?:number|null;stages?:FilmStage[];mediaExpired?:boolean;visualPrompt?:string;index:number;title:string;status:'pending'|'submitted'|'done'|'needs_review';dialogue:Array<{speaker:string;text:string}>;phase:string|null;completed:number|null;total:number|null;ready:boolean;}
 export interface FilmVisualReview {index:number;model:string;summary:string;visibleText:string;continuity:string;causalOrder:string;audioAssessment:"not_checked";findings:string[];suggestedCorrections:string[];sampleCount:number;computedUSD:number|null;invoiceUSD:null;}
 export interface FilmImagePreview {id:string;status:'offered'|'queued'|'running'|'completed'|'failed'|'uncertain'|'expired';estimatedUSD:number;computedUSD:number|null;invoiceUSD:null;expiresAt:number;error:string|null;model:string;}
-export interface FilmProject {pinned?:boolean;archived?:boolean;preview?:FilmImagePreview|null;discussion?:{readyToWrite:boolean;seconds:number|null;style:string}|null;launch?:{state:string;approvedAt:number;finishedAt:number|null}|null;directorFollow?:boolean;reviewPending?:boolean;reviewState?:string;visualReviews?:FilmVisualReview[];id:string;name:string;story:string;messages:Array<{role:'user'|'assistant';content:string;hasReference?:boolean}>;seconds:number;orientation:'portrait'|'landscape';reference:{mime:string;size:number;width:number;height:number;uploadedAt:number}|null;state:'draft'|'planned'|'generating'|'needs_review'|'completed';textPending:boolean;textUncertain:boolean;textCostPolicy:'administrator_funded_separate_from_gpu_wallet';planningCompletedScenes:number;merge:{status:'running'|'completed'|'unavailable'|'failed'|'deleted';error:string|null;duration:number|null;width:number|null;height:number|null;nativeAudio:boolean}|null;scenes:FilmScene[];error:string|null;}
+export interface FilmProject {orientationConfirmed?:boolean;pinned?:boolean;archived?:boolean;preview?:FilmImagePreview|null;discussion?:{readyToWrite:boolean;seconds:number|null;style:string}|null;launch?:{state:string;approvedAt:number;finishedAt:number|null}|null;directorFollow?:boolean;reviewPending?:boolean;reviewState?:string;visualReviews?:FilmVisualReview[];id:string;name:string;story:string;messages:Array<{role:'user'|'assistant';content:string;hasReference?:boolean}>;seconds:number;orientation:'portrait'|'landscape';reference:{mime:string;size:number;width:number;height:number;uploadedAt:number}|null;state:'draft'|'planned'|'generating'|'needs_review'|'completed';textPending:boolean;textUncertain:boolean;textCostPolicy:'administrator_funded_separate_from_gpu_wallet';planningCompletedScenes:number;merge:{status:'running'|'completed'|'unavailable'|'failed'|'deleted';error:string|null;duration:number|null;width:number|null;height:number|null;nativeAudio:boolean}|null;scenes:FilmScene[];error:string|null;}
 export interface FilmError {error:string;message:string;}
 export interface FilmEmergencyStop {id:string;requested:true;confirmed:boolean;pending:number;jobs:Array<{id:string;status:string;cloudStopped:boolean}>;rentals:Array<{id:string;state:string}>;createdAt:number;finishedAt:number|null;message:string;}
 
