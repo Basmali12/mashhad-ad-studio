@@ -452,3 +452,9 @@ test('an explicit image-preview intent creates only a pending image offer, never
  await f.invoke(alice,'chat.submit',{projectId:p.id,message:'اريني صورة للأجواء والشخصيات قبل البداية',approved:true});await waitFor(()=>!f.store.get('film-project',p.id).textPending);
  const dto=await f.invoke(alice,'project.get',{id:p.id});assert.equal(dto.preview.status,'offered');assert.equal(dto.preview.estimatedUSD,.1);assert.equal(dto.discussion.readyToWrite,false);assert.equal(dto.state,'draft');assert.equal(dto.scenes.length,0);assert.equal(f.store.all('film-image-preview').length,0);assert.equal(f.provider.calls.length,0);assert.equal('prompt' in dto.preview,false);
 });
+
+
+test('verified legacy scene preview no longer fails solely due to stale submitted status, without changing quality state',async t=>{
+ const f=await fixture(t),p=await draft(f),jid=randomUUID(),raw=f.store.get('film-project',p.id);raw.state='needs_review';raw.scenes=[{jobId:jid,status:'submitted',attempted:true}];f.store.put('film-project',raw);f.store.put('job',{id:jid,tenantId:f.users.alice,projectId:p.id,action:'generate',status:'needs_review',result:{videoVerified:true},finishedAt:f.now()});
+ const ticket=await f.invoke(alice,'media.ticket',{projectId:p.id,index:0});assert.ok(ticket.url.startsWith('https://fixture.test/api/film-media/'));await assert.rejects(f.invoke(bob,'media.ticket',{projectId:p.id,index:0}),/NOT_FOUND/);assert.equal(f.store.get('film-project',p.id).scenes[0].status,'submitted');assert.deepEqual(await f.invoke(alice,'files.list'),[]);assert.equal(f.provider.calls.length,0);
+});
