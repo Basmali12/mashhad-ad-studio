@@ -18,3 +18,15 @@ it('opens a saved video as a player and actions rather than the upload form',()=
  const html=renderToStaticMarkup(<DayEditor {...props} date="2026-10-18" now={Date.parse('2026-10-17T13:00:00+03:00')} drafts={[{...props.drafts[0],id:'saved',original}]} onDelete={async()=>{}}/>);
  expect(html).toContain('<video');expect(html).toContain('controls=""');expect(html).toContain('تحميل الفيديو');expect(html).toContain('تعديل');expect(html).toContain('حذف');expect(html).not.toContain('type="file"');expect(html).not.toContain('عنوان الريلز');
 });
+
+it('locks deletion for a confirmed published video but still allows adding today second slot',()=>{
+ const original={id:'published',title:'Published',createdAt:1,publishAt:'2026-10-17T11:00:00+03:00',publishedAt:'2026-10-17T11:01:00+03:00',url:'https://example.test/video.mp4'};
+ const html=renderToStaticMarkup(<DayEditor {...props} now={Date.parse('2026-10-17T13:00:00+03:00')} drafts={[{...props.drafts[0],id:'published',original}]} onDelete={async()=>{}}/>);
+ expect(html).toMatch(/class="series-delete"[^>]*disabled=""/);expect(html).toContain('الحذف التلقائي');expect(html).toMatch(/<button type="button" class="series-secondary"><svg[^]*?إضافة فيديو<\/button>/);
+});
+
+it('locks deletion from a live receipt update and closes all mutation actions after midnight',()=>{
+ const original={id:'saved',title:'Saved',createdAt:1,publishAt:'2026-10-17T18:00:00+03:00',url:'https://example.test/video.mp4'};
+ const active=renderToStaticMarkup(<DayEditor {...props} now={Date.parse('2026-10-17T13:00:00+03:00')} drafts={[{...props.drafts[0],original,publicationLocked:true}]} onDelete={async()=>{}}/>);expect(active).toMatch(/class="series-delete"[^>]*disabled=""/);expect(active).toContain('الحذف التلقائي');
+ const ended=renderToStaticMarkup(<DayEditor {...props} now={Date.parse('2026-10-18T00:00:00+03:00')} drafts={[{...props.drafts[0],original}]} onDelete={async()=>{}}/>);expect(ended).toMatch(/class="series-delete"[^>]*disabled=""/);expect(ended).toContain('تحميل الفيديو');
+});

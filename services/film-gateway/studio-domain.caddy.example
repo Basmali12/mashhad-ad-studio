@@ -1,0 +1,23 @@
+# Replace only the existing studio.iraqaistudio.com block after backup/validation.
+# Existing other domains and storage/worker routes remain untouched.
+studio.iraqaistudio.com {
+    handle /api/mashhad-film* {
+        reverse_proxy 127.0.0.1:3480
+    }
+    handle_path /admin/* {
+        root * /srv/mashhad-film/current/dist-admin
+        try_files {path} /index.html
+        file_server
+    }
+    handle /auth/* {
+        respond 410
+    }
+    handle /api/* {
+        respond 404
+    }
+    handle {
+        root * /srv/mashhad-film/current/dist
+        try_files {path} /index.html
+        file_server
+    }
+}

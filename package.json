@@ -28,7 +28,10 @@
     "film:existing": "npm --prefix worker run film:existing --",
     "worker:start": "npm --prefix worker run service:start --",
     "build:admin": "npm run typecheck && vite build --config vite.admin.config.ts",
-    "dev:preview": "vite --config vite.preview.config.ts"
+    "dev:preview": "vite --config vite.preview.config.ts",
+    "film:gateway:check": "node --test services/film-gateway/tests/*.check.mjs",
+    "film:gateway:start": "node services/film-gateway/server.mjs",
+    "film:engine:check": "npm --prefix services/film-engine test"
   },
   "dependencies": {
     "@clerk/localizations": "^4.21.2",

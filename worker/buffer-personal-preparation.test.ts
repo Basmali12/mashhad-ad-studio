@@ -20,9 +20,9 @@ it('keeps two mocked customer keys, channels, selections and encrypted records s
  expect(await personalCredentialForOwner('user-a',a,encryption)).toBe('test-only-key-for-a');
  expect(a.writePermission).toBe('unverified');
 });
-it('cannot activate in production, even with an approval flag; never uses an owner key',async()=>{
+it('requires explicit operator authorization in every environment; never uses an owner key',async()=>{
  const fetcher=provider('A');
- for(const p of [{environment:'production' as const,personalKeysApproved:true},{environment:'test' as const,personalKeysApproved:false}])await expect(preparePersonalConnection('u','test-only-key-for-a',encryption,p,fetcher)).rejects.toThrow('disabled');
+ for(const p of [{environment:'production' as const,personalKeysApproved:false},{environment:'test' as const,personalKeysApproved:false}])await expect(preparePersonalConnection('u','test-only-key-for-a',encryption,p,fetcher)).rejects.toThrow('disabled');
  await expect(preparePersonalConnection('u','',encryption,policy,fetcher)).rejects.toThrow('invalid_key');expect(fetcher).not.toHaveBeenCalled();
 });
 it('only sends read queries to the exact Buffer endpoint and forbids redirects',async()=>{

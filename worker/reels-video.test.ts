@@ -18,7 +18,9 @@ it('uses real FFprobe on local 180s and 180.25s MP4s and rejects a renamed inval
  const invalid=join(directory,'invalid.mp4');await writeFile(invalid,Buffer.from([0,0,0,16,102,116,121,112,1,2,3,4,5,6,7,8]));await expect(probeReelFile(invalid,ffprobe.path)).rejects.toThrow('تعذر');
  await expect(probeReelFile(invalid,join(directory,'missing-ffprobe'))).rejects.toThrow('تعذر');
  }finally{await rm(directory,{recursive:true,force:true});}
-},30000);
+// Two bounded FFmpeg encodes and several separate FFprobe subprocesses run here.
+// Keep an outer fixture guard above their aggregate individual process limits.
+},90000);
 
 it('probes actual banner images and rejects portrait or unsupported animated formats',async()=>{
  const directory=await mkdtemp(join(tmpdir(),'banner-probe-'));try{

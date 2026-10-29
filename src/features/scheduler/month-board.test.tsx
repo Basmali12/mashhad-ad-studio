@@ -17,3 +17,10 @@ it('shows gold VIP for an active subscription even at zero quota, but not for in
  expect(html.includes('اشتراك فعّال VIP')).toBe(state.vip);
  }}finally{vi.restoreAllMocks();}
 });
+
+it('marks past dates ended and shaded while keeping saved history available for read-only downloads',()=>{
+ vi.spyOn(Date,'now').mockReturnValue(Date.parse('2026-10-18T00:00:00+03:00'));try{
+ const collection={id:'q',name:'Q',libraryVideos:[{id:'v',title:'Published',createdAt:1,publishAt:'2026-10-17T12:00:00+03:00',publishedAt:'2026-10-17T12:01:00+03:00'}]};
+ const html=renderToStaticMarkup(<MonthBoardView collection={collection} collections={[collection]} busy={false} onSave={async()=>{}} subscription={{startsAt:Date.parse('2026-10-17T00:00:00+03:00'),expiresAt:Date.parse('2026-11-16T00:00:00+03:00'),videoLimit:60}} remaining={59} uploading={0}/>);expect(html).toContain('is-past');expect(html).toContain('منتهي — معاينة وتحميل فقط');expect(html).toContain('<small>منتهي</small>');
+ }finally{vi.restoreAllMocks();}
+});

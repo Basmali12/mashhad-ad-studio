@@ -1,3 +1,4 @@
+import {assertScheduleMutable} from './reelsScheduleProtection';
 import {createJob} from './reelsJobs';
 import {internal} from './_generated/api';
 import {v,ConvexError} from 'convex/values';
@@ -34,6 +35,7 @@ export const save=mutation({args:{collection:collectionValidator,expectedVersion
  const videos=a.libraryVideos??[];if(new Set(videos.map(v=>v.id)).size!==videos.length)throw new ConvexError('فيديوهات مكررة.');
  for(const item of videos){if(!key(item.id)||item.title.length>150||item.taskId&&!tasks.some(t=>t.id===item.taskId)||item.publishAt&&!Number.isFinite(Date.parse(item.publishAt)))throw new ConvexError('بيانات الفيديو غير صالحة.');
   const previous=(old?.libraryVideos as {id:string;publishedAt?:string;publicationId?:string;publishAt?:string;taskId?:string;bunnyAssetId?:string;storageId?:string;channelIds?:string[]}[]|undefined)?.find(v=>v.id===item.id);if(item.publishedAt&&item.publishedAt!==previous?.publishedAt||item.publicationId&&item.publicationId!==previous?.publicationId)throw new ConvexError('حالة النشر يثبتها محرك النشر؛ ما تتغيّر من الحافظة.');
+  if(previous&&!unchanged(previous,item))await assertScheduleMutable(ctx,user.subject,a.id,previous);
   if(previous?.publishAt&&Date.parse(previous.publishAt)<=Date.now()&&!unchanged(previous,item))throw new ConvexError('الموعد انتهى؛ لا يمكن تعديل فيديو في وقت مضى. اختَر موعداً مستقبلياً لفيديو جديد.');
   if(previous?.bunnyAssetId&&item.bunnyAssetId!==previous.bunnyAssetId||previous?.storageId&&item.storageId!==previous.storageId)throw new ConvexError('لا تبدّل ملف فيديو محفوظ؛ أضفه كفيديو جديد.');
   if(item.bunnyAssetId){const asset=await ctx.db.query('mediaAssets').withIndex('by_key',q=>q.eq('subject',user.subject).eq('key',item.bunnyAssetId!)).unique();if(asset&&(asset.deletedAt||asset.deletionPending)&&previous&&unchanged(previous,item))continue;if(!asset||asset.deletedAt||asset.deletionPending||asset.type!=='video/mp4')throw new ConvexError('نسخة الفيديو لا تخص حسابك.');if(previous?.bunnyAssetId!==item.bunnyAssetId)await ctx.db.patch(asset._id,{retentionDeleteAt:undefined});
@@ -48,6 +50,7 @@ export const save=mutation({args:{collection:collectionValidator,expectedVersion
  }
  // Removing a schedule entry must not leave a queued or uncertain delivery behind.
  for(const removed of old?.libraryVideos??[]){if(videos.some(v=>v.id===removed.id))continue;
+  await assertScheduleMutable(ctx,user.subject,a.id,removed);
   if(removed.publicationId){const publicationId=typeof removed.publicationId==='string'?ctx.db.normalizeId('libraryPublications',removed.publicationId):null,publication=publicationId?await ctx.db.get(publicationId):null;if(!publication||publication.subject!==user.subject||!['published','cancelled','failed'].includes(publication.status))throw new ConvexError('سجل نشر قديم قيد التنفيذ؛ راجعه قبل الحذف من الجدول.');}
   const asset=removed.bunnyAssetId?await ctx.db.query('mediaAssets').withIndex('by_key',q=>q.eq('subject',user.subject).eq('key',removed.bunnyAssetId!)).unique():null;
   const lookup=asset?ctx.db.query('reelsJobs').withIndex('by_asset',q=>q.eq('assetId',asset._id)):ctx.db.query('reelsJobs').withIndex('by_subject',q=>q.eq('subject',user.subject));

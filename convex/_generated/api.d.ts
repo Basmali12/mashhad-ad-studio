@@ -60,6 +60,7 @@ import type * as reelsInsights from "../reelsInsights.js";
 import type * as reelsJobs from "../reelsJobs.js";
 import type * as reelsPublishingPolicy from "../reelsPublishingPolicy.js";
 import type * as reelsRetention from "../reelsRetention.js";
+import type * as reelsScheduleProtection from "../reelsScheduleProtection.js";
 import type * as reelsSingleTest from "../reelsSingleTest.js";
 import type * as reelsStorage from "../reelsStorage.js";
 import type * as reelsStorageHttp from "../reelsStorageHttp.js";
@@ -148,6 +149,7 @@ declare const fullApi: ApiFromModules<{
   reelsJobs: typeof reelsJobs;
   reelsPublishingPolicy: typeof reelsPublishingPolicy;
   reelsRetention: typeof reelsRetention;
+  reelsScheduleProtection: typeof reelsScheduleProtection;
   reelsSingleTest: typeof reelsSingleTest;
   reelsStorage: typeof reelsStorage;
   reelsStorageHttp: typeof reelsStorageHttp;

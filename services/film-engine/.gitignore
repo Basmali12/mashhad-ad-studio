@@ -1,0 +1,7 @@
+node_modules/
+.engine-data/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc

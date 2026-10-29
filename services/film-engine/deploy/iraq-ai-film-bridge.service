@@ -1,0 +1,27 @@
+[Unit]
+Description=Private Iraq AI film bridge (loopback TLS staging)
+After=network.target postgresql.service
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=iraq-film
+Group=iraq-film
+WorkingDirectory=/srv/iraq-ai-studio/current/services/film-engine
+EnvironmentFile=/etc/iraq-ai-studio/film.env
+ExecStart=/usr/local/bin/node service.mjs
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=15
+KillSignal=SIGTERM
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/iraq-ai-film-platform
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

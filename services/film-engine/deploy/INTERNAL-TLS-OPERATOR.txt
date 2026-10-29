@@ -1,0 +1,74 @@
+REVIEWABLE STAGING TEMPLATES ONLY. Nothing here has been installed or deployed.
+
+Single login:
+The public browser uses the existing native Studio Google OIDC/session cookie.
+Studio derives ctx.actor from its SQL session and signs the server-to-server film
+request with the independent HMAC key. Film requires that signature; it neither
+accepts the browser cookie as film authentication nor issues another login cookie.
+An administrator is the verified native allowlist role, not a project/tab selector.
+
+Internal bridge TLS does not require a public film hostname:
+Use https://127.0.0.1:3477 on the same host. Existing service.mjs binds 127.0.0.1
+and accepts FILM_TLS_CERT_FILE/FILM_TLS_KEY_FILE. Issue a server certificate from
+a private operator CA with SAN IP:127.0.0.1 (and optionally DNS:localhost), serverAuth
+EKU and a valid certificate chain/expiry. Never use NODE_TLS_REJECT_UNAUTHORIZED=0,
+rejectUnauthorized:false, a global unverified dispatcher, or plaintext HTTP.
+
+Keep the CA signing key offline/outside both services. Put only its public CA
+certificate at /etc/iraq-ai-studio-public-ca/film-ca.pem, root:root 0644, in a
+root-owned 0755 directory readable by iraq-studio (no secrets in this directory).
+Keep the film leaf private key root:iraq-film 0640 and its private TLS directory
+root:iraq-film 0750; give Studio access only to the separate public CA certificate.
+The leaf certificate is film-cert.pem. Renew it before expiry, retain the SAN,
+then perform an approved film-service restart. Review permissions locally.
+
+The Studio unit drop-in services/studio/deploy/iraq-ai-studio-film-ca.conf sets
+NODE_EXTRA_CA_CERTS for that Node process at startup, not global operating-system
+trust. Populate the existing private Studio environment with:
+  FILM_BACKEND_ORIGIN=https://127.0.0.1:3477
+  FILM_BRIDGE_SECRET=<independent shared HMAC value supplied privately>
+Keep the exact same HMAC value in the private film.env. It must differ from
+STUDIO_VAULT_KEY, ENGINE_MASTER_KEY, OAuth secrets and provider credentials.
+No secret value belongs in source, chat, process arguments or shell history.
+
+Use distinct unprivileged accounts iraq-studio and iraq-film. The optional film
+unit and film-staging.env.example show reviewed paths only. Provision NEW private
+/var/lib/iraq-ai-film-platform data and a NEW dedicated film_platform_* PostgreSQL
+database/login. Never reuse /srv/iraqi-film-forge, existing databases, old vaults
+or provider models/Volumes. Review/apply film schema migrations 001/002 explicitly;
+startup does not install them. Do not use the local SQLite test as production
+PostgreSQL evidence. Copy environment files privately with protected permissions.
+
+Leave ENGINE_ALLOW_PAID_ACTIONS=NO, FILM_TEXT_ENABLED=NO and legacy admin disabled.
+The local verification injects a provider adapter that rejects every cloud call;
+production staging must remain free of configured provider accounts and paid jobs.
+Keep the existing Studio paid OpenAI flag disabled. No model/GPU tests are needed
+for session/wallet/draft verification.
+
+After explicit operator approval, validate unit syntax/paths and then start the
+new services. Check ss -lntp: film port must be 127.0.0.1:3477, Studio loopback,
+PostgreSQL loopback; do not add a public firewall rule or public film Caddy route.
+Check TLS from the Studio account with the private CA, then real browser login,
+the same user in tool and film tabs, zero wallet, draft save/reload, owner/admin
+denial and logout. Wrong CA/signature must fail. Do not print keys or response
+secrets while checking. These server/systemd/PostgreSQL checks are not yet proven.
+
+Scope of this loopback origin:
+It unblocks the internal session/wallet/draft HMAC bridge without a public film
+domain. Google still needs an approved public HTTPS Studio callback. Direct media
+and reference tickets currently derive their URL from FILM_PUBLIC_ORIGIN; a loopback
+ticket is not usable by a remote browser. Keep FILM_MEDIA_ORIGINS empty and do not
+claim media/reference readiness. Before enabling those capabilities, separately
+review a reachable HTTPS media origin/proxy and signed URL routing; never rewrite
+signed tickets or weaken TLS. This task adds no media proxy or UI changes.
+
+Reproduce local network proof from services/studio:
+Set STUDIO_TEST_PYTHON to an EXISTING Python with cryptography, then run
+  npm run verify:single-login
+The runner creates ephemeral CA/leaf certificates under repository work/, launches
+one child Node with only that process's NODE_EXTRA_CA_CERTS, runs actual HTTP ->
+HTTPS HMAC -> SQL tests, and removes its scratch directory after the child exits.
+It does not install dependencies/certificates, change OS trust, call Google/cloud,
+seed credits or run a provider. Local native SQL sessions are explicit fixtures,
+not proof of real Google consent/login. Native and film databases are local SQLite;
+production PostgreSQL and remote deployment remain external verification gates.

@@ -2,8 +2,8 @@ import {sealToken,openToken} from '../shared/meta';
 import {bufferAccountQuery,bufferChannelsQuery,bufferRateLimits,supportedBufferChannel,connectedBufferChannel,type BufferChannel} from '../shared/buffer';
 import {accountAvatar} from '../shared/account-avatar';
 
-// Task 07 preparation only: no HTTP route, database writer, posting operation or owner fallback.
-// Buffer recommends OAuth for apps used by independent customers. This adapter stays test-only.
+// Connection inspection performs reads only, with no posting operation or owner fallback.
+// personalKeysApproved is the operator's runtime authorization, not a claim of provider policy approval.
 export interface PreparedPersonalConnection {
  subject:string; encryptedKey:string; accountId:string; organizations:{id:string}[]; channels:BufferChannel[];
  selectedChannelIds:string[]; writePermission:'unverified';
@@ -24,7 +24,7 @@ async function limitedJson(response:Response):Promise<unknown>{
 }
 function record(value:unknown):Record<string,unknown>{if(!value||typeof value!=='object'||Array.isArray(value))throw new PersonalPreparationError('invalid_response');return value as Record<string,unknown>;}
 export async function preparePersonalConnection(subject:string,key:string,encryptionKey:string,policy:PersonalPreparationPolicy,fetcher:typeof fetch=fetch,observe?:(headers:Headers)=>Promise<void>):Promise<PreparedPersonalConnection>{
- if(!['test','restricted-production'].includes(policy.environment)||policy.personalKeysApproved!==true)throw new PersonalPreparationError('disabled');
+ if(!['test','restricted-production','production'].includes(policy.environment)||policy.personalKeysApproved!==true)throw new PersonalPreparationError('disabled');
  if(!identifier(subject)||typeof key!=='string'||key.trim()!==key||key.length<16||key.length>4096||/\s/.test(key)||Array.from(key).some(c=>c.charCodeAt(0)<32||c.charCodeAt(0)===127))throw new PersonalPreparationError('invalid_key');
  let limits:ReturnType<typeof bufferRateLimits>=[];
  async function query(document:string,variables:unknown={}){
