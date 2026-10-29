@@ -37,8 +37,15 @@ export function createFilmGateway({env=process.env,fetchImpl}={}){
   if(route==='/health'&&req.method==='GET')return reply(res,200,{status:'ok'});
   if(!['/api/mashhad-film','/api/mashhad-film/access'].includes(route))return reply(res,404,{error:'NOT_FOUND'});
   try{
-   deny(req.method==='POST','METHOD_NOT_ALLOWED',405);
    deny(req.headers.origin===config.origin,'ORIGIN_DENIED',403);
+   res.setHeader('Access-Control-Allow-Origin',config.origin);res.setHeader('Vary','Origin');
+   if(req.method==='OPTIONS'){
+    deny(req.headers['access-control-request-method']==='POST','PREFLIGHT_DENIED',403);
+    const headers=String(req.headers['access-control-request-headers']||'').toLowerCase().split(',').map(v=>v.trim()).filter(Boolean);
+    deny(headers.every(v=>['authorization','content-type'].includes(v)),'PREFLIGHT_DENIED',403);
+    res.writeHead(204,{'Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Max-Age':'300','Cache-Control':'no-store'});return res.end();
+   }
+   deny(req.method==='POST','METHOD_NOT_ALLOWED',405);
    deny(req.headers['content-type']?.split(';')[0].trim()==='application/json','INVALID_CONTENT_TYPE',415);
    deny(config.enabled,'FILM_NOT_CONFIGURED',503);
    const authorization=req.headers.authorization;

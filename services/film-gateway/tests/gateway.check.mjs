@@ -51,3 +51,13 @@ test('paid requests require approval, errors are opaque, and bridge requests are
 test('access endpoint reveals only verified role and health never contacts providers',async t=>{
  const f=await fixture(t);assert.equal((await fetch(f.base+'/health')).status,200);assert.equal(f.calls.length,0);const r=await f.post({}, {},'/api/mashhad-film/access');assert.deepEqual(await r.json(),{id:'mashhad-convexuser01',isAdmin:false});assert.equal(f.calls.length,1);
 });
+test('Pages preflight permits only the exact configured origin, POST and bounded headers without provider calls',async t=>{
+ const f=await fixture(t);
+ const preflight=(origin,method='POST',headers='authorization,content-type')=>fetch(f.base+'/api/mashhad-film',{method:'OPTIONS',headers:{Origin:origin,'Access-Control-Request-Method':method,'Access-Control-Request-Headers':headers}});
+ const r=await preflight(env.MASHHAD_FILM_ORIGIN);assert.equal(r.status,204);assert.equal(r.headers.get('access-control-allow-origin'),env.MASHHAD_FILM_ORIGIN);assert.equal(r.headers.get('access-control-allow-credentials'),null);
+ assert.equal((await preflight('https://evil.test')).status,403);
+ assert.equal((await preflight(env.MASHHAD_FILM_ORIGIN,'DELETE')).status,403);
+ assert.equal((await preflight(env.MASHHAD_FILM_ORIGIN,'POST','x-untrusted')).status,403);
+ assert.equal(f.calls.length,0);
+ const denied=await f.post(undefined,{Authorization:''});assert.equal(denied.status,401);assert.equal(denied.headers.get('access-control-allow-origin'),env.MASHHAD_FILM_ORIGIN);
+});

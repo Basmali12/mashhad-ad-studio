@@ -1,5 +1,7 @@
 # Mashhad / Iraq AI Studio — project map
 
+Activation plan after live inspection: keep iraqaistudio.com on Pages, host its authenticated film API at https://scan.iraqaistudio.com, and use only exact-Origin bearer CORS. The explicit VITE_FILM_API_ORIGIN setting is public and restricted by filmEndpoint.ts. Publish standalone admin to /admin/ on the Pages origin. Do not switch root DNS or replace existing storage/worker routes. Historical whole-site Caddy templates are not the activation plan.
+
 Deployment target correction (owner request, 2026-10-29): publish Mashhad with the film integration at https://iraqaistudio.com/, not the previously planned studio subdomain. Preserve existing schedules/accounts and scan storage routes. Historical studio-only deployment guidance below is superseded for the target only. Keep the same backend/authentication verification and rollback gates; no GPU or model transfer as a deployment check.
 
 This directory (`outputs/ad-studio`) is the application and Git root. Preserve the existing React + TypeScript + Vite + Convex + Clerk project. Do not rebuild it or replace working features.

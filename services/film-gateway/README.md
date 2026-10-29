@@ -1,5 +1,7 @@
 # Mashhad film gateway
 
+The owner selected the existing https://iraqaistudio.com/ Pages site. Its release sets the public VITE_FILM_API_ORIGIN=https://scan.iraqaistudio.com. Caddy forwards only /api/mashhad-film and /api/mashhad-film/access on scan to this loopback service. Strict preflight allows only the configured Mashhad Origin, POST, Authorization and Content-Type; cookies and wildcard origins are never enabled. Both customer and standalone /admin/ releases remain on the same Pages origin and share the existing session. No root DNS change is required. The older studio-domain Caddy example is not the activation plan for this deployment.
+
 Node 24 loopback service. It does not import the Modal SDK, create an Image/Volume or start GPU resources. Startup/health checks never contact a provider. The browser uses the one existing Mashhad Clerk/Convex bearer session; no new login form, cookies or provider credentials are introduced.
 
 Each request resolves the existing authenticated `publishingUsers:profile` Convex query. That deployed query enforces the signed issuer, membership/ban state and owner-derived role. The gateway never trusts a frontend actor/admin/email field and has no owner credential fallback. Film tenants use a separate `mashhad-<verified-user-id>` namespace. An optional server-only mapping retains the previous owner's film records without mapping customer identities together.

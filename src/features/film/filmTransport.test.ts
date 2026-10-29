@@ -1,5 +1,14 @@
-import {it,expect,vi} from 'vitest';
+import {it,expect,vi,beforeEach,afterEach} from 'vitest';
 import {filmTransport} from './filmTransport';
+beforeEach(()=>vi.stubEnv('VITE_FILM_API_ORIGIN',''));
+afterEach(()=>vi.unstubAllEnvs());
+it('uses the configured scan gateway for the Pages deployment without cookies or redirects',async()=>{
+ vi.stubEnv('VITE_FILM_API_ORIGIN','https://scan.iraqaistudio.com');
+ const fetcher=vi.fn<typeof fetch>(async()=>Response.json({enabled:true}));
+ await filmTransport(async()=>({Authorization:'Bearer synthetic-session'}),()=>true,fetcher)('session',{},'session-check');
+ expect(fetcher.mock.calls[0][0]).toBe('https://scan.iraqaistudio.com/api/mashhad-film');
+ expect(fetcher.mock.calls[0][1]?.credentials).toBe('omit');expect(fetcher.mock.calls[0][1]?.redirect).toBe('error');
+});
 it('uses the existing bearer session once and preserves the paid request ID without cookies',async()=>{
  const fetcher=vi.fn<typeof fetch>(async()=>Response.json({accepted:true}));
  await filmTransport(async()=>({Authorization:'Bearer synthetic-session'}),()=>true,fetcher)('project.generate',{projectId:'p',rentalId:'r',approved:true},'same-request-id');
