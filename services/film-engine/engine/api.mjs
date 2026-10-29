@@ -1,6 +1,7 @@
 import {Readable} from 'node:stream';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import fs from 'node:fs/promises';
+import {verifyArtifactStorage} from './artifact-storage.mjs';
 import path from 'node:path';
 import { Store, id, hash, passwordOK } from './store.mjs';
 import {openStore} from './open-store.mjs';
@@ -209,6 +210,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
         try {
             const latest=await store.get('job',job.id);
             if(latest?.stopRequestedAt){job.stopRequestedAt=latest.stopRequestedAt;job.status='stopped';job.cloudStopped=true;return;}
+            if(['start','generate'].includes(job.action))await verifyArtifactStorage(store.folder,job.id);
             const payload = { credentials: credentials(a), source: source ? credentials(source) : null, sourceVolume: source?.volume, volume: a.volume, settings: job.settings, plan: job.plan, jobId: job.id, prompt: job.prompt, previousFrame: job.previousFrame, hfCredentials: job.plan?.source === 'official' ? store.open(a.hf, a.id + ':hf') : undefined, paidApproved: true, artifactDir: path.resolve(store.folder, 'artifacts', job.id), stagingDir: path.resolve(store.folder, 'transfer-cache', a.id) };
             if(isCloud(job)){
                 const receipt=await provider.call('cloud_transfer_dispatch',{...payload,workerApp:job.plan.workerApp},queueEvent,600000);
@@ -267,8 +269,9 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                 (await store.put('scene', scene));
             }
         }
-        catch {
+        catch (error) {
             await events;
+            if(error?.message==='LOCAL_ARTIFACT_NOT_WRITABLE'&&!job.appId){job.status='failed';job.error='LOCAL_ARTIFACT_NOT_WRITABLE';job.cloudStopped=true;return;}
             const stopped=await store.get('job',job.id);if(stopped?.stopRequestedAt)job.stopRequestedAt=stopped.stopRequestedAt;
             // A local persistence/transport failure is NOT proof that cloud generation failed.
             const heldForText=job.result?.videoVerified&&job.quality?.textQualityRequired&&job.result.textQuality?.status!=='passed';
@@ -318,7 +321,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
             if (job.cloudStopped)
                 job.stoppedAt = Date.now();
             job.elapsedSeconds = (Date.now() - job.startedAt) / 1000;
-            job.estimatedUSD = job.action === 'prepare'&&!isCloud(job) ? null : job.elapsedSeconds * job.estimate.rate;
+            job.estimatedUSD = job.error==='LOCAL_ARTIFACT_NOT_WRITABLE'?0:job.action === 'prepare'&&!isCloud(job) ? null : job.elapsedSeconds * job.estimate.rate;
             (await store.put('job', job));
             (await store.audit('operation_finished', job.id));
         }
@@ -640,6 +643,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                 if(b.action!=='prepare'&&quality.textQualityRequired&&s.gpu!=='RTX-PRO-6000')throw Error('DFR_RTX_PRO_6000_10S_ONLY');
                 if (!['prepare', 'start', 'generate'].includes(b.action))
                     throw Error('INVALID_ACTION');
+                if(['start','generate'].includes(b.action))await verifyArtifactStorage(store.folder);
                 if(b.action==='generate'&&b.projectId){const saved=await store.get('project',b.projectId);const p=saved?.snapshot;if(p&&((p.videoProvider&&p.videoProvider!=='modal')||(p.plan?.videoProvider&&p.plan.videoProvider!=='modal')))throw Error('ARCHIVED_PROJECT_READ_ONLY');}
                 if(b.action!=='prepare'&&a.activated===false)throw Error('ACCOUNT_SETUP_CONFIRMATION_REQUIRED');
                 if (b.action === 'prepare' && (a.role === 'primary' || a.workspace === 'basm1998ali'))

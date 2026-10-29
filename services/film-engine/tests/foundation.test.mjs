@@ -1,7 +1,7 @@
 import './conv-fixture-profile.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,rm} from 'node:fs/promises';
+import {mkdtemp,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {randomBytes,randomUUID} from 'node:crypto';
@@ -44,6 +44,19 @@ async function fixture(t,{paid=true,rentals=true}={}){
 }
 async function ready(f,id){for(let n=0;n<100;n++){const j=f.store.get('job',id);if(j?.status==='ready')return j;await new Promise(r=>setTimeout(r,5));}throw Error('FIXTURE_READY_TIMEOUT');}
 
+test('broken output storage blocks a quote before any provider call',async t=>{
+ const f=await fixture(t);await writeFile(path.join(f.folder,'artifacts'),'not-a-directory');
+ await assert.rejects(f.quote(),/LOCAL_ARTIFACT_NOT_WRITABLE/);assert.equal(f.provider.calls.length,0);
+});
+test('storage becoming unwritable after quote fails before GPU dispatch and records zero estimated compute',async t=>{
+ const f=await fixture(t),q=await f.quote();const artifacts=path.resolve(f.folder,'artifacts');
+ assert.equal(path.dirname(artifacts),path.resolve(f.folder));await rm(artifacts,{recursive:true,force:true});await writeFile(artifacts,'not-a-directory');
+ const accepted=await f.execute(q);let job;
+ for(let n=0;n<100;n++){job=f.store.get('job',accepted.id);if(job?.status==='failed')break;await new Promise(r=>setTimeout(r,5));}
+ assert.equal(job.status,'failed');assert.equal(job.error,'LOCAL_ARTIFACT_NOT_WRITABLE');assert.equal(job.cloudStopped,true);assert.equal(job.estimatedUSD,0);
+ assert.equal(f.provider.calls.some(c=>['session','generate','stop'].includes(c.action)),false);
+});
+
 test('Conv stable is an explicit fixture rollback with original native audio, 720p and resource contract',()=>{
   assert.equal(quality.profile,'conv-stable');assert.equal(quality.contract,'ltx25-native-crop-720-v1');
   assert.equal(quality.convVAE,true);assert.equal(quality.textQualityRequired,false);assert.equal(quality.nativeAudio,true);
@@ -63,6 +76,7 @@ test('same slot rejects concurrent starts and legacy administrator excludes all 
   const results=await Promise.allSettled([f.execute(q1),f.execute(q2)]);
   assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
   assert.match(results.find(r=>r.status==='rejected').reason.message,/ONE_ACTIVE_OR_UNCERTAIN_JOB_ONLY/);
+  await ready(f,results.find(r=>r.status==='fulfilled').value.id);
   const adminQuote=await f.api.invoke('quote',{action:'start',accountId:f.account.id,settings:{}});
   await assert.rejects(f.api.invoke('execute',{quoteId:adminQuote.id,approvedCost:true}),/ONE_ACTIVE_OR_UNCERTAIN_JOB_ONLY/);
   assert.equal(f.provider.sessions.size,1);

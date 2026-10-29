@@ -127,6 +127,7 @@ for (const key of ('confirmed pending jobs rentals standaloneActiveCount').split
     adminKeys.add(key);
 for (const key of ('retired retiredAt unlinked unlinkedAt remoteResourcesDeleted providerTokenRevoked').split(' '))
     adminKeys.add(key);
+for(const key of ['error','error_type','app_id','running_containers','tasks'])adminKeys.add(key);
 function adminDTO(value, secrets, depth = 0) {
     if (record(value) && typeof value.reason === 'string' && typeof value.subject === 'string' && 'acknowledged' in value) {
         const d = record(value.details) ? value.details : {};
@@ -143,6 +144,7 @@ function adminDTO(value, secrets, depth = 0) {
     return typeof value === 'boolean' || typeof value === 'number' || value === null ? value : null;
 }
 const safeErrors = {
+    LOCAL_ARTIFACT_NOT_WRITABLE: 'مجلد حفظ الفيديو غير قابل للكتابة على الخادم؛ لم يبدأ تشغيل GPU. راجع صلاحيات خدمة الملفات.',
     SLOT_RETIRED: 'المحرك متقاعد نهائياً؛ سجله محفوظ ولا يمكن إعادة نشره أو تشغيله.',
     ACCOUNT_UNLINKED: 'فُصل ربط الحساب؛ لم يبدأ تشغيل جديد.',
     STOP_AND_RECONCILE_JOBS_FIRST: 'لم يُؤكد إغلاق كل موارد الحساب أو النقل منه؛ أوقف العمليات وتابع التحقق أولاً.',

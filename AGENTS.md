@@ -1,5 +1,7 @@
 # Mashhad / Iraq AI Studio — project map
 
+Artifact admission: services/film-engine/engine/artifact-storage.mjs performs a real service-identity write/sync probe before quotes and again immediately before GPU dispatch. A local storage failure before dispatch is terminal, cloudStopped=true and estimated compute zero; it must never start a replacement cloud job. Preserve existing videos and all failed/uncertain receipts. The explicit Linux maintenance script scripts/install-film-artifact-preflight.py pins file hashes, refuses active work, retains backups and performs no GPU/model operations.
+
 Activation plan after live inspection: keep iraqaistudio.com on Pages, host its authenticated film API at https://scan.iraqaistudio.com, and use only exact-Origin bearer CORS. The explicit VITE_FILM_API_ORIGIN setting is public and restricted by filmEndpoint.ts. Publish standalone admin to /admin/ on the Pages origin. Do not switch root DNS or replace existing storage/worker routes. Historical whole-site Caddy templates are not the activation plan.
 
 Deployment target correction (owner request, 2026-10-29): publish Mashhad with the film integration at https://iraqaistudio.com/, not the previously planned studio subdomain. Preserve existing schedules/accounts and scan storage routes. Historical studio-only deployment guidance below is superseded for the target only. Keep the same backend/authentication verification and rollback gates; no GPU or model transfer as a deployment check.
