@@ -113,3 +113,13 @@ test('chat planning receives only the current project opening image and never pe
  const input={requestId:'portrait-discuss',projectId:'portrait-project',mode:'discuss',approvedTextCost:true,messages:[{role:'user',content:'هذه زينب، نريد عشرين ثانية'}]};await director.submit(input);await finish(director);assert.equal((await director.get(input.requestId)).status,'completed');await director.submit(input);assert.equal(calls,1);assert.equal(JSON.stringify(store.all('text-call')).includes(bytes.toString('base64')),false);
  const p=store.get('film-project','portrait-project');p.reference.sha256='bad';store.put('film-project',p);await assert.rejects(director.submit({...input,requestId:'broken-image'}),/REFERENCE_INVALID/);assert.equal(calls,1);
 });
+
+test('terminal text status is released only after persistence settles, avoiding a false busy failure on automatic planning',async t=>{
+ const {store,cleanup}=await fixture(t);let release;const audit=store.audit.bind(store),hold=new Promise(r=>release=r);t.after(()=>release());
+ store.audit=async(action,subject)=>{if(action==='openai_text_completed')await hold;return audit(action,subject);};let calls=0;
+ const director=new OpenAIDirector(store,{fetcher:async()=>{calls++;return Response.json({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({reply:'نتفق على عشرين ثانية',proposed_duration_seconds:20,style:'realistic',ready_to_write:false,missing:[],portrait_prompt:null,continuity_notes:''})}]}]});}});cleanup.push(()=>{release();return director.close();});
+ const input={requestId:'settled-call',projectId:'settled-project',mode:'discuss',approvedTextCost:true,messages:[{role:'user',content:'عشرين ثانية'}]};await director.submit(input);
+ for(let n=0;n<100&&store.get('text-call',input.requestId).status!=='completed';n++)await new Promise(r=>setTimeout(r,5));
+ assert.equal(store.get('text-call',input.requestId).status,'completed');assert.equal((await director.get(input.requestId)).status,'running');assert.equal((await director.submit(input)).status,'running');assert.equal(calls,1);
+ release();await finish(director);assert.equal((await director.get(input.requestId)).status,'completed');
+});

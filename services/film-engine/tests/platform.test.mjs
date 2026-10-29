@@ -384,7 +384,7 @@ test('discussion duration is persisted in the hidden project and explicit ready-
 });
 
 test('single production approval durably claims one launch; repeated requests cannot allocate a second session',async t=>{
- const f=await fixture(t,{text:true}),p=await draft(f);await f.credit(alice);
+ const f=await fixture(t,{text:true}),p=await draft(f);await f.credit(alice);f.store.put('config',{id:'openai-director',credentials:'local-fixture-presence-only'});
  const planned=f.store.get('film-project',p.id);planned.state='planned';planned.scenes=[{prompt:'An Iraqi courtyard',audioContract:{language:'ar',dialect:'iraqi',mode:'dialogue',lines:[{speaker:'علي',text:'شلونك اليوم؟'}]},status:'pending',attempted:false}];f.store.put('film-project',planned);
  const q=await f.invoke(alice,'rental.quote',{serverId:f.slot.id}),input={projectId:p.id,...q,approved:true,requestId:'launch-once'};
  await assert.rejects(f.invoke(alice,'project.launch',{...input,approved:false}),/APPROVAL_REQUIRED/);
@@ -395,4 +395,12 @@ test('single production approval durably claims one launch; repeated requests ca
  const saved=f.store.get('film-project',p.id);assert.equal(saved.launch.started,true);assert.equal(saved.launch.serverId,f.slot.id);
  // No external provider or GPU exists in this local fixture. Close before generation dispatch.
  await f.platform.close();
+});
+
+test('launch checks the writer key and reserves review budget before any rental or supplier dispatch',async t=>{
+ const f=await fixture(t,{text:true}),p=await draft(f);await f.credit(alice);const saved=f.store.get('film-project',p.id);saved.state='planned';saved.scenes=[{status:'pending',attempted:false}];f.store.put('film-project',saved);
+ const q=await f.invoke(alice,'rental.quote',{serverId:f.slot.id}),input={...q,projectId:p.id,approved:true,requestId:'preflight'};
+ await assert.rejects(f.invoke(alice,'project.launch',input),/OPENAI_KEY_REQUIRED/);assert.equal(f.store.all('rental').length,0);assert.equal(f.provider.calls.length,0);
+ f.store.put('config',{id:'openai-director',credentials:'synthetic-presence-only'});f.store.put('film-text-reservation',{id:'prior-budget',customerId:f.users.bob,reservedMicroUSD:2000000,calls:1,createdAt:f.now()});
+ await assert.rejects(f.invoke(alice,'project.launch',input),/TEXT_BUDGET_LIMIT/);assert.equal(f.store.all('rental').length,0);assert.equal(f.provider.calls.length,0);assert.equal(f.store.get('film-project',p.id).launch,undefined);
 });

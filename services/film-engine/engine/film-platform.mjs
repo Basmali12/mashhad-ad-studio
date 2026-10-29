@@ -130,6 +130,17 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    if(working.has(r.id))return;working.add(r.id);try{await inspectRental(r);}catch{await alert('METER_REQUIRES_REVIEW',r.id);}finally{working.delete(r.id);}
   }));
  }
+ async function reserveDirectorFollow(latest,c){
+  if(latest.directorFollow)return;
+     if(!textEnabled||!Number.isSafeInteger(textBudgetMicroUSD)||textBudgetMicroUSD<=0)throw Error('TEXT_DISABLED');
+     if(!(await store.get('config','openai-director'))?.credentials)throw Error('OPENAI_KEY_REQUIRED');
+     const calls=latest.scenes.filter(s=>!s.attempted).length,reserve=calls*250000;
+     const usage=(await store.all('film-text-reservation')).filter(x=>x.createdAt>now()-CREDIT_LIFETIME);
+     if(usage.reduce((v,x)=>v+x.reservedMicroUSD,0)+reserve>textBudgetMicroUSD)throw Error('TEXT_BUDGET_LIMIT');
+     if(usage.filter(x=>x.customerId===c.id&&x.createdAt>now()-86400000).reduce((v,x)=>v+x.calls,0)+calls>60)throw Error('TEXT_LIMIT');
+     const request=id();await store.put('film-text-reservation',{id:request,customerId:c.id,projectId:latest.id,calls,reservedMicroUSD:reserve,createdAt:now(),source:'administrator_director_follow_reservation_not_invoice'});
+     latest.directorFollow={id:request,approvedAt:now(),calls:[],failed:false};latest.visualReviews=[];latest.reviewState='awaiting_next_scene';
+ }
  async function followProject(p){
   let changed=false;
   for(const scene of p.scenes||[]){
@@ -291,6 +302,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
     if(!slot||slot.retired||slot.locked||!slot.published)throw Error('SERVER_LOCKED');
     if(slot.revision!==input.revision||slot.hourMicros!==input.priceMicroUSD)throw Error('COST_CHANGED');
     if(existing&&(existing.engineSlotId!==slot.id||!['ready','preparing','reserved'].includes(existing.state)))throw Error('USER_HAS_RENTAL');
+    await reserveDirectorFollow(p,c);
     intent={state:'starting',approvedAt:now(),serverId:slot.id,revision:slot.revision,priceMicroUSD:slot.hourMicros,requestId:label(input.requestId,100),rentalId:existing?.id||null};
     p.launch=intent;await store.put('film-project',p);
    });
@@ -329,16 +341,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    }else if(p.state!=='planned')throw Error('PLAN_REQUIRED');
    await store.transaction(async()=>{const latest=await owned('film-project',p.id,c.id);if(latest.referenceUploading)throw Error('REFERENCE_LOCKED');if(latest.state==='generating'||(operation==='project.generate'&&latest.state!=='planned')||latest.scenes.some(s=>s.attempted&&s.status!=='done'))throw Error('SCENE_ALREADY_ATTEMPTED');
     if(latest.reviewPending||latest.directorFollow?.failed)throw Error('DIRECTOR_REVIEW_REQUIRES_FOLLOW_ONLY');
-    if(input.directorFollow===true&&!latest.directorFollow){
-     if(!textEnabled||!Number.isSafeInteger(textBudgetMicroUSD)||textBudgetMicroUSD<=0)throw Error('TEXT_DISABLED');
-     if(!(await store.get('config','openai-director'))?.credentials)throw Error('OPENAI_KEY_REQUIRED');
-     const calls=latest.scenes.filter(s=>!s.attempted).length,reserve=calls*250000;
-     const usage=(await store.all('film-text-reservation')).filter(x=>x.createdAt>now()-CREDIT_LIFETIME);
-     if(usage.reduce((v,x)=>v+x.reservedMicroUSD,0)+reserve>textBudgetMicroUSD)throw Error('TEXT_BUDGET_LIMIT');
-     if(usage.filter(x=>x.customerId===c.id&&x.createdAt>now()-86400000).reduce((v,x)=>v+x.calls,0)+calls>60)throw Error('TEXT_LIMIT');
-     const request=id();await store.put('film-text-reservation',{id:request,customerId:c.id,projectId:p.id,calls,reservedMicroUSD:reserve,createdAt:now(),source:'administrator_director_follow_reservation_not_invoice'});
-     latest.directorFollow={id:request,approvedAt:now(),calls:[],failed:false};latest.visualReviews=[];latest.reviewState='awaiting_next_scene';
-    }
+    if(input.directorFollow===true)await reserveDirectorFollow(latest,c);
     latest.state='generating';latest.error=null;latest.rentalHistory=[...new Set([...(latest.rentalHistory||[]),...(latest.rentalId?[latest.rentalId]:[]),r.id])];latest.rentalId=r.id;await store.put('film-project',latest);});
    runTask(async()=>{try{await generateProject(c,p,r);}catch{const latest=await owned('film-project',p.id,c.id);latest.error='GENERATION_REQUIRES_REVIEW';latest.state='needs_review';if(latest.launch){latest.launch.state='needs_review';latest.launch.finishedAt=now();}await store.put('film-project',latest);await alert('FILM_REQUIRES_REVIEW',p.id);await stopRental(await owned('rental',r.id,c.id),'FILM_FAULT');}});return {accepted:true};
   }

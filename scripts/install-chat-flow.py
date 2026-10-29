@@ -1,7 +1,7 @@
 """Chat-first film flow deployment; no GPU, model transfers, or financial edits."""
 import hashlib,json,os,pathlib,re,shutil,subprocess,sys,urllib.request
-BASE_HASHES={'services/film-engine/engine/film-platform.mjs': '2ae6c758680e7e87a5bde4f3dfabb142783fe23c83be10e421addb79413b124d', 'services/film-engine/engine/openai-director.mjs': '916144d24e9fe339a37c41d7b1ce63353cb1b081b03b2bb52a3853118f756d13', 'services/film-engine/engine/film-contracts.ts': 'bafbd35ebd10f31cbbcbaba7e701db751192a10ee28bd69fe7ce7e998e0611e9', 'services/film-gateway/film-bridge.mjs': 'b041d3bcc0035772467c1094a90f7d5efe859f7c51d9725699f80689855903b2', 'shared/film-contracts.ts': 'bafbd35ebd10f31cbbcbaba7e701db751192a10ee28bd69fe7ce7e998e0611e9'}
-NEW_HASHES={'services/film-engine/engine/film-platform.mjs': 'f05277c2e8d3ddc3b5f477c590711406d3a5b81944d4434259e359322c034d1c', 'services/film-engine/engine/openai-director.mjs': '08dc163f5767a470e8ee53281e83cd016c05083eb526a293645da3980e36d0ff', 'services/film-engine/engine/film-contracts.ts': 'b81b1692d1bcfe79f9b0b766f5470f36af549e1de72c460a30abf813b3165151', 'services/film-gateway/film-bridge.mjs': 'cc4c412099d8efe1958a00192a9f8b682d357edbd5cffb74f22fbe5b120b9618', 'shared/film-contracts.ts': 'b81b1692d1bcfe79f9b0b766f5470f36af549e1de72c460a30abf813b3165151'}
+BASE_HASHES={'services/film-engine/engine/film-platform.mjs': 'f05277c2e8d3ddc3b5f477c590711406d3a5b81944d4434259e359322c034d1c', 'services/film-engine/engine/openai-director.mjs': '08dc163f5767a470e8ee53281e83cd016c05083eb526a293645da3980e36d0ff', 'services/film-engine/engine/film-contracts.ts': 'b81b1692d1bcfe79f9b0b766f5470f36af549e1de72c460a30abf813b3165151', 'services/film-gateway/film-bridge.mjs': 'cc4c412099d8efe1958a00192a9f8b682d357edbd5cffb74f22fbe5b120b9618', 'shared/film-contracts.ts': 'b81b1692d1bcfe79f9b0b766f5470f36af549e1de72c460a30abf813b3165151'}
+NEW_HASHES={'services/film-engine/engine/film-platform.mjs': 'df926cb37f4deee33bc832eacde12438b27361dcb7364cee88313966b53c1abb', 'services/film-engine/engine/openai-director.mjs': '2cf8cc061e81d8dd875efca4b8be05d6ded6d9be53187d22ff31c3f8dae1f32f', 'services/film-engine/engine/film-contracts.ts': 'b81b1692d1bcfe79f9b0b766f5470f36af549e1de72c460a30abf813b3165151', 'services/film-gateway/film-bridge.mjs': 'cc4c412099d8efe1958a00192a9f8b682d357edbd5cffb74f22fbe5b120b9618', 'shared/film-contracts.ts': 'b81b1692d1bcfe79f9b0b766f5470f36af549e1de72c460a30abf813b3165151'}
 
 def sha(data):return hashlib.sha256(data.replace(b'\r\n',b'\n')).hexdigest()
 def run(args):return subprocess.run(args,capture_output=True,text=True,check=True,timeout=45)
@@ -18,7 +18,7 @@ def main():
  payload={}
  for name,digest in NEW_HASHES.items():
   b=urllib.request.urlopen('https://raw.githubusercontent.com/Basmali12/mashhad-ad-studio/'+commit+'/'+name,timeout=25).read();assert sha(b)==digest;payload[name]=b
- backup=pathlib.Path('/root/codex-chat-flow-before-20261029');backup.mkdir(mode=0o700)
+ backup=pathlib.Path('/root/codex-chat-preflight-before-20261029');backup.mkdir(mode=0o700)
  for name,target in targets.items():
   if target.exists():shutil.copy2(target,backup/(name.replace('/','-')))
  try:

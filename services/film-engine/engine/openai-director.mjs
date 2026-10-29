@@ -66,17 +66,17 @@ export class OpenAIDirector{
   if(old){if(old.signature!==signature)throw Error('TEXT_REQUEST_ID_CONFLICT');return this.public(old);}
   if(this.busy)throw Error('ONE_TEXT_REQUEST_AT_A_TIME');
   // Claim before any asynchronous credential/persistence work, across projects too.
-  this.busy=true;
+  this.busy=true;this.activeId=b.requestId;
   try{
   const c=await this.store.get('config',this.keyId);if(!c?.credentials)throw Error('OPENAI_KEY_REQUIRED');
   const maxTokens=b.mode==='discuss'?1600:Math.min(6000,Math.max(500,Math.floor(Number(b.maxTokens)||3500)));
   const estimatedMaxUSD=(Buffer.byteLength(MASTER+CINEMATOGRAPHY+FILM_DIRECTION+instruction+JSON.stringify(messages))*this.pricing.inputPerMillionUSD+maxTokens*this.pricing.outputPerMillionUSD)/1e6+(b.mode==='review'?.05:0);
   const record={id:b.requestId,projectId:b.projectId,mode:b.mode,signature,status:'queued',createdAt:Date.now(),model:this.model,estimatedMaxUSD,estimateIsInvoiceCap:false,pricing:this.pricing,invoiceUSD:null,...(b[REVIEW_INPUT]?{evidence:b[REVIEW_INPUT].evidence}:{})};
   await this.store.put(this.recordKind,record);this.busy=true;
-  const task=this.run(record,{messages,instruction,maxTokens,frames:b[REVIEW_INPUT]?.frames,referenceImage},c.credentials).finally(()=>{this.busy=false;this.pending.delete(task);});this.pending.add(task);return this.public(record);
-  }catch(e){this.busy=false;throw e;}
+  const task=this.run(record,{messages,instruction,maxTokens,frames:b[REVIEW_INPUT]?.frames,referenceImage},c.credentials).finally(()=>{this.busy=false;this.activeId=null;this.pending.delete(task);});this.pending.add(task);return this.public(record);
+  }catch(e){this.busy=false;this.activeId=null;throw e;}
  }
- public(record){const {signature,...safe}=record;return safe;}
+ public(record){const {signature,...safe}=record;if(this.busy&&this.activeId===record.id&&['completed','failed','uncertain'].includes(record.status))safe.status='running';return safe;}
  async get(id){if(!safeId(id))throw Error('INVALID_DIRECTOR_REQUEST');const r=await this.store.get(this.recordKind,id);if(!r)throw Error('TEXT_CALL_NOT_FOUND');return this.public(r);}
  async run(r,{messages,instruction,maxTokens,frames,referenceImage},credentials){
   try{
