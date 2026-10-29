@@ -4,7 +4,7 @@ import {createServer} from 'node:http';
 import {createHmac} from 'node:crypto';
 import {createFilmGateway} from '../gateway.mjs';
 const env={MASHHAD_FILM_ENABLED:'YES',MASHHAD_FILM_ORIGIN:'https://studio.example.test',MASHHAD_CONVEX_URL:'https://fixture.convex.cloud',FILM_BACKEND_ORIGIN:'https://film.example.test',FILM_BRIDGE_SECRET:'synthetic-film-bridge-secret-at-least-32'};
-async function fixture(t,{role='customer',profileFailure=false,bridgeFailure=false,legacyOwner}={}){
+async function fixture(t,{role='customer',profileFailure=false,bridgeFailure=false,legacyOwner,bridgeResult}={}){
  const calls=[];
  const handler=createFilmGateway({env:{...env,...(legacyOwner?{MASHHAD_FILM_LEGACY_OWNER_ID:legacyOwner}:{})},fetchImpl:async(url,options)=>{
   calls.push({url:String(url),options});
@@ -18,6 +18,7 @@ async function fixture(t,{role='customer',profileFailure=false,bridgeFailure=fal
   const body=JSON.parse(options.body);assert.equal(body.actor.isAdmin,role==='super-admin');
   const signature=createHmac('sha256',env.FILM_BRIDGE_SECRET).update(options.headers['x-film-time']+'\n'+options.headers['x-film-nonce']+'\n'+options.body).digest('hex');
   assert.equal(options.headers['x-film-signature'],signature);
+  if(bridgeResult)return Response.json(bridgeResult);
   return Response.json(body.operation==='admin.accounts.list'?[]:{user:{id:body.actor.id,name:body.actor.name},wallet:{balanceMicroUSD:0},servers:[],enabled:true,planningEnabled:true,secret:'DO_NOT_RETURN'});
  }});
  const server=createServer(handler);await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>server.close(r)));
@@ -69,4 +70,17 @@ test('single film launch accepts only an explicit scoped price approval and neve
  assert.equal(f.calls.filter(c=>c.url.includes('film.example')).length,0);
  const response=await f.post({operation:'project.launch',input:{...base,approved:true},requestId:'req-approved'});assert.equal(response.status,200);
  const dispatched=f.calls.filter(c=>c.url.includes('film.example'));assert.equal(dispatched.length,1);const envelope=JSON.parse(dispatched[0].options.body);assert.equal(envelope.operation,'project.launch');assert.equal(envelope.input.serverId,'server-one');assert.equal(envelope.actor.id,'mashhad-convexuser01');
+});
+
+
+test('file library strips private paths, preserves merged index and requires explicit deletion approval',async t=>{
+ const f=await fixture(t,{bridgeResult:[{id:'file-one',projectId:'project-one',index:'merged',kind:'film',name:'فيلم',createdAt:1,expiresAt:2,bytes:120,path:'/private/video.mp4',tokenSecret:'private'}]});
+ const r=await f.post({operation:'files.list',input:{},requestId:'files-list-001'});assert.equal(r.status,200);const rows=await r.json();assert.equal(rows[0].index,'merged');assert.equal('path' in rows[0],false);assert.equal('tokenSecret' in rows[0],false);
+ const before=f.calls.length;
+ await f.post({operation:'files.delete',input:{id:'file-one',approved:false},requestId:'files-delete-001'});
+ await f.post({operation:'files.ticket',input:{id:'file-one',customerId:'bob'},requestId:'files-ticket-001'});
+ assert.equal(f.calls.filter(c=>c.url.includes('film.example')).length,1);
+ assert.ok(f.calls.length>=before);
+ await f.post({operation:'files.delete',input:{id:'file-one',approved:true},requestId:'files-delete-002'});
+ assert.equal(f.calls.filter(c=>c.url.includes('film.example')).length,2);
 });

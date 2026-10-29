@@ -17,6 +17,7 @@ const integer = x => Number.isSafeInteger(x) && x >= 0;
 const date = x => x === null || (integer(x) && x > 0);
 const short = x => text(x, 120);
 const fields = {
+    'files.list': {}, 'files.ticket': {id,'download?':bool}, 'files.delete': { id, approved: yes },
     'rental.quote': { serverId: id },
     'rental.start': { serverId: id, revision: integer, priceMicroUSD: integer, approved: yes, requestId: id },
     'rental.status': { id }, 'rental.stop': { id },
@@ -30,7 +31,7 @@ const fields = {
     'project.launch': { projectId: id, serverId: id, revision: integer, priceMicroUSD: integer, approved: yes, requestId: id },
     'project.generate': { projectId: id, rentalId: id, approved: yes, 'directorFollow?': bool },
     'project.resume': { projectId: id, rentalId: id, approved: yes, 'directorFollow?': bool },
-    'project.merge': { projectId: id }, 'media.ticket': { projectId: id, index: x => x === 'merged' || (integer(x) && x < 30) },
+    'project.merge': { projectId: id }, 'media.ticket': { projectId: id, 'download?': bool, index: x => x === 'merged' || (integer(x) && x < 30) },
     'admin.credit.add': { customerId: id, amountUSD: money, requestId: id },
     'admin.account.link': { name: short, tokenId: x => typeof x === 'string' && /^ak-[A-Za-z0-9_-]{8,200}$/.test(x), tokenSecret: x => typeof x === 'string' && /^as-[A-Za-z0-9_-]{8,200}$/.test(x) },
     'admin.account.inspect': { accountId: id }, 'admin.account.activate': { accountId: id }, 'admin.account.unlink': { accountId: id, approved: yes },
@@ -62,9 +63,10 @@ const wallet = { balanceMicroUSD: 'value', expiresAt: 'value', reservedMicroUSD:
 const server = { id: 'id', name: 'text', gpu: 'text', ram: 'value', cpu: 'value', pricePerHourUSD: 'value', state: 'text', availability: 'text' };
 const rental = { id: 'id', serverId: 'id', state: 'text', elapsedSeconds: 'value', billedMicroUSD: 'value', hourPriceUSD: 'value', lowFunds: 'value', phase: 'text', completed: 'value', total: 'value', stopReason: 'text', message: 'text' };
 const visualReview={index:'value',model:'text',summary:'text',visibleText:'text',continuity:'text',causalOrder:'text',audioAssessment:'text',findings:['text'],suggestedCorrections:['text'],sampleCount:'value',computedUSD:'value',invoiceUSD:'value'};
-const project = {discussion:{readyToWrite:'value',seconds:'value',style:'text'},launch:{state:'text',approvedAt:'value',finishedAt:'value'},directorFollow:'value',reviewPending:'value',reviewState:'text',visualReviews:[visualReview], id: 'id', name: 'text', story: 'text', messages: [{ role: 'text', content: 'text' }], seconds: 'value', orientation: 'text', state: 'text', reference: { mime: 'text', size: 'value', width: 'value', height: 'value', uploadedAt: 'value' }, textPending: 'value', textUncertain: 'value', textCostPolicy: 'text', planningCompletedScenes: 'value', merge: { status: 'text', error: 'text', duration: 'value', width: 'value', height: 'value', nativeAudio: 'value' }, scenes: [{ index: 'value', title: 'text', visualPrompt:'text', status: 'text', dialogue: [{ speaker: 'text', text: 'text' }], phase: 'text', completed: 'value', total: 'value', ready: 'value' }], error: 'text' };
+const project = {discussion:{readyToWrite:'value',seconds:'value',style:'text'},launch:{state:'text',approvedAt:'value',finishedAt:'value'},directorFollow:'value',reviewPending:'value',reviewState:'text',visualReviews:[visualReview], id: 'id', name: 'text', story: 'text', messages: [{ role: 'text', content: 'text' }], seconds: 'value', orientation: 'text', state: 'text', reference: { mime: 'text', size: 'value', width: 'value', height: 'value', uploadedAt: 'value' }, textPending: 'value', textUncertain: 'value', textCostPolicy: 'text', planningCompletedScenes: 'value', merge: { status: 'text', error: 'text', duration: 'value', width: 'value', height: 'value', nativeAudio: 'value' }, scenes: [{ index: 'value', title: 'text', mediaExpired:'value', visualPrompt:'text', status: 'text', dialogue: [{ speaker: 'text', text: 'text' }], phase: 'text', completed: 'value', total: 'value', ready: 'value' }], error: 'text' };
 const customerShapes = {
     session: { user: { id: 'id', name: 'text' }, wallet, servers: [server], enabled: 'value', planningEnabled: 'value', capabilities: { referenceUpload: 'value', ingredients: 'value', voiceCloning: 'value', lastFrameContinuity: 'value', nativeAudio: 'value', wholeFilmMerge: 'value' } },
+    'files.list': [{id:'id',projectId:'id',index:'fileIndex',kind:'text',name:'text',createdAt:'value',expiresAt:'value',bytes:'value'}], 'files.delete': {removed:'value'}, 'files.ticket': {url:'url',expires:'value'},
     wallet, 'servers.list': [server], 'rental.quote': { serverId: 'id', revision: 'value', priceMicroUSD: 'value', pricePerHourUSD: 'value', minimumCreditUSD: 'value', warning: 'text', canStart: 'value' },
     'rental.start': rental, 'rental.status': rental, 'rental.stop': rental, 'projects.list': [project],
     'project.reference.view': { url: 'referenceUrl', expires: 'value' }, 'project.reference.ticket': { url: 'uploadUrl', expires: 'value', maxBytes: 'value' }, 'project.reference.remove': project, 'project.save': project, 'project.get': project, 'project.follow': project, 'text.status': project, 'plan.status': project, 'project.merge': project,
@@ -94,6 +96,7 @@ function projectShape(value, shape, secrets) {
             return null;
         return Object.fromEntries(Object.entries(shape).filter(([k]) => k in value).map(([k, s]) => [k, k === 'error' && value[k] ? 'العملية تحتاج مراجعة؛ تابع الحالة دون إعادة تلقائية.' : projectShape(value[k], s, secrets)]));
     }
+    if(shape==='fileIndex')return value==='merged'||integer(value)?value:null;
     if (shape === 'value')
         return typeof value === 'boolean' || (typeof value === 'number' && Number.isFinite(value)) ? value : null;
     if (typeof value !== 'string')
@@ -147,6 +150,8 @@ function adminDTO(value, secrets, depth = 0) {
     return typeof value === 'boolean' || typeof value === 'number' || value === null ? value : null;
 }
 const safeErrors = {
+    MEDIA_EXPIRED: 'انتهت مدة حفظ الفيديو أو حُذف. لا يعاد توليده تلقائياً.',
+    MEDIA_IN_USE: 'الفيديو مستخدم في إنتاج أو دمج جارٍ؛ انتظر اكتمال العملية قبل الحذف.',
     LOCAL_ARTIFACT_NOT_WRITABLE: 'مجلد حفظ الفيديو غير قابل للكتابة على الخادم؛ لم يبدأ تشغيل GPU. راجع صلاحيات خدمة الملفات.',
     SLOT_RETIRED: 'المحرك متقاعد نهائياً؛ سجله محفوظ ولا يمكن إعادة نشره أو تشغيله.',
     ACCOUNT_UNLINKED: 'فُصل ربط الحساب؛ لم يبدأ تشغيل جديد.',

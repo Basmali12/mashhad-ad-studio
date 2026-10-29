@@ -170,7 +170,7 @@ test('whole-film merge uses real local CPU stream copy, verifies native AV and p
  project.merge={status:'completed',...result};f.store.put('film-project',project);const ticket=await f.invoke(alice,'media.ticket',{projectId:project.id,index:'merged'});assert.equal(ticket.url.includes('film-exports'),false);await assert.rejects(f.invoke(bob,'media.ticket',{projectId:project.id,index:'merged'}),/NOT_FOUND/);
 });
 test('missing merge tooling is an honest unavailable state and never changes source scene success',async t=>{
- const {createFilmMerger}=await import('../engine/film-merge.mjs'),f=await fixture(t),p=await f.invoke(alice,'project.save',{name:'unavailable',story:'fixture',seconds:10,orientation:'portrait'}),project=f.store.get('film-project',p.id);project.scenes=[{status:'done',jobId:randomUUID()}];project.state='completed';f.store.put('film-project',project);const platform=createFilmPlatform({engine:f.engine,secret:f.secret,origin:'https://fixture.test',startWorker:false,merger:createFilmMerger({ffmpeg:path.join(f.folder,'missing-ffmpeg.exe')})});
+ const {createFilmMerger}=await import('../engine/film-merge.mjs'),f=await fixture(t),p=await f.invoke(alice,'project.save',{name:'unavailable',story:'fixture',seconds:10,orientation:'portrait'}),project=f.store.get('film-project',p.id);project.scenes=[{status:'done',jobId:randomUUID()}];f.store.put('job',{id:project.scenes[0].jobId,tenantId:f.users.alice,projectId:p.id,result:{videoVerified:true},finishedAt:f.now()});project.state='completed';f.store.put('film-project',project);const platform=createFilmPlatform({engine:f.engine,secret:f.secret,origin:'https://fixture.test',startWorker:false,merger:createFilmMerger({ffmpeg:path.join(f.folder,'missing-ffmpeg.exe')})});
  const response=await platform.dispatch(alice,'project.merge',{projectId:p.id});assert.equal(response.merge.status,'unavailable');assert.equal(response.merge.error,'MERGE_UNAVAILABLE');assert.equal(response.state,'completed');assert.equal(response.scenes[0].status,'done');assert.equal(f.provider.calls.length,0);await platform.close();
 });
 
@@ -403,4 +403,25 @@ test('launch checks the writer key and reserves review budget before any rental 
  await assert.rejects(f.invoke(alice,'project.launch',input),/OPENAI_KEY_REQUIRED/);assert.equal(f.store.all('rental').length,0);assert.equal(f.provider.calls.length,0);
  f.store.put('config',{id:'openai-director',credentials:'synthetic-presence-only'});f.store.put('film-text-reservation',{id:'prior-budget',customerId:f.users.bob,reservedMicroUSD:2000000,calls:1,createdAt:f.now()});
  await assert.rejects(f.invoke(alice,'project.launch',input),/TEXT_BUDGET_LIMIT/);assert.equal(f.store.all('rental').length,0);assert.equal(f.provider.calls.length,0);assert.equal(f.store.get('film-project',p.id).launch,undefined);
+});
+
+test('generated file library serves owned downloads with attachment headers, caps expiry and permanently removes approved files',async t=>{
+ const f=await fixture(t),p=await draft(f),j={id:randomUUID(),projectId:p.id,tenantId:f.users.alice,action:'generate',status:'completed',cloudStopped:true,finishedAt:f.now(),result:{videoVerified:true}};
+ const project=f.store.get('film-project',p.id);project.state='completed';project.scenes=[{jobId:j.id,status:'done',attempted:true}];f.store.put('film-project',project);f.store.put('job',j);
+ const folder=path.join(f.folder,'artifacts',j.id);await mkdir(folder,{recursive:true});const bytes=Buffer.alloc(200,7);await writeFile(path.join(folder,'video.mp4'),bytes);
+ const files=await f.invoke(alice,'files.list');assert.equal(files.length,1);assert.deepEqual(await f.invoke(bob,'files.list'),[]);await assert.rejects(f.invoke(bob,'files.ticket',{id:files[0].id}),/NOT_FOUND/);await assert.rejects(f.invoke(alice,'files.delete',{id:files[0].id}),/APPROVAL_REQUIRED/);
+ const {createServer}=await import('node:http'),server=createServer((req,res)=>f.platform.handler(req,res));await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>server.close(r)));
+ const ticket=await f.invoke(alice,'files.ticket',{id:files[0].id,download:true}),url='http://127.0.0.1:'+server.address().port+new URL(ticket.url).pathname+new URL(ticket.url).search;
+ const response=await fetch(url,{headers:{origin:'https://front.test','x-forwarded-proto':'https'}});assert.equal(response.status,200);assert.match(response.headers.get('content-disposition'),/^attachment;/);assert.deepEqual(Buffer.from(await response.arrayBuffer()),bytes);
+ await f.invoke(alice,'files.delete',{id:files[0].id,approved:true});assert.deepEqual(await f.invoke(alice,'files.list'),[]);assert.equal(f.store.get('film-media',files[0].id),null);assert.equal(f.store.get('job',j.id).status,'completed');assert.equal(f.provider.calls.length,0);
+ assert.equal((await fetch(url,{headers:{origin:'https://front.test','x-forwarded-proto':'https'}})).status,404);
+});
+
+
+test('a damaged media folder cannot interrupt rental metering or claim a supplier start',async t=>{
+ const f=await fixture(t),pid=randomUUID(),jid=randomUUID();
+ f.store.put('film-project',{id:pid,customerId:'alice',name:'Retention fixture',state:'completed',scenes:[{jobId:jid,status:'done'}]});
+ f.store.put('job',{id:jid,projectId:pid,tenantId:'alice',action:'generate',status:'completed',cloudStopped:true,finishedAt:Date.now(),result:{videoVerified:true}});
+ await writeFile(path.join(f.folder,'artifacts'),'invalid directory fixture');
+ await f.platform.tick();assert.ok(f.store.all('film-alert').some(a=>a.reason==='MEDIA_CLEANUP_PENDING'));assert.equal(f.provider.calls.length,0);
 });
