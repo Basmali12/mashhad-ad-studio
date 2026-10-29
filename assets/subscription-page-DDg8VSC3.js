@@ -1,1 +1,0 @@
-import{j as o}from"./auth-BSpfLDIE.js";import{d as r}from"./index-DTxPSOPP.js";import"./convex-XusNso-1.js";import"./auth-arabic-DVh29meS.js";function m(){return o.jsx(r,{})}export{m as ReelsSubscription};
