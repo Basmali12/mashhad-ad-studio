@@ -1,4 +1,4 @@
-import FilmGeneration,{elapsedLabel} from './FilmGeneration';
+import FilmGeneration,{elapsedLabel,generatedVideoSeconds} from './FilmGeneration';
 import type {FilmProject} from '../../../shared/film-contracts';
 import React from 'react';
 import {it,expect} from 'vitest';
@@ -20,5 +20,13 @@ it('generation clock distinguishes elapsed time from requested duration and stop
  expect(elapsedLabel(59)).toBe('59 ثانية');expect(elapsedLabel(70)).toBe('1 دقيقة و10 ثانية');expect(elapsedLabel(130)).toBe('2 دقيقة و10 ثانية');
  const p={id:'p',name:'film',story:'test',messages:[],seconds:20,orientation:'portrait',reference:null,state:'completed',textPending:false,textUncertain:false,textCostPolicy:'administrator_funded_separate_from_gpu_wallet',planningCompletedScenes:2,merge:null,scenes:[],error:null,launch:{state:'completed',approvedAt:1000,finishedAt:71000}} as const;
  const html=renderToStaticMarkup(<FilmGeneration request={async()=>{throw Error('NO_CLOUD');}} project={p as unknown as FilmProject} rental={null} onBack={()=>{}} onStop={()=>{}} busy={false}/>);
- expect(html).toContain('1 دقيقة و10 ثانية');expect(html).toContain('20');expect(html).not.toContain('is-active');expect(html).not.toContain('<progress');
+ expect(html).toContain('1 دقيقة و10 ثانية');expect(html).toContain('20');expect(html).not.toContain('is-active');expect(html).toContain('ثواني الفيديو المؤكدة');
+});
+
+
+it('the primary video counter advances only for verified durations, not wall-clock time or denoising percentage',()=>{
+ const p={id:'p',seconds:20,messages:[],state:'generating',scenes:[{index:0,title:'1',status:'done',ready:true,durationSeconds:10,dialogue:[]},{index:1,title:'2',status:'submitted',ready:false,durationSeconds:null,dialogue:[],phase:'denoise_stage_2',completed:3,total:3,stages:[{phase:'denoise_stage_2',state:'running'}]}],merge:null,error:null,launch:{state:'generating',approvedAt:1,finishedAt:null}} as unknown as FilmProject;
+ expect(generatedVideoSeconds(p)).toBe(10);const html=renderToStaticMarkup(<FilmGeneration request={async()=>{throw Error('NO_CLOUD');}} project={p} rental={null} onBack={()=>{}} onStop={()=>{}} busy={false}/>);
+ expect(html).toContain('aria-label="مدة الفيديو المولّدة فعلياً" aria-live="polite">10 ثانية');expect(html).toContain('3 / 3');expect(html).toContain('خطوات معالجة، وليست ثواني فيديو');
+ expect(generatedVideoSeconds({...p,scenes:p.scenes.map(s=>({...s,durationSeconds:null}))})).toBe(0);
 });

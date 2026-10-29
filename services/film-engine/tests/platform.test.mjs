@@ -435,3 +435,11 @@ test('an uploaded reference attaches once to the discussion, preserves assigned 
  await f.invoke(alice,'chat.submit',{projectId:p.id,message:'خلي زينب تلبس نفس الملابس',approved:true});await waitFor(()=>!f.store.get('film-project',p.id).textPending);
  dto=await f.invoke(alice,'project.get',{id:p.id});assert.equal(dto.messages.filter(m=>m.hasReference).length,1);assert.equal(f.provider.calls.length,0);
 });
+
+
+test('customer scene telemetry uses actual stage events and verified media metadata, excluding foreign job data',async t=>{
+ const f=await fixture(t),p=await draft(f),raw=f.store.get('film-project',p.id),jid=randomUUID();raw.scenes=[{jobId:jid,status:'submitted'}];f.store.put('film-project',raw);
+ f.store.put('job',{id:jid,projectId:p.id,tenantId:f.users.alice,action:'generate',events:[{kind:'phase_start',phase:'denoise_stage_1'},{kind:'progress',phase:'denoise_stage_1',completed:8,total:8,global_completed:8,global_total:11},{kind:'phase_end',phase:'denoise_stage_1'},{kind:'phase_start',phase:'video_decode'}],result:{videoVerified:false,metadata:{duration_seconds:10}}});
+ let dto=await f.invoke(alice,'project.get',{id:p.id});assert.equal(dto.scenes[0].durationSeconds,null);assert.equal(dto.scenes[0].phase,'video_decode');assert.equal(dto.scenes[0].completed,null);assert.equal(dto.scenes[0].stages[0].state,'completed');
+ const job=f.store.get('job',jid);job.result.videoVerified=true;f.store.put('job',job);dto=await f.invoke(alice,'project.get',{id:p.id});assert.equal(dto.scenes[0].durationSeconds,10);job.tenantId=f.users.bob;f.store.put('job',job);dto=await f.invoke(alice,'project.get',{id:p.id});assert.equal(dto.scenes[0].durationSeconds,null);assert.deepEqual(dto.scenes[0].stages,[]);
+});

@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import {observedProgress,verifiedVideoSeconds} from './film-progress.mjs';
 import {createFilmMediaLibrary} from './film-media-library.mjs';
 import {touchesAccount} from './account-routing.mjs';
 import path from 'node:path';
@@ -160,11 +161,11 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
  }
  const timer=startWorker?setInterval(()=>{runTask(tick);},1000):null;timer?.unref();
  async function rentalDTO(r){
-  const job=r.engineJobId?await store.get('job',r.engineJobId):null,events=job?.events||[],last=events.at(-1);
-  const current=events.filter(e=>e.kind==='progress').at(-1);
+  const job=r.engineJobId?await store.get('job',r.engineJobId):null,events=job?.events||[];
+  const telemetry=observedProgress(events);
   return {id:r.id,serverId:r.engineSlotId,state:r.state,elapsedSeconds:r.meterStartedAt?Math.max(0,Math.floor(((r.closedAt||now())-r.meterStartedAt)/1000)):0,
    billedMicroUSD:r.chargedMicroUSD||0,hourPriceUSD:r.hourMicros/1e6,lowFunds:!!r.lowFunds,
-   phase:clean(last?.phase||'')||null,completed:current?.global_completed??null,total:current?.global_total??null,stopReason:r.stopReason||null,
+   ...telemetry,stopReason:r.stopReason||null,
    message:r.state==='uncertain'?'حالة الموارد غير محسومة؛ لن نبدأ جلسة بديلة.':null};
  }
  async function startRental(c,input){
@@ -265,8 +266,8 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
  async function projectDTO(p){
   return {id:p.id,name:clean(p.name),story:clean(p.story),messages:(p.messages||[]).map(m=>({role:m.role,content:clean(m.content),hasReference:!!(m.referenceId&&m.referenceId===p.reference?.id)})),textPending:!!p.textPending,textUncertain:!!p.textUncertain,planningCompletedScenes:p.planningCompletedScenes||0,textCostPolicy:'administrator_funded_separate_from_gpu_wallet',seconds:p.seconds,orientation:p.orientation,state:p.state,discussion:p.discussion||null,launch:p.launch?{state:p.launch.state,approvedAt:p.launch.approvedAt,finishedAt:p.launch.finishedAt||null}:null,reference:p.reference?{mime:p.reference.mime,size:p.reference.size,width:p.reference.width,height:p.reference.height,uploadedAt:p.reference.uploadedAt}:null,merge:p.merge?{status:p.merge.status,error:p.merge.error||null,duration:p.merge.duration||null,width:p.merge.width||null,height:p.merge.height||null,nativeAudio:p.merge.audio===true}:null,
    directorFollow:!!p.directorFollow,reviewPending:!!p.reviewPending,reviewState:p.reviewState||'not_requested',visualReviews:p.visualReviews||[],
-   scenes:await Promise.all((p.scenes||[]).map(async(s,index)=>{const j=s.jobId?await store.get('job',s.jobId):null;const event=j?.events?.filter(e=>e.kind==='progress').at(-1);
-    return {index,title:'المشهد '+(index+1),visualPrompt:clean(s.prompt||''),status:s.status,dialogue:(s.audioContract?.lines||[]).map(l=>({speaker:clean(l.speaker),text:clean(l.text)})),phase:clean(j?.events?.at(-1)?.phase||'')||null,completed:event?.global_completed??null,total:event?.global_total??null,ready:await media.sceneAvailable(p,j),mediaExpired:!!j&&(!!j.mediaRemovedAt||await media.deadline(j)<=now())};})),error:p.error?'توقفت العملية وتحتاج مراجعة؛ لا إعادة تلقائية.':null};
+   scenes:await Promise.all((p.scenes||[]).map(async(s,index)=>{const candidate=s.jobId?await store.get('job',s.jobId):null,j=candidate?.tenantId===p.customerId&&candidate?.projectId===p.id?candidate:null;const telemetry=observedProgress(j?.events||[]);
+    return {index,title:'المشهد '+(index+1),visualPrompt:clean(s.prompt||''),status:s.status,dialogue:(s.audioContract?.lines||[]).map(l=>({speaker:clean(l.speaker),text:clean(l.text)})),...telemetry,durationSeconds:verifiedVideoSeconds(j),ready:await media.sceneAvailable(p,j),mediaExpired:!!j&&(!!j.mediaRemovedAt||await media.deadline(j)<=now())};})),error:p.error?'توقفت العملية وتحتاج مراجعة؛ لا إعادة تلقائية.':null};
  }
  async function dispatch(actor,operation,input={}){
   await recovery;
