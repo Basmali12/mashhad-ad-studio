@@ -14,7 +14,8 @@ export function gatewaySettings(env){
  deny(/^https:\/\/[a-z0-9-]+\.convex\.cloud$/.test(convex.origin)&&convex.href===convex.origin+'/','INVALID_MEMBERSHIP_ORIGIN',503);
  if(env.MASHHAD_FILM_LEGACY_OWNER_ID)deny(id(env.MASHHAD_FILM_LEGACY_OWNER_ID),'INVALID_OWNER_MAPPING',503);
  const ownerEmail=env.MASHHAD_FILM_LEGACY_OWNER_EMAIL||'';deny(!ownerEmail||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ownerEmail)&&ownerEmail.length<=254,'INVALID_OWNER_MAPPING',503);
- return {origin:origin.origin,convex:convex.origin,enabled:env.MASHHAD_FILM_ENABLED==='YES',legacyOwner:env.MASHHAD_FILM_LEGACY_OWNER_ID||null,ownerEmail};
+ let adminOrigin=null;if(env.MASHHAD_FILM_ADMIN_ORIGIN){const admin=new URL(env.MASHHAD_FILM_ADMIN_ORIGIN);deny(admin.protocol==='https:'&&!admin.username&&!admin.password&&admin.pathname==='/'&&!admin.search&&!admin.hash&&admin.origin!==origin.origin,'INVALID_ADMIN_ORIGIN',503);adminOrigin=admin.origin;}
+ return {adminOrigin,origin:origin.origin,convex:convex.origin,enabled:env.MASHHAD_FILM_ENABLED==='YES',legacyOwner:env.MASHHAD_FILM_LEGACY_OWNER_ID||null,ownerEmail};
 }
 async function body(req){let size=0;const chunks=[];for await(const c of req){size+=c.length;deny(size<=limit,'REQUEST_TOO_LARGE',413);chunks.push(c);}try{return JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw new Rejection('INVALID_INPUT',400);}}
 async function actorFromMembership(token,config){
@@ -37,8 +38,9 @@ export function createFilmGateway({env=process.env,fetchImpl}={}){
   if(route==='/health'&&req.method==='GET')return reply(res,200,{status:'ok'});
   if(!['/api/mashhad-film','/api/mashhad-film/access'].includes(route))return reply(res,404,{error:'NOT_FOUND'});
   try{
-   deny(req.headers.origin===config.origin,'ORIGIN_DENIED',403);
-   res.setHeader('Access-Control-Allow-Origin',config.origin);res.setHeader('Vary','Origin');
+   const adminOrigin=!!config.adminOrigin&&req.headers.origin===config.adminOrigin;
+   deny(req.headers.origin===config.origin||adminOrigin,'ORIGIN_DENIED',403);
+   res.setHeader('Access-Control-Allow-Origin',req.headers.origin);res.setHeader('Vary','Origin');
    if(req.method==='OPTIONS'){
     deny(req.headers['access-control-request-method']==='POST','PREFLIGHT_DENIED',403);
     const headers=String(req.headers['access-control-request-headers']||'').toLowerCase().split(',').map(v=>v.trim()).filter(Boolean);
@@ -56,7 +58,9 @@ export function createFilmGateway({env=process.env,fetchImpl}={}){
     if(route.endsWith('/access'))deny(Object.keys(input).length===0,'INVALID_INPUT',400);
     else deny(Object.keys(input).every(k=>['operation','input','requestId'].includes(k))&&operations.has(input.operation)&&id(input.requestId)&&object(input.input),'INVALID_INPUT',400);
     const actor=await actorFromMembership(authorization.slice(7),config);
+    deny(!adminOrigin||actor.isAdmin,'FORBIDDEN',403);
     if(route.endsWith('/access'))return reply(res,200,{id:actor.id,isAdmin:actor.isAdmin});
+    deny(!adminOrigin||input.operation.startsWith('admin.'),'ADMIN_ORIGIN_ONLY',403);
     deny(!input.operation.startsWith('admin.')||actor.isAdmin,'FORBIDDEN',403);
     // One attempt only. Preserve request IDs and backend uncertainty semantics.
     const result=await requestFilm(actor,input,env);

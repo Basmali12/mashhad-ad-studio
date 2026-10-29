@@ -4,9 +4,9 @@ import {createServer} from 'node:http';
 import {createHmac} from 'node:crypto';
 import {createFilmGateway} from '../gateway.mjs';
 const env={MASHHAD_FILM_ENABLED:'YES',MASHHAD_FILM_ORIGIN:'https://studio.example.test',MASHHAD_CONVEX_URL:'https://fixture.convex.cloud',FILM_BACKEND_ORIGIN:'https://film.example.test',FILM_BRIDGE_SECRET:'synthetic-film-bridge-secret-at-least-32'};
-async function fixture(t,{role='customer',profileFailure=false,bridgeFailure=false,legacyOwner,bridgeResult,publicMediaOrigin}={}){
+async function fixture(t,{role='customer',profileFailure=false,bridgeFailure=false,legacyOwner,bridgeResult,publicMediaOrigin,adminOrigin}={}){
  const calls=[];
- const handler=createFilmGateway({env:{...env,...(publicMediaOrigin?{FILM_PUBLIC_MEDIA_ORIGIN:publicMediaOrigin}:{}),...(legacyOwner?{MASHHAD_FILM_LEGACY_OWNER_ID:legacyOwner}:{})},fetchImpl:async(url,options)=>{
+ const handler=createFilmGateway({env:{...env,...(adminOrigin?{MASHHAD_FILM_ADMIN_ORIGIN:adminOrigin}:{}),...(publicMediaOrigin?{FILM_PUBLIC_MEDIA_ORIGIN:publicMediaOrigin}:{}),...(legacyOwner?{MASHHAD_FILM_LEGACY_OWNER_ID:legacyOwner}:{})},fetchImpl:async(url,options)=>{
   calls.push({url:String(url),options});
   if(String(url)==='https://fixture.convex.cloud/api/query'){
    assert.equal(options.headers.Authorization,'Bearer synthetic-session');
@@ -118,4 +118,18 @@ test('nullable account direction preferences and unanswered project creation pas
  r=await f.post({operation:'preferences.save',input:{orientation:'landscape'},requestId:'pref-landscape'});assert.equal(r.status,200);
  const count=f.calls.filter(c=>c.url.includes('film.example')).length;assert.equal((await f.post({operation:'preferences.save',input:{orientation:'square'},requestId:'bad-pref'})).status,400);assert.equal(f.calls.filter(c=>c.url.includes('film.example')).length,count);
  r=await f.post({operation:'project.save',input:{name:'قصة',story:'test',seconds:20,orientation:null},requestId:'unspecified-project'});assert.equal(r.status,200);
+});
+
+test('separate admin origin requires a verified administrator and allows admin operations only',async t=>{
+ const origin='https://admin.example.test',a=await fixture(t,{role:'super-admin',adminOrigin:origin});
+ let r=await a.post({}, {Origin:origin},'/api/mashhad-film/access');assert.equal(r.status,200);assert.equal((await r.json()).isAdmin,true);assert.equal(r.headers.get('access-control-allow-origin'),origin);
+ r=await a.post({operation:'admin.accounts.list',input:{},requestId:'admin-read'},{Origin:origin});assert.equal(r.status,200);assert.deepEqual(await r.json(),[]);
+ const n=a.calls.filter(c=>c.url.includes('film.example')).length;
+ r=await a.post({operation:'rental.start',input:{serverId:'s',revision:1,priceMicroUSD:1,requestId:'r',approved:true},requestId:'not-an-admin-command'},{Origin:origin});assert.equal(r.status,403);assert.equal(a.calls.filter(c=>c.url.includes('film.example')).length,n);
+ const c=await fixture(t,{adminOrigin:origin});assert.equal((await c.post({}, {Origin:origin},'/api/mashhad-film/access')).status,403);assert.equal((await c.post({operation:'admin.accounts.list',input:{},requestId:'no-role'},{Origin:origin})).status,403);assert.equal(c.calls.filter(x=>x.url.includes('film.example')).length,0);
+});
+test('separate admin preflight is exact-origin and does not bypass bearer or customer isolation',async t=>{
+ const origin='https://admin.example.test',f=await fixture(t,{role:'super-admin',adminOrigin:origin});
+ const r=await fetch(f.base+'/api/mashhad-film',{method:'OPTIONS',headers:{Origin:origin,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'authorization,content-type'}});assert.equal(r.status,204);assert.equal(r.headers.get('access-control-allow-origin'),origin);assert.equal(f.calls.length,0);
+ assert.equal((await f.post(undefined,{Origin:origin,Authorization:''})).status,401);assert.equal((await f.post(undefined,{Origin:'https://evil.example.test'})).status,403);
 });

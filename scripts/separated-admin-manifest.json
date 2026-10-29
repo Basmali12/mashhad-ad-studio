@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "gatewayBefore": "93e00b4d4d5de6f3c0d50dae5e7852daac75deab84bc9516c3ec8434843a9090",
+  "gatewayAfter": "7f2e30f65a3e5a84da45a3b443a0680d69195656dd690dd97c6f4ed2c02d3b83",
+  "files": [
+    {
+      "path": "index.html",
+      "sha256": "d66df601fb52ba12f835ea2e56b81b67195f3bd7cb27b7dac4f73db764a96a8f",
+      "bytes": 906
+    },
+    {
+      "path": "admin.webmanifest",
+      "sha256": "465d138c27600abd613b3416cf4304d10aaab35ecf68cd52674788dee19bf32c",
+      "bytes": 628
+    },
+    {
+      "path": "mashhad-admin-icon-v1-180.png",
+      "sha256": "1a2ed09489d66fc63f5a4dea78aa1afd4dc1aee100af3e5c9c9c4fbd4bce58a8",
+      "bytes": 43994
+    },
+    {
+      "path": "mashhad-admin-icon-v1-192.png",
+      "sha256": "0ccfdb1a979f05a4793b6ef67cb9eecf4a92849eab4d8c5e3cf9c1ba0260e5cb",
+      "bytes": 49434
+    },
+    {
+      "path": "mashhad-admin-icon-v1-512.png",
+      "sha256": "e7038fdb3a2636c1bff14f4757615b92c5d838f39346ae71d08d90d45aabc623",
+      "bytes": 311309
+    },
+    {
+      "path": "sw.js",
+      "sha256": "482ecb61c11a2275561f55118dee6603d3595b78b9bbe3189f62a7b2b40cc2f7",
+      "bytes": 233
+    },
+    {
+      "path": "version.json",
+      "sha256": "517b7e27fb6822f9dcd099ac4f0510f5bd025bd53a4ca61d725eda2570133f56",
+      "bytes": 53
+    },
+    {
+      "path": "assets/admin-CyDvx0bw.js",
+      "sha256": "6a33e95493b812059889a3df88174ee3488437c4c3c0f059366e18f13be89270",
+      "bytes": 53432
+    },
+    {
+      "path": "assets/admin-D2NT8FFR.css",
+      "sha256": "ffbb33206652ad2067219e44dc4d1904736dff8a2d0a651643e4626d4e6d16d1",
+      "bytes": 62966
+    },
+    {
+      "path": "assets/auth-arabic-DVh29meS.js",
+      "sha256": "46feb7e9a2f22cc56fa67c812afc8bc57402b38ad898c6083ab9f4f06688c9d6",
+      "bytes": 75282
+    },
+    {
+      "path": "assets/auth-CTprXwLg.js",
+      "sha256": "a3fffef42b786f18ff5c81b1b82b5212a31126fab32be35f591e67a2e2d0ee2d",
+      "bytes": 308647
+    },
+    {
+      "path": "assets/convex-BTZqt167.js",
+      "sha256": "ce383598de9d351ab6e1ff43ecf93e5c4255d9034e7df0e62b44543048ae7538",
+      "bytes": 86320
+    },
+    {
+      "path": "assets/FilmAdminEntry-BxGwn_IC.css",
+      "sha256": "47282e409681ef5084031b99a02a2a96a7bc0b4c234035e0f731b7cd6858d39c",
+      "bytes": 20482
+    },
+    {
+      "path": "assets/FilmAdminEntry-GP0p_dk8.js",
+      "sha256": "2eec4fa2bc687faace4b125220e8f2bd9628712d4f22fa450df62c331d25053e",
+      "bytes": 23829
+    }
+  ]
+}
