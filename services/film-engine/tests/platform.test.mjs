@@ -85,6 +85,27 @@ test('publish requires fresh same account GPU quality proof and explicit visual/
  const j={id:randomUUID(),accountId:f.account.id,settings:{gpu:'RTX-PRO-6000'},status:'completed',cloudStopped:true,quality:f.engine.quality,result:{videoVerified:true}};f.store.put('job',j);
  await assert.rejects(f.invoke(admin,'admin.slot.verify',{id:f.slot.id,jobId:j.id}),/REAL_GPU_TEST_REQUIRED/);await f.invoke(admin,'admin.slot.verify',{id:f.slot.id,jobId:j.id,reviewed:true});await f.invoke(admin,'admin.slot.publish',{id:f.slot.id});j.quality={contract:'stale'};f.store.put('job',j);await assert.rejects(f.invoke(admin,'admin.slot.publish',{id:f.slot.id}),/REAL_GPU_TEST_REQUIRED/);
 });
+
+test('administrator can explicitly publish a trial without inventing quality proof or starting GPU',async t=>{
+ const f=await fixture(t);f.store.put('film-slot',{...f.slot,published:false,locked:true});
+ await assert.rejects(f.invoke(alice,'admin.slot.publish',{id:f.slot.id,testingOnly:true,approved:true}),/FORBIDDEN/);
+ await assert.rejects(f.invoke(admin,'admin.slot.publish',{id:f.slot.id,testingOnly:true}),/APPROVAL_REQUIRED/);
+ const before=f.provider.calls.length;
+ await f.invoke(admin,'admin.slot.publish',{id:f.slot.id,testingOnly:true,approved:true});
+ const slot=f.store.get('film-slot',f.slot.id);assert.equal(slot.published,true);assert.equal(slot.testingOnly,true);assert.equal(slot.locked,true);assert.equal(slot.testJobId,undefined);
+ assert.equal(f.provider.calls.length,before);assert.equal(f.store.all('job').length,0);
+ const listed=(await f.invoke(alice,'servers.list'))[0];assert.match(listed.availability,/للتجربة/);assert.equal(listed.state,'locked');
+ await assert.rejects(f.invoke(admin,'admin.slot.publish',{id:f.slot.id}),/REAL_GPU_TEST_REQUIRED/);
+ f.store.put('account',{...f.account,activated:false});await assert.rejects(f.invoke(admin,'admin.slot.publish',{id:f.slot.id,testingOnly:true,approved:true}),/WEIGHTS_NOT_READY/);
+ f.store.put('account',{...f.account,discovery:{ready:false}});await assert.rejects(f.invoke(admin,'admin.slot.publish',{id:f.slot.id,testingOnly:true,approved:true}),/WEIGHTS_NOT_READY/);
+ f.store.put('account',f.account);f.store.put('job',{id:'active-work',accountId:f.account.id,action:'start',cloudStopped:false});await assert.rejects(f.invoke(admin,'admin.slot.publish',{id:f.slot.id,testingOnly:true,approved:true}),/ACCOUNT_IN_USE/);
+});
+
+test('both catalog entries show busy when their shared account capacity is occupied',async t=>{
+ const f=await fixture(t);await f.invoke(admin,'admin.capacity.save',{accountId:f.account.id,maxConcurrent:1});
+ const other=await f.invoke(admin,'admin.slot.save',{accountId:f.account.id,name:'Second',hourPriceUSD:'3'});f.store.put('film-slot',{...other,published:true,locked:false});
+ await f.credit(alice);await warm(f,await f.start(alice));assert.ok((await f.invoke(bob,'servers.list')).every(s=>s.state==='busy'));
+});
 test('HMAC time/body/HTTPS/replay checks and polling avoids durable request cache',async t=>{
  const f=await fixture(t);const nonce=randomUUID(),requestId=randomUUID();assert.equal((await bridge(f,{nonce,requestId})).status,200);assert.equal((await bridge(f,{nonce,requestId})).body.error,'BRIDGE_UNAUTHORIZED');assert.equal((await bridge(f,{secure:false})).body.error,'BRIDGE_UNAUTHORIZED');assert.equal((await bridge(f,{headers:{'x-film-signature':'0'.repeat(64)}})).body.error,'BRIDGE_UNAUTHORIZED');
  assert.equal(f.store.all('film-bridge-request').length,0);f.advance(121000);await bridge(f);assert.equal(f.store.all('film-bridge-nonce').length,1);

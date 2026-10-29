@@ -38,7 +38,7 @@ const fields = {
     'admin.test.quote': { id, prompt: x => text(x, 9000), audioContract: x => record(x) && JSON.stringify(x).length <= 20000 },
     'admin.test.execute': { quoteId: id, approved: yes }, 'admin.operation.status': { id },
     'admin.slot.save': { 'id?': id, accountId: id, name: short, hourPriceUSD: money, 'gpu?': x => ['RTX-PRO-6000', 'L40S'].includes(x) },
-    'admin.slot.verify': { id, jobId: id, reviewed: yes }, 'admin.slot.publish': { id },
+    'admin.slot.verify': { id, jobId: id, reviewed: yes }, 'admin.slot.publish': { id, 'testingOnly?': bool, 'approved?': yes },
     'admin.slot.retire': { id, approved: yes },
     'admin.slot.lock': { id, locked: bool }, 'admin.slot.stop': { id, approved: yes },
     'admin.capacity.save': { accountId: id, maxConcurrent: x => x === 1 || x === 2 },
@@ -127,7 +127,7 @@ for (const key of ('confirmed pending jobs rentals standaloneActiveCount').split
     adminKeys.add(key);
 for (const key of ('retired retiredAt unlinked unlinkedAt remoteResourcesDeleted providerTokenRevoked').split(' '))
     adminKeys.add(key);
-for(const key of ['error','error_type','app_id','running_containers','tasks'])adminKeys.add(key);
+for(const key of ['error','error_type','app_id','running_containers','tasks','testingOnly','trialPublishedAt'])adminKeys.add(key);
 function adminDTO(value, secrets, depth = 0) {
     if (record(value) && typeof value.reason === 'string' && typeof value.subject === 'string' && 'acknowledged' in value) {
         const d = record(value.details) ? value.details : {};
