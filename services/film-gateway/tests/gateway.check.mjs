@@ -112,3 +112,10 @@ test('conversation management schema and DTO expose only owner-safe metadata',as
  const r=await f.post({operation:'project.organize',input:{id:'project1',name:'renamed',pinned:true},requestId:'organize-one'});assert.equal(r.status,200);assert.deepEqual(await r.json(),{id:'project1',name:'renamed',pinned:true,archived:false});
  assert.equal((await f.post({operation:'project.organize',input:{id:'project1',pinned:'yes'},requestId:'bad-organize'})).status,400);
 });
+
+test('nullable account direction preferences and unanswered project creation pass strict gateway fields only',async t=>{
+ const f=await fixture(t,{bridgeResult:{orientation:null,private:'hidden'}});let r=await f.post({operation:'preferences.save',input:{orientation:null},requestId:'pref-clear'});assert.deepEqual(await r.json(),{orientation:null});
+ r=await f.post({operation:'preferences.save',input:{orientation:'landscape'},requestId:'pref-landscape'});assert.equal(r.status,200);
+ const count=f.calls.filter(c=>c.url.includes('film.example')).length;assert.equal((await f.post({operation:'preferences.save',input:{orientation:'square'},requestId:'bad-pref'})).status,400);assert.equal(f.calls.filter(c=>c.url.includes('film.example')).length,count);
+ r=await f.post({operation:'project.save',input:{name:'قصة',story:'test',seconds:20,orientation:null},requestId:'unspecified-project'});assert.equal(r.status,200);
+});
