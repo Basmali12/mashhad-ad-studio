@@ -22,6 +22,7 @@ const fields = {
     'rental.start': { serverId: id, revision: integer, priceMicroUSD: integer, approved: yes, requestId: id },
     'rental.status': { id }, 'rental.stop': { id },
     'project.save': { 'id?': id, name: short, story: x => text(x), seconds: x => integer(x) && x >= 10 && x <= 300 && x % 10 === 0, orientation: x => ['portrait', 'landscape'].includes(x) },
+    'project.preview.execute': {projectId:id,quoteId:id,approved:yes}, 'project.preview.view': {projectId:id},
     'project.reference.view': { projectId: id }, 'project.reference.ticket': { projectId: id }, 'project.reference.remove': { projectId: id },
     'project.get': { id }, 'project.follow': { id },
     'chat.submit': { projectId: id, message: x => text(x), approved: yes },
@@ -63,12 +64,13 @@ const wallet = { balanceMicroUSD: 'value', expiresAt: 'value', reservedMicroUSD:
 const server = { id: 'id', name: 'text', gpu: 'text', ram: 'value', cpu: 'value', pricePerHourUSD: 'value', state: 'text', availability: 'text' };
 const rental = { stages:[{phase:'text',state:'text'}], id: 'id', serverId: 'id', state: 'text', elapsedSeconds: 'value', billedMicroUSD: 'value', hourPriceUSD: 'value', lowFunds: 'value', phase: 'text', completed: 'value', total: 'value', stopReason: 'text', message: 'text' };
 const visualReview={index:'value',model:'text',summary:'text',visibleText:'text',continuity:'text',causalOrder:'text',audioAssessment:'text',findings:['text'],suggestedCorrections:['text'],sampleCount:'value',computedUSD:'value',invoiceUSD:'value'};
-const project = {discussion:{readyToWrite:'value',seconds:'value',style:'text'},launch:{state:'text',approvedAt:'value',finishedAt:'value'},directorFollow:'value',reviewPending:'value',reviewState:'text',visualReviews:[visualReview], id: 'id', name: 'text', story: 'text', messages: [{ role: 'text', content: 'text', hasReference:'value' }], seconds: 'value', orientation: 'text', state: 'text', reference: { mime: 'text', size: 'value', width: 'value', height: 'value', uploadedAt: 'value' }, textPending: 'value', textUncertain: 'value', textCostPolicy: 'text', planningCompletedScenes: 'value', merge: { status: 'text', error: 'text', duration: 'value', width: 'value', height: 'value', nativeAudio: 'value' }, scenes: [{ durationSeconds:'value',stages:[{phase:'text',state:'text'}],index: 'value', title: 'text', mediaExpired:'value', visualPrompt:'text', status: 'text', dialogue: [{ speaker: 'text', text: 'text' }], phase: 'text', completed: 'value', total: 'value', ready: 'value' }], error: 'text' };
+const project = {preview:{id:'id',status:'text',estimatedUSD:'value',computedUSD:'value',invoiceUSD:'value',expiresAt:'value',error:'text',model:'text'},discussion:{readyToWrite:'value',seconds:'value',style:'text'},launch:{state:'text',approvedAt:'value',finishedAt:'value'},directorFollow:'value',reviewPending:'value',reviewState:'text',visualReviews:[visualReview], id: 'id', name: 'text', story: 'text', messages: [{ role: 'text', content: 'text', hasReference:'value' }], seconds: 'value', orientation: 'text', state: 'text', reference: { mime: 'text', size: 'value', width: 'value', height: 'value', uploadedAt: 'value' }, textPending: 'value', textUncertain: 'value', textCostPolicy: 'text', planningCompletedScenes: 'value', merge: { status: 'text', error: 'text', duration: 'value', width: 'value', height: 'value', nativeAudio: 'value' }, scenes: [{ durationSeconds:'value',stages:[{phase:'text',state:'text'}],index: 'value', title: 'text', mediaExpired:'value', visualPrompt:'text', status: 'text', dialogue: [{ speaker: 'text', text: 'text' }], phase: 'text', completed: 'value', total: 'value', ready: 'value' }], error: 'text' };
 const customerShapes = {
     session: { user: { id: 'id', name: 'text' }, wallet, servers: [server], enabled: 'value', planningEnabled: 'value', capabilities: { referenceUpload: 'value', ingredients: 'value', voiceCloning: 'value', lastFrameContinuity: 'value', nativeAudio: 'value', wholeFilmMerge: 'value' } },
     'files.list': [{id:'id',projectId:'id',index:'fileIndex',kind:'text',name:'text',createdAt:'value',expiresAt:'value',bytes:'value'}], 'files.delete': {removed:'value'}, 'files.ticket': {url:'url',expires:'value'},
     wallet, 'servers.list': [server], 'rental.quote': { serverId: 'id', revision: 'value', priceMicroUSD: 'value', pricePerHourUSD: 'value', minimumCreditUSD: 'value', warning: 'text', canStart: 'value' },
     'rental.start': rental, 'rental.status': rental, 'rental.stop': rental, 'projects.list': [project],
+    'project.preview.execute':project, 'project.preview.view':{url:'previewUrl',expires:'value'},
     'project.reference.view': { url: 'referenceUrl', expires: 'value' }, 'project.reference.ticket': { url: 'uploadUrl', expires: 'value', maxBytes: 'value' }, 'project.reference.remove': project, 'project.save': project, 'project.get': project, 'project.follow': project, 'text.status': project, 'plan.status': project, 'project.merge': project,
     'chat.submit': { accepted: 'value', textCostPolicy: 'text' }, 'plan.submit': { accepted: 'value', textCostPolicy: 'text' }, 'review.submit': { accepted: 'value', textCostPolicy: 'text' },
     'project.launch': project,
@@ -103,6 +105,7 @@ function projectShape(value, shape, secrets, publicMediaOrigin) {
         return null;
     if (shape === 'id')
         return id(value) && !/modal|مودال/i.test(value) ? value : null;
+    if(shape==='previewUrl'){const url=new URL(value);if(url.protocol!=='https:'||url.username||url.password||url.origin!==publicMediaOrigin||!/^\/api\/film-preview\/[A-Za-z0-9_-]+$/.test(url.pathname)||secrets.some((s,i)=>i!==1&&s&&value.includes(s)))throw Error('INVALID_MEDIA');return value;}
     if (shape === 'referenceUrl') {
         const url = new URL(value);
         if (url.protocol !== 'https:' || url.username || url.password || !/^\/api\/film-reference-view\/[A-Za-z0-9_-]+$/.test(url.pathname) || url.origin !== publicMediaOrigin || secrets.some((s, i) => i !== 1 && s && value.includes(s)))
@@ -150,6 +153,7 @@ function adminDTO(value, secrets, depth = 0) {
     return typeof value === 'boolean' || typeof value === 'number' || value === null ? value : null;
 }
 const safeErrors = {
+    PREVIEW_PENDING:'معاينة الصورة قيد التنفيذ أو تحتاج متابعة؛ لا تشغيل إضافي.',PREVIEW_LIMIT:'وصل هذا الفيلم إلى حد معاينات الصور.',PREVIEW_NOT_AVAILABLE:'عرض معاينة الصورة غير متاح؛ حدّث المحادثة.',
     MEDIA_EXPIRED: 'انتهت مدة حفظ الفيديو أو حُذف. لا يعاد توليده تلقائياً.',
     MEDIA_IN_USE: 'الفيديو مستخدم في إنتاج أو دمج جارٍ؛ انتظر اكتمال العملية قبل الحذف.',
     LOCAL_ARTIFACT_NOT_WRITABLE: 'مجلد حفظ الفيديو غير قابل للكتابة على الخادم؛ لم يبدأ تشغيل GPU. راجع صلاحيات خدمة الملفات.',

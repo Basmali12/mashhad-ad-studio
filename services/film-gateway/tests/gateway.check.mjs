@@ -95,3 +95,10 @@ test('signed image upload/view URLs use explicitly trusted public origin, indepe
   const rejected=await bad.post({operation,input:{projectId:'project-one'},requestId:'image-ticket-002'});assert.equal((await rejected.json()).error,'REQUEST_STATE_UNKNOWN');
  }
 });
+
+
+test('image preview cannot start without explicit scoped approval; private prompt and storage fields are stripped',async t=>{
+ const f=await fixture(t,{bridgeResult:{id:'project-one',preview:{id:'offer-one',status:'offered',model:'gpt-image-2-2026-04-21',estimatedUSD:.1,prompt:'PRIVATE',path:'/private',computedUSD:null,invoiceUSD:null}}});
+ await f.post({operation:'project.preview.execute',input:{projectId:'project-one',quoteId:'offer-one',approved:false},requestId:'preview-denied'});assert.equal(f.calls.filter(c=>c.url.includes('film.example')).length,0);
+ const r=await f.post({operation:'project.preview.execute',input:{projectId:'project-one',quoteId:'offer-one',approved:true},requestId:'preview-approved'});const dto=await r.json();assert.equal(dto.preview.status,'offered');assert.equal('prompt' in dto.preview,false);assert.equal('path' in dto.preview,false);assert.equal(f.calls.filter(c=>c.url.includes('film.example')).length,1);
+});

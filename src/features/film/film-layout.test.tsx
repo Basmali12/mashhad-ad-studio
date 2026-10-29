@@ -30,3 +30,11 @@ it('the primary video counter advances only for verified durations, not wall-clo
  expect(html).toContain('aria-label="مدة الفيديو المولّدة فعلياً" aria-live="polite">10 ثانية');expect(html).toContain('3 / 3');expect(html).toContain('خطوات معالجة، وليست ثواني فيديو');
  expect(generatedVideoSeconds({...p,scenes:p.scenes.map(s=>({...s,durationSeconds:null}))})).toBe(0);
 });
+
+
+it('customer production has no per-clip player or downloads; only the completed final film exposes separate controls',()=>{
+ const p={id:'p',seconds:20,messages:[],state:'generating',scenes:[{index:0,title:'INTERNAL_CLIP_ONE',status:'done',ready:true,durationSeconds:10,dialogue:[]}],merge:null,error:null,launch:{state:'generating',approvedAt:1,finishedAt:null}} as unknown as FilmProject;
+ const props={request:async()=>{throw Error('NO_CLOUD');},rental:null,onBack:()=>{},onStop:()=>{},busy:false};
+ const partial=renderToStaticMarkup(<FilmGeneration {...props} project={p}/>);expect(partial).not.toContain('INTERNAL_CLIP_ONE');expect(partial).not.toContain('معاينة الفيديو');expect(partial).not.toContain('تنزيل الفيديو');
+ const complete=renderToStaticMarkup(<FilmGeneration {...props} project={{...p,state:'completed',merge:{status:'completed',error:null,duration:20,width:720,height:1280,nativeAudio:true}}}/>);expect(complete).toContain('معاينة الفيديو');expect(complete).toContain('تنزيل الفيديو');expect(complete).not.toContain('مشاهدة وتنزيل');
+});
