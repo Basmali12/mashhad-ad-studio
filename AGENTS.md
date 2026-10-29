@@ -1,5 +1,7 @@
 # Mashhad / Iraq AI Studio — project map
 
+Deployment target correction (owner request, 2026-10-29): publish Mashhad with the film integration at https://iraqaistudio.com/, not the previously planned studio subdomain. Preserve existing schedules/accounts and scan storage routes. Historical studio-only deployment guidance below is superseded for the target only. Keep the same backend/authentication verification and rollback gates; no GPU or model transfer as a deployment check.
+
 This directory (`outputs/ad-studio`) is the application and Git root. Preserve the existing React + TypeScript + Vite + Convex + Clerk project. Do not rebuild it or replace working features.
 
 ## Where to work

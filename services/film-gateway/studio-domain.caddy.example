@@ -1,6 +1,9 @@
-# Replace only the existing studio.iraqaistudio.com block after backup/validation.
-# Existing other domains and storage/worker routes remain untouched.
-studio.iraqaistudio.com {
+# Target explicitly selected by the owner: https://iraqaistudio.com/.
+# Template only: inspect existing TLS, headers, DNS and media routes first.
+# GitHub Pages cannot serve /api/mashhad-film: activate the gateway and verify
+# authenticated access before switching the root domain to this server.
+# Preserve scan.iraqaistudio.com and all storage/worker routes.
+iraqaistudio.com {
     handle /api/mashhad-film* {
         reverse_proxy 127.0.0.1:3480
     }
