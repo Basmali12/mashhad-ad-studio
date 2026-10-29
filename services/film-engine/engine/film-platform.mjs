@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import {touchesAccount} from './account-routing.mjs';
 import path from 'node:path';
 import {id,hash} from './store.mjs';
 import {settings} from './config.mjs';
@@ -12,6 +13,7 @@ import {reviewBlocksContinuation} from './film-review.mjs';
 const dateOrNull=v=>{if(v==null)return null;if(!Number.isSafeInteger(v)||v<=0)throw Error('INVALID_INPUT');return v;};
 const prose=(v,max=20000)=>{if(typeof v!=='string'||!v.trim()||v.length>max||/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(v))throw Error('INVALID_INPUT');return v.trim();};
 const SAFE=/^[a-zA-Z0-9_-]{1,100}$/;
+const accountReady=a=>a&&a.activated!==false&&a.discovery?.ready===true;
 const clean=text=>String(text??'').replace(/modal|مودال/gi,'مزود الحوسبة');
 const label=(v,max=120)=>{if(typeof v!=='string'||!v.trim()||v.length>max||/[\x00-\x1f<>]/.test(v))throw Error('INVALID_INPUT');return v.trim();};
 const secureRequest=req=>!!req.socket.encrypted||(['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress)&&req.headers['x-forwarded-proto']==='https');
@@ -29,6 +31,8 @@ function mediaRange(value,size){
 const messages={INSUFFICIENT_CREDIT:'رصيدك لا يغطي التجهيز وهامش الإيقاف. اشحن المحفظة أولاً.',SERVER_LOCKED:'المحرك مقفول من الإدارة.',SERVER_BUSY:'المحرك مشغول حالياً.',USER_HAS_RENTAL:'عندك جلسة قائمة؛ تابعها أو أوقفها أولاً.',NOT_FOUND:'العنصر غير موجود أو غير مسموح لك بالوصول إليه.',FORBIDDEN:'هذه العملية للمسؤول فقط.',APPROVAL_REQUIRED:'راجع السعر ووافق على التكلفة أولاً.',PAID_DISABLED:'التشغيل المدفوع مقفل؛ لم يبدأ أي تشغيل.',SCENE_ALREADY_ATTEMPTED:'لهذا المشهد محاولة محفوظة. لن نعيد توليده تلقائياً.',RENTAL_NOT_READY:'المحرك غير جاهز للتوليد بعد.',INVALID_INPUT:'راجع الحقول المطلوبة.',INVALID_MONEY:'اكتب مبلغاً صحيحاً بالدولار.',TEXT_DISABLED:'كتابة القصة غير مفعلة من الإدارة.',RENTAL_SCHEMA_REQUIRED:'خدمة الاستئجار تحتاج إكمال تهيئة قاعدة البيانات.',PLAN_REQUIRED:'جهّز واعتمد تقرير الفيلم قبل التوليد.',COST_CHANGED:'تغير السعر أو إعداد المحرك؛ راجع عرضاً جديداً.',NO_CAPACITY:'بلغ الحساب حد الجلسات المحدد؛ جرب لاحقاً.'};
 
 /** Authenticated server-to-server gateway. Customer DTOs never include credentials, workspaces or provider jobs. */
+messages.ACCOUNT_IN_USE='أوقف جلسات الحسابين وتأكد من توقفها قبل تغيير الربط.';
+messages.WEIGHTS_NOT_READY='ملفات نسخة النموذج الحالية غير مكتملة؛ يلزم تجهيز الحساب من الإدارة أولاً، بدون بدء GPU.';
 messages.REFERENCE_QUOTA='بلغت مساحة الصور المرجعية المتاحة لحسابك. راجع الإدارة؛ لم تُحذف صورك.';
 export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.now,mediaOrigins=[],startWorker=true,textEnabled=false,textBudgetMicroUSD=0,closeTimeoutMs=2000,merger=createFilmMerger(),referenceCustomerByteLimit=REFERENCE_CUSTOMER_LIMIT}){
  const store=engine.store,pending=new Set(),working=new Set();let closed=false;
@@ -56,8 +60,9 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    reservedMicroUSD:0,activeRentalId:rental?.id??null,lots:lots.map(l=>({amountMicroUSD:l.amount,remainingMicroUSD:l.expiresAt>now()?l.remaining:0,expiresAt:l.expiresAt,expired:l.expiresAt<=now()}))};
  }
  async function listServers(){
-  const rentals=await store.all('rental'),capacities=new Map((await store.all('film-capacity')).map(v=>[v.id,v.maxConcurrent])),standaloneBusy=(await store.all('job')).some(j=>!j.tenantId&&blocksRental(j));return (await store.all('film-slot')).filter(s=>s.published&&!s.retired).map(s=>({id:s.id,name:clean(s.name),gpu:s.gpu,ram:s.ram,cpu:s.cpu,pricePerHourUSD:s.hourMicros/1e6,
-   state:s.locked?'locked':standaloneBusy||rentals.some(r=>r.engineSlotId===s.id&&r.state!=='closed')||rentals.filter(r=>r.accountId===s.accountId&&r.state!=='closed').length>=(capacities.get(s.accountId)||1)?'busy':'available',availability:s.testingOnly?'متاح للتجربة — لم يُعتمد اختبار الجودة بعد. GPU يبدأ عند تشغيلك فقط؛ التوفر الفوري غير مضمون.':'متاح للحجز لا يعني ضمان تخصيص فوري'}));
+  const accounts=new Map((await store.all('account')).map(a=>[a.id,a]));
+  const rentals=await store.all('rental'),capacities=new Map((await store.all('film-capacity')).map(v=>[v.id,v.maxConcurrent])),standaloneJobs=(await store.all('job')).filter(j=>!j.tenantId&&blocksRental(j));return (await store.all('film-slot')).filter(s=>s.published&&!s.retired).map(s=>({id:s.id,name:clean(s.name),gpu:s.gpu,ram:s.ram,cpu:s.cpu,pricePerHourUSD:s.hourMicros/1e6,
+   state:s.locked||!accountReady(accounts.get(s.accountId))?'locked':standaloneJobs.some(j=>touchesAccount(j,s.accountId))||rentals.some(r=>r.engineSlotId===s.id&&r.state!=='closed')||rentals.filter(r=>r.accountId===s.accountId&&r.state!=='closed').length>=(capacities.get(s.accountId)||1)?'busy':'available',availability:!accountReady(accounts.get(s.accountId))?'المحرك يحتاج إكمال تجهيز ملفات النموذج من الإدارة؛ لم يبدأ أي تشغيل.':s.testingOnly?'متاح للتجربة — لم يُعتمد اختبار الجودة بعد. GPU يبدأ عند تشغيلك فقط؛ التوفر الفوري غير مضمون.':'متاح للحجز لا يعني ضمان تخصيص فوري'}));
  }
  async function stopRental(r,reason='CUSTOMER_STOP'){
   if(r.state==='closed')return;if(r.stopAttemptAt&&now()-r.stopAttemptAt<10000)return;
@@ -115,7 +120,8 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   if(r.creditExpiresAt<=now()+STOP_GUARD_SECONDS*1000)await stopRental(r,'CREDIT_EXPIRING');
   if(['recovery_required','uncertain','failed'].includes(job?.status)&&!job?.cloudStopped){await stopRental(r,'SERVER_RESTART');try{job=await engine.invoke('jobs/'+r.engineJobId+'/reconcile',{},scope(r));}catch{await alert('RESOURCE_STATE_UNKNOWN',r.id);}}
   await meter(r,job);
-  if(job&&['failed','uncertain','stopped'].includes(job.status))await alert('ENGINE_STOPPED',r.id,{knownReason:/^[A-Z_]{3,80}$/.test(job.error||'')?job.error:'PROVIDER_STOP',accountId:r.accountId});
+  const latest=await store.get('rental',r.id),expectedStop=job?.status==='stopped'&&job.cloudStopped===true&&latest?.state==='closed'&&['CUSTOMER_STOP','ADMIN_STOP','ADMIN_ACCOUNT_STOP'].includes(latest.stopReason)&&!job.error;
+  if(job&&!expectedStop&&['failed','uncertain','stopped'].includes(job.status))await alert('ENGINE_STOPPED',r.id,{knownReason:/^[A-Z_]{3,80}$/.test(job.error||'')?job.error:'PROVIDER_STOP',accountId:r.accountId});
  }
  async function tick(){
   await recovery;if(closed||!store)return;
@@ -149,9 +155,9 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   await requireRentals();if(input.approved!==true)throw Error('APPROVAL_REQUIRED');
   let r,created=false;await store.transaction(async()=>{
    const key=hash(c.id+':'+label(input.requestId,100));const old=await store.get('rental',key);if(old){r=old;return;}
-   if((await store.all('job')).some(j=>!j.tenantId&&blocksRental(j)))throw Error('SERVER_BUSY');
    const slot=await store.get('film-slot',input.serverId);if(!slot?.published||slot.locked||slot.retired)throw Error('SERVER_LOCKED');
-   if(!await store.get('account',slot.accountId))throw Error('SERVER_LOCKED');
+   if((await store.all('job')).some(j=>!j.tenantId&&blocksRental(j)&&touchesAccount(j,slot.accountId)))throw Error('SERVER_BUSY');
+   if(!accountReady(await store.get('account',slot.accountId)))throw Error('WEIGHTS_NOT_READY');
    if(slot.hourMicros!==input.priceMicroUSD||slot.revision!==input.revision)throw Error('COST_CHANGED');
    const all=(await store.all('rental')).filter(x=>x.state!=='closed');if(all.some(x=>x.customerId===c.id))throw Error('USER_HAS_RENTAL');if(all.some(x=>x.engineSlotId===slot.id))throw Error('SERVER_BUSY');
    const capacity=await store.get('film-capacity',slot.accountId);if(all.filter(x=>x.accountId===slot.accountId).length>=(capacity?.maxConcurrent||1))throw Error('NO_CAPACITY');
@@ -313,13 +319,13 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   }
   if(operation==='admin.rentals.list')return Promise.all((await store.all('rental')).map(async r=>({...await rentalDTO(r),customerId:r.customerId,accountId:r.accountId,createdAt:r.createdAt,providerRecordedUSD:r.providerRecordedUSD??null,uncoveredMicroUSD:r.uncoveredMicroUSD||0,estimatedSupplierUSD:null,supplierCostSource:r.providerRecordedUSD==null?'unknown':'provider_recorded_not_invoice'})));
   if(operation==='admin.accounts.list'){
-   const slots=await store.all('film-slot'),rentals=await store.all('rental'),jobs=await store.all('job');return Promise.all([...(await store.all('account')),...(await store.all('account-archive'))].map(async a=>{const standaloneActiveCount=new Set(jobs.filter(j=>!j.tenantId&&(j.accountId===a.id||j.sourceId===a.id)&&unconfirmed(j)).map(j=>j.attachedEngineId||j.id)).size;return {id:a.id,label:a.label,workspace:a.workspace,role:a.role,unlinked:!!a.unlinked,unlinkedAt:a.unlinkedAt??null,weightsReady:!!a.discovery?.ready,checkedAt:a.discovery?.checkedAt??null,files:a.discovery?.files?.map(f=>({name:f.name,size:f.size})),slots:slots.filter(s=>s.accountId===a.id),activeCount:rentals.filter(r=>r.accountId===a.id&&r.state!=='closed').length+standaloneActiveCount,standaloneActiveCount,billing:await store.get('film-account-billing',a.id),capacity:await store.get('film-capacity',a.id)};}));
+   const slots=await store.all('film-slot'),rentals=await store.all('rental'),jobs=await store.all('job');return Promise.all([...(await store.all('account')),...(await store.all('account-archive'))].map(async a=>{const standaloneActiveCount=new Set(jobs.filter(j=>!j.tenantId&&(j.accountId===a.id||j.sourceId===a.id)&&unconfirmed(j)).map(j=>j.attachedEngineId||j.id)).size;return {id:a.id,label:a.label,workspace:a.workspace,role:a.role,unlinked:!!a.unlinked,unlinkedAt:a.unlinkedAt??null,weightsReady:!!a.discovery?.ready,checkedAt:a.discovery?.checkedAt??null,files:(a.discovery?.productionQuality?.files||a.discovery?.files)?.map(f=>({name:f.name,size:f.size,present:f.present??true})),slots:slots.filter(s=>s.accountId===a.id),activeCount:rentals.filter(r=>r.accountId===a.id&&r.state!=='closed').length+standaloneActiveCount,standaloneActiveCount,billing:await store.get('film-account-billing',a.id),capacity:await store.get('film-capacity',a.id)};}));
   }
   if(operation==='admin.account.link')return engine.invoke('accounts',{label:label(input.name),tokenId:input.tokenId,tokenSecret:input.tokenSecret});
   if(operation==='admin.text.config')return engine.invoke('llm/config');
   if(operation==='admin.text.key.save')return engine.invoke('llm/config',{key:input.key});
   if(operation==='admin.text.key.remove')return engine.invoke('llm/config',undefined,undefined,'DELETE');
-  if(operation==='admin.account.lock')return store.transaction(async()=>{const slots=(await store.all('film-slot')).filter(s=>s.accountId===input.accountId&&!s.retired);if(!slots.length)throw Error('NOT_FOUND');for(const s of slots){s.locked=input.locked===true;await store.put('film-slot',s);}return {updated:slots.length,locked:input.locked===true};});
+  if(operation==='admin.account.lock')return store.transaction(async()=>{const slots=(await store.all('film-slot')).filter(s=>s.accountId===input.accountId&&!s.retired);if(!slots.length)throw Error('NOT_FOUND');if(input.locked!==true&&!accountReady(await store.get('account',input.accountId)))throw Error('WEIGHTS_NOT_READY');for(const s of slots){s.locked=input.locked===true;await store.put('film-slot',s);}return {updated:slots.length,locked:input.locked===true};});
   if(operation==='admin.account.stop'){if(input.approved!==true)throw Error('APPROVAL_REQUIRED');return emergencyStop({accountId:input.accountId});}
   if(operation==='admin.account.activate')return engine.invoke('accounts/'+input.accountId+'/activate',{});
   if(operation==='admin.account.unlink'){if(input.approved!==true)throw Error('APPROVAL_REQUIRED');return engine.invoke('accounts/'+input.accountId,undefined,undefined,'DELETE');}
@@ -345,6 +351,22 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    s.settings=settings({gpu:s.gpu,cpu:4,ram:96,timeout:600,startup:180,budget:0,idleSeconds:1200});
    if(old&&old.gpu!==s.gpu){s.testJobId=null;s.published=false;s.locked=true;}await store.put('film-slot',s);return s;
   });
+  if(operation==='admin.slot.reassign')return store.transaction(async()=>{
+   if(input.approved!==true)throw Error('APPROVAL_REQUIRED');
+   const s=await store.get('film-slot',input.id),a=await store.get('account',input.accountId);
+   if(!s||!a)throw Error('NOT_FOUND');if(s.retired)throw Error('SLOT_RETIRED');
+   if(s.accountId===a.id)return s;
+   const accountIds=[s.accountId,a.id];
+   if((await store.all('rental')).some(r=>accountIds.includes(r.accountId)&&r.state!=='closed')||(await store.all('job')).some(j=>unconfirmed(j)&&accountIds.some(aid=>touchesAccount(j,aid))))throw Error('ACCOUNT_IN_USE');
+   if((await store.all('film-slot')).filter(x=>!x.retired&&x.accountId===a.id).length>=2)throw Error('MAX_TWO_SLOTS');
+   const previousAccountId=s.accountId;
+   s.accountId=a.id;s.revision++;s.locked=true;
+   // Preserve trial visibility only; a result on the previous account cannot certify this account.
+   s.published=!!(s.published&&s.testingOnly);s.testJobId=null;s.visualAudioReviewedAt=null;s.reviewedQualityContract=null;
+   s.reassignedAt=now();s.reassignedBy=c.id;
+   await store.put('film-slot',s);await store.put('film-slot-routing',{id:id(),slotId:s.id,previousAccountId,accountId:a.id,createdAt:now(),actor:c.id});
+   await store.audit('film_slot_reassigned',s.id);return s;
+  });
   if(operation==='admin.slot.retire')return store.transaction(async()=>{
    if(input.approved!==true)throw Error('APPROVAL_REQUIRED');const s=await store.get('film-slot',input.id);if(!s)throw Error('NOT_FOUND');if(s.retired)return s;
    if((await store.all('rental')).some(r=>r.accountId===s.accountId&&r.state!=='closed')||(await store.all('job')).some(j=>(j.accountId===s.accountId||j.sourceId===s.accountId)&&unconfirmed(j)))throw Error('ACCOUNT_IN_USE');
@@ -365,7 +387,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    if(!s||!a?.activated||!a?.discovery?.ready||!j?.result?.videoVerified||j.status!=='completed'||!j.cloudStopped||(engine.quality.textQualityRequired&&j.result.textQuality?.status!=='passed')||j.accountId!==s.accountId||j.settings?.gpu!==s.gpu||j.quality?.contract!==engine.quality.contract||s.reviewedQualityContract!==engine.quality.contract||!s.visualAudioReviewedAt)throw Error('REAL_GPU_TEST_REQUIRED');s.published=true;s.testingOnly=false;await store.put('film-slot',s);return {published:true};
   });
   if(operation==='admin.slot.lock')return store.transaction(async()=>{
-   const s=await store.get('film-slot',input.id);if(!s)throw Error('NOT_FOUND');if(s.retired)throw Error('SLOT_RETIRED');s.locked=input.locked===true;await store.put('film-slot',s);return {locked:s.locked};
+   const s=await store.get('film-slot',input.id);if(!s)throw Error('NOT_FOUND');if(s.retired)throw Error('SLOT_RETIRED');if(input.locked!==true&&!accountReady(await store.get('account',s.accountId)))throw Error('WEIGHTS_NOT_READY');s.locked=input.locked===true;await store.put('film-slot',s);return {locked:s.locked};
   });
   if(operation==='admin.slot.stop'){
    if(input.approved!==true)throw Error('APPROVAL_REQUIRED');const slot=await store.get('film-slot',input.id);if(!slot)throw Error('NOT_FOUND');return emergencyStop({accountId:slot.accountId,slotId:slot.id});

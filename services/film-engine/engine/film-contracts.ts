@@ -38,6 +38,7 @@ export const FILM_OPERATIONS = [
   "admin.prepare.execute",
   "admin.operation.status",
   "admin.slot.save",
+  "admin.slot.reassign",
   "admin.slot.retire",
   "admin.slot.verify",
   "admin.slot.publish",

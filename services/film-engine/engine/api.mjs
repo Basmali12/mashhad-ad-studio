@@ -1,3 +1,4 @@
+import {blocksScope} from './account-routing.mjs';
 import {Readable} from 'node:stream';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import fs from 'node:fs/promises';
@@ -53,7 +54,6 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
     if(store){const selected=await store.get('config','selection');const active=(await store.all('job')).some(j=>['queued','running','ready','stopping','uncertain','recovery_required'].includes(j.status)&&!j.cloudStopped);if(selected&&!active){selected.settings=fixedEngineSettings(selected.settings||{});await store.put('config',selected);}}
     const allowedOrigins = new Set((process.env.ENGINE_ALLOWED_ORIGINS || origin).split(',').map(s => s.trim()));
     const internalScope=Symbol('trusted-rental-context');
-    const blocks=(job,scope)=>!scope||!job.engineSlotId||job.engineSlotId===scope.engineSlotId;
     // A failed local state is not proof of stopped cloud resources.
     const unconfirmedResource=job=>['start','generate','prepare'].includes(job.action)&&job.cloudStopped!==true;
     const owns=(record,scope)=>!scope?.tenantId||(record?.tenantId===scope.tenantId&&record?.rentalId===scope.rentalId&&record?.engineSlotId===scope.engineSlotId);
@@ -827,7 +827,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                 if(q.action==='generate'&&(q.dialoguePolicyVersion!==ArabicDialogue.version||q.dialogueScriptHash!==hash(JSON.stringify(ArabicDialogue.validate(q.audioContract)))))throw Error('ARABIC_DIALOGUE_REQUIRED: تغيّر عقد الحوار؛ جهّز عرضاً جديداً قبل التشغيل.');
                 if(q.estimate?.manualControl&&q.estimate.resourceWindowUSD===null&&(await store.get('config','budget'))?.limitUSD!=null)
                     throw Error('APPLICATION_MONTHLY_LIMIT_REQUIRES_BOUNDED_PLAN');
-                const a = (await account(q.accountId)), busy = (await store.all('job')).filter(j => unconfirmedResource(j) && blocks(j,scope?.tenantId?scope:null) && !(j.status==='completed'&&j.attachedEngineId&&j.result?.videoVerified));
+                const a = (await account(q.accountId)), busy = (await store.all('job')).filter(j => unconfirmedResource(j) && blocksScope(j,scope?.tenantId?scope:null,q.accountId,q.sourceId) && !(j.status==='completed'&&j.attachedEngineId&&j.result?.videoVerified));
                 if(q.action!=='prepare'&&q.quality?.contract!==quality.contract)throw Error('ENGINE_QUALITY_CHANGED_REQUOTE');
                 const prepared = q.action === 'generate' && busy.length === 1 && busy[0].action === 'start' && busy[0].status === 'ready' && busy[0].accountId === a.id && (!busy[0].readyUntil||busy[0].readyUntil>Date.now()) && sameEngineSettings(busy[0].settings,q.settings) && controllers.has(busy[0].id) ? busy[0] : null;
                 if(prepared&&prepared.quality?.contract!==quality.contract)throw Error('ENGINE_QUALITY_CHANGED_STOP_OLD_SESSION');
@@ -866,7 +866,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                     if(q.engineSlotId){const slot=await store.get('film-slot',q.engineSlotId);if(slot?.retired)throw Error('SLOT_RETIRED');}
                     const proof=await store.get('film-admin-test',q.id);
                     if(proof){const slot=await store.get('film-slot',proof.slotId);if(!slot||slot.retired)throw Error('SLOT_RETIRED');}
-                    const current = (await store.all('job')).filter(x => unconfirmedResource(x) && blocks(x,scope?.tenantId?scope:null) && !(x.status==='completed'&&x.attachedEngineId&&x.result?.videoVerified));
+                    const current = (await store.all('job')).filter(x => unconfirmedResource(x) && blocksScope(x,scope?.tenantId?scope:null,q.accountId,q.sourceId) && !(x.status==='completed'&&x.attachedEngineId&&x.result?.videoVerified));
                     if (current.length && !(prepared && current.length === 1 && current[0].id === prepared.id && current[0].status === 'ready'))
                         throw Error('ONE_ACTIVE_OR_UNCERTAIN_JOB_ONLY');
                     const priorScene = sceneKey ? (await store.get('scene', sceneKey)) : null;

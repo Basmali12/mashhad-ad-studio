@@ -323,3 +323,49 @@ test('shutdown attempts standalone failed-resource cancellation without clearing
  const folder=await mkdtemp(path.join(tmpdir(),'film-shutdown-')),key=randomBytes(32).toString('base64'),store=new Store(folder,key);store.installRentalSchema();const account={id:randomUUID(),mode:'local_profile',workspace:'shutdown-only'},provider=new Provider();store.put('account',account);const engine=await createEngineAPI({folder,key,store,provider,allowPaid:false,origin:'https://fixture.test'}),job={id:randomUUID(),accountId:account.id,action:'generate',status:'failed',cloudStopped:false};store.put('job',job);provider.uncertain=true;
  try{await engine.close();assert.equal(provider.calls.filter(c=>c.action==='stop'&&c.input.jobId===job.id).length,1);const reopened=new Store(folder,key);try{const saved=reopened.get('job',job.id);assert.equal(saved.cloudStopped,false);assert.equal(saved.status,'uncertain');assert.ok(saved.stopRequestedAt);}finally{await reopened.close();}}finally{await rm(folder,{recursive:true,force:true});}
 });
+
+test('independent accounts route customer sessions separately and reassign invalidates old quotes without changing history',async t=>{
+ const f=await fixture(t),backup={...f.account,id:randomUUID(),workspace:'backup-workspace',volume:'backup-volume'};f.store.put('account',backup);
+ const second=await f.invoke(admin,'admin.slot.save',{accountId:f.account.id,name:'second',hourPriceUSD:'3'});f.store.put('film-slot',{...second,published:true,testingOnly:true,locked:false});
+ await f.credit(alice);await f.credit(bob);
+ const oldQuote=await f.invoke(bob,'rental.quote',{serverId:second.id});
+ f.store.put('rental',{id:'historic',customerId:f.users.bob,engineSlotId:second.id,accountId:f.account.id,state:'closed',chargedMicroUSD:12345});
+ await assert.rejects(f.invoke(alice,'admin.slot.reassign',{id:second.id,accountId:backup.id,approved:true}),/FORBIDDEN/);
+ await assert.rejects(f.invoke(admin,'admin.slot.reassign',{id:second.id,accountId:backup.id}),/APPROVAL_REQUIRED/);
+ const moved=await f.invoke(admin,'admin.slot.reassign',{id:second.id,accountId:backup.id,approved:true});
+ assert.equal(moved.locked,true);assert.equal(moved.published,true);assert.equal(moved.revision,second.revision+1);assert.equal(moved.testJobId,null);assert.equal(f.provider.calls.length,0);
+ assert.equal(f.store.get('rental','historic').accountId,f.account.id);assert.equal(f.store.get('rental','historic').chargedMicroUSD,12345);
+ await f.invoke(admin,'admin.slot.lock',{id:second.id,locked:false});
+ await assert.rejects(f.invoke(bob,'rental.start',{...oldQuote,serverId:second.id,approved:true,requestId:'stale-route'}),/COST_CHANGED/);
+ const a=await warm(f,await f.start(alice));
+ await assert.rejects(f.invoke(admin,'admin.slot.reassign',{id:second.id,accountId:f.account.id,approved:true}),/ACCOUNT_IN_USE/);
+ assert.equal((await f.invoke(bob,'servers.list')).find(s=>s.id===second.id).state,'available');
+ const q=await f.invoke(bob,'rental.quote',{serverId:second.id}),b=await warm(f,await f.invoke(bob,'rental.start',{...q,serverId:second.id,approved:true,requestId:'backup-session'}));
+ assert.equal(f.store.get('job',b.engineJobId).accountId,backup.id);assert.equal(f.store.get('job',a.engineJobId).accountId,f.account.id);
+ assert.equal(f.provider.calls.filter(c=>c.action==='session').find(c=>c.input.jobId===b.engineJobId).input.credentials.expectedWorkspace,'backup-workspace');
+ assert.equal(f.provider.sessions.size,2);
+});
+
+test('standalone jobs block only their own known account; unknown legacy account remains global',async t=>{
+ const f=await fixture(t),backup={...f.account,id:randomUUID(),workspace:'backup'};f.store.put('account',backup);
+ const second=await f.invoke(admin,'admin.slot.save',{accountId:backup.id,name:'backup',hourPriceUSD:'3'});f.store.put('film-slot',{...second,published:true,locked:false});await f.credit(bob);
+ f.store.put('job',{id:randomUUID(),accountId:f.account.id,action:'start',status:'uncertain',cloudStopped:false,createdAt:Date.now()});
+ const catalog=await f.invoke(bob,'servers.list');assert.equal(catalog.find(s=>s.id===f.slot.id).state,'busy');assert.equal(catalog.find(s=>s.id===second.id).state,'available');
+ const q=await f.invoke(bob,'rental.quote',{serverId:second.id});await warm(f,await f.invoke(bob,'rental.start',{...q,serverId:second.id,approved:true,requestId:'independent'}));
+ f.store.put('job',{id:randomUUID(),action:'prepare',status:'uncertain',cloudStopped:false});assert.equal((await f.invoke(alice,'servers.list')).find(s=>s.id===second.id).state,'busy');
+});
+
+test('confirmed customer stop closes billing without ENGINE_STOPPED failure alert; unexpected stop still alerts',async t=>{
+ const f=await fixture(t);await f.credit(alice);const r=await warm(f,await f.start(alice));
+ await f.invoke(alice,'rental.stop',{id:r.id,approved:true});await waitFor(()=>f.store.get('job',r.engineJobId).cloudStopped);await f.platform.tick();
+ assert.equal(f.store.get('rental',r.id).state,'closed');assert.equal(f.store.all('film-alert').some(a=>a.reason==='ENGINE_STOPPED'),false);
+ const next=await warm(f,await f.start(alice));f.store.put('job',{...f.store.get('job',next.engineJobId),status:'stopped',cloudStopped:true});await f.platform.tick();assert.ok(f.store.all('film-alert').some(a=>a.reason==='ENGINE_STOPPED'&&a.subject===next.id));
+});
+
+test('a mapped but unprepared account stays visible locked and cannot be opened or rented',async t=>{
+ const f=await fixture(t),backup={...f.account,id:randomUUID(),workspace:'missing-files',activated:false,discovery:{ready:false,productionQuality:{files:[{name:'vae/missing',present:false,size:null}]}}};f.store.put('account',backup);
+ f.store.put('film-slot',{...f.slot,published:true,testingOnly:true});await f.invoke(admin,'admin.slot.reassign',{id:f.slot.id,accountId:backup.id,approved:true});
+ await assert.rejects(f.invoke(admin,'admin.slot.lock',{id:f.slot.id,locked:false}),/WEIGHTS_NOT_READY/);
+ const entry=(await f.invoke(alice,'servers.list'))[0];assert.equal(entry.state,'locked');assert.match(entry.availability,/تجهيز/);assert.equal(f.provider.calls.length,0);
+ const metadata=await f.invoke(admin,'admin.accounts.list');assert.equal(metadata.find(a=>a.id===backup.id).files[0].present,false);
+});
