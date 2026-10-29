@@ -425,3 +425,13 @@ test('a damaged media folder cannot interrupt rental metering or claim a supplie
  await writeFile(path.join(f.folder,'artifacts'),'invalid directory fixture');
  await f.platform.tick();assert.ok(f.store.all('film-alert').some(a=>a.reason==='MEDIA_CLEANUP_PENDING'));assert.equal(f.provider.calls.length,0);
 });
+
+
+test('an uploaded reference attaches once to the discussion, preserves assigned role, and strips internal markers before writer dispatch',async t=>{
+ const f=await fixture(t,{text:true}),p=await draft(f);const ticket=await f.invoke(alice,'project.reference.ticket',{projectId:p.id});assert.equal((await upload(f,ticket)).status,200);
+ const calls=[];f.engine.invoke=async(route,b)=>{if(route==='llm/calls'){calls.push(b);assert.ok(b.messages.every(m=>Object.keys(m).every(k=>['role','content'].includes(k))));return {status:'queued'};}return {status:'completed',discussion:{reply:'زينب هي الشخصية بالصورة؛ نحافظ على وصفها.',proposed_duration_seconds:20,style:'realistic',ready_to_write:false},text:'unused'};};
+ await f.invoke(alice,'chat.submit',{projectId:p.id,message:'هاي الصورة لشخصية زينب، ناقشني بيها',approved:true});await waitFor(()=>!f.store.get('film-project',p.id).textPending);
+ let dto=await f.invoke(alice,'project.get',{id:p.id});assert.equal(dto.messages[0].hasReference,true);assert.equal('referenceId' in dto.messages[0],false);assert.ok(calls[0].messages.some(m=>m.content.includes('زينب')));
+ await f.invoke(alice,'chat.submit',{projectId:p.id,message:'خلي زينب تلبس نفس الملابس',approved:true});await waitFor(()=>!f.store.get('film-project',p.id).textPending);
+ dto=await f.invoke(alice,'project.get',{id:p.id});assert.equal(dto.messages.filter(m=>m.hasReference).length,1);assert.equal(f.provider.calls.length,0);
+});

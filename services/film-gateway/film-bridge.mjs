@@ -63,7 +63,7 @@ const wallet = { balanceMicroUSD: 'value', expiresAt: 'value', reservedMicroUSD:
 const server = { id: 'id', name: 'text', gpu: 'text', ram: 'value', cpu: 'value', pricePerHourUSD: 'value', state: 'text', availability: 'text' };
 const rental = { id: 'id', serverId: 'id', state: 'text', elapsedSeconds: 'value', billedMicroUSD: 'value', hourPriceUSD: 'value', lowFunds: 'value', phase: 'text', completed: 'value', total: 'value', stopReason: 'text', message: 'text' };
 const visualReview={index:'value',model:'text',summary:'text',visibleText:'text',continuity:'text',causalOrder:'text',audioAssessment:'text',findings:['text'],suggestedCorrections:['text'],sampleCount:'value',computedUSD:'value',invoiceUSD:'value'};
-const project = {discussion:{readyToWrite:'value',seconds:'value',style:'text'},launch:{state:'text',approvedAt:'value',finishedAt:'value'},directorFollow:'value',reviewPending:'value',reviewState:'text',visualReviews:[visualReview], id: 'id', name: 'text', story: 'text', messages: [{ role: 'text', content: 'text' }], seconds: 'value', orientation: 'text', state: 'text', reference: { mime: 'text', size: 'value', width: 'value', height: 'value', uploadedAt: 'value' }, textPending: 'value', textUncertain: 'value', textCostPolicy: 'text', planningCompletedScenes: 'value', merge: { status: 'text', error: 'text', duration: 'value', width: 'value', height: 'value', nativeAudio: 'value' }, scenes: [{ index: 'value', title: 'text', mediaExpired:'value', visualPrompt:'text', status: 'text', dialogue: [{ speaker: 'text', text: 'text' }], phase: 'text', completed: 'value', total: 'value', ready: 'value' }], error: 'text' };
+const project = {discussion:{readyToWrite:'value',seconds:'value',style:'text'},launch:{state:'text',approvedAt:'value',finishedAt:'value'},directorFollow:'value',reviewPending:'value',reviewState:'text',visualReviews:[visualReview], id: 'id', name: 'text', story: 'text', messages: [{ role: 'text', content: 'text', hasReference:'value' }], seconds: 'value', orientation: 'text', state: 'text', reference: { mime: 'text', size: 'value', width: 'value', height: 'value', uploadedAt: 'value' }, textPending: 'value', textUncertain: 'value', textCostPolicy: 'text', planningCompletedScenes: 'value', merge: { status: 'text', error: 'text', duration: 'value', width: 'value', height: 'value', nativeAudio: 'value' }, scenes: [{ index: 'value', title: 'text', mediaExpired:'value', visualPrompt:'text', status: 'text', dialogue: [{ speaker: 'text', text: 'text' }], phase: 'text', completed: 'value', total: 'value', ready: 'value' }], error: 'text' };
 const customerShapes = {
     session: { user: { id: 'id', name: 'text' }, wallet, servers: [server], enabled: 'value', planningEnabled: 'value', capabilities: { referenceUpload: 'value', ingredients: 'value', voiceCloning: 'value', lastFrameContinuity: 'value', nativeAudio: 'value', wholeFilmMerge: 'value' } },
     'files.list': [{id:'id',projectId:'id',index:'fileIndex',kind:'text',name:'text',createdAt:'value',expiresAt:'value',bytes:'value'}], 'files.delete': {removed:'value'}, 'files.ticket': {url:'url',expires:'value'},
@@ -86,15 +86,15 @@ function safeText(value, secrets, customer) {
         out = out.replace(/modal|مودال/gi, 'مزود الحوسبة');
     return out;
 }
-function projectShape(value, shape, secrets) {
+function projectShape(value, shape, secrets, publicMediaOrigin) {
     if (value === null)
         return null;
     if (Array.isArray(shape))
-        return Array.isArray(value) ? value.map(x => projectShape(x, shape[0], secrets)) : [];
+        return Array.isArray(value) ? value.map(x => projectShape(x, shape[0], secrets, publicMediaOrigin)) : [];
     if (typeof shape === 'object') {
         if (!record(value))
             return null;
-        return Object.fromEntries(Object.entries(shape).filter(([k]) => k in value).map(([k, s]) => [k, k === 'error' && value[k] ? 'العملية تحتاج مراجعة؛ تابع الحالة دون إعادة تلقائية.' : projectShape(value[k], s, secrets)]));
+        return Object.fromEntries(Object.entries(shape).filter(([k]) => k in value).map(([k, s]) => [k, k === 'error' && value[k] ? 'العملية تحتاج مراجعة؛ تابع الحالة دون إعادة تلقائية.' : projectShape(value[k], s, secrets, publicMediaOrigin)]));
     }
     if(shape==='fileIndex')return value==='merged'||integer(value)?value:null;
     if (shape === 'value')
@@ -105,13 +105,13 @@ function projectShape(value, shape, secrets) {
         return id(value) && !/modal|مودال/i.test(value) ? value : null;
     if (shape === 'referenceUrl') {
         const url = new URL(value);
-        if (url.protocol !== 'https:' || url.username || url.password || !/^\/api\/film-reference-view\/[A-Za-z0-9_-]+$/.test(url.pathname) || url.origin !== new URL(secrets[1]).origin || secrets.some((s, i) => i !== 1 && s && value.includes(s)))
+        if (url.protocol !== 'https:' || url.username || url.password || !/^\/api\/film-reference-view\/[A-Za-z0-9_-]+$/.test(url.pathname) || url.origin !== publicMediaOrigin || secrets.some((s, i) => i !== 1 && s && value.includes(s)))
             throw Error('INVALID_UPLOAD');
         return value;
     }
     if (shape === 'uploadUrl') {
         const url = new URL(value);
-        if (url.protocol !== 'https:' || url.username || url.password || !/^\/api\/film-reference\/[A-Za-z0-9_-]+$/.test(url.pathname) || url.origin !== new URL(secrets[1]).origin || secrets.some((s, i) => i !== 1 && s && value.includes(s)))
+        if (url.protocol !== 'https:' || url.username || url.password || !/^\/api\/film-reference\/[A-Za-z0-9_-]+$/.test(url.pathname) || url.origin !== publicMediaOrigin || secrets.some((s, i) => i !== 1 && s && value.includes(s)))
             throw Error('INVALID_UPLOAD');
         return value;
     }
@@ -204,10 +204,13 @@ export async function requestFilm(actor, args, env) {
     catch {
         return fail('INVALID_INPUT', 'راجع الحقول المطلوبة.');
     }
-    let origin;
+    let origin, publicMediaOrigin;
     const secret = env.FILM_BRIDGE_SECRET ?? '';
     try {
         origin = new URL(env.FILM_BACKEND_ORIGIN ?? '');
+        const media = new URL(env.FILM_PUBLIC_MEDIA_ORIGIN || origin.origin);
+        if(media.protocol!=='https:'||media.username||media.password||media.pathname!=='/'||media.search||media.hash)throw Error();
+        publicMediaOrigin=media.origin;
         if (!/^https:\/\/[^/?#\\\s]+\/?$/.test(env.FILM_BACKEND_ORIGIN ?? '') || origin.protocol !== 'https:' || origin.username || origin.password || origin.pathname !== '/' || origin.search || origin.hash || secret.length < 32 || secret.length > 4096)
             throw Error();
     }
@@ -240,7 +243,7 @@ export async function requestFilm(actor, args, env) {
                 return fail(data.error, safeErrors[data.error]);
             return fail('REQUEST_STATE_UNKNOWN', 'النتيجة تحتاج متابعة آمنة.', true);
         }
-        return operation.startsWith('admin.') ? adminDTO(data, secrets) : projectShape(data, customerShapes[operation], secrets);
+        return operation.startsWith('admin.') ? adminDTO(data, secrets) : projectShape(data, customerShapes[operation], secrets, publicMediaOrigin);
     }
     catch {
         return fail('REQUEST_STATE_UNKNOWN', 'تعذر تأكيد نتيجة الطلب.', true);

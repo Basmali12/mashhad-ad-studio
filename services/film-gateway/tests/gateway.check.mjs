@@ -4,9 +4,9 @@ import {createServer} from 'node:http';
 import {createHmac} from 'node:crypto';
 import {createFilmGateway} from '../gateway.mjs';
 const env={MASHHAD_FILM_ENABLED:'YES',MASHHAD_FILM_ORIGIN:'https://studio.example.test',MASHHAD_CONVEX_URL:'https://fixture.convex.cloud',FILM_BACKEND_ORIGIN:'https://film.example.test',FILM_BRIDGE_SECRET:'synthetic-film-bridge-secret-at-least-32'};
-async function fixture(t,{role='customer',profileFailure=false,bridgeFailure=false,legacyOwner,bridgeResult}={}){
+async function fixture(t,{role='customer',profileFailure=false,bridgeFailure=false,legacyOwner,bridgeResult,publicMediaOrigin}={}){
  const calls=[];
- const handler=createFilmGateway({env:{...env,...(legacyOwner?{MASHHAD_FILM_LEGACY_OWNER_ID:legacyOwner}:{})},fetchImpl:async(url,options)=>{
+ const handler=createFilmGateway({env:{...env,...(publicMediaOrigin?{FILM_PUBLIC_MEDIA_ORIGIN:publicMediaOrigin}:{}),...(legacyOwner?{MASHHAD_FILM_LEGACY_OWNER_ID:legacyOwner}:{})},fetchImpl:async(url,options)=>{
   calls.push({url:String(url),options});
   if(String(url)==='https://fixture.convex.cloud/api/query'){
    assert.equal(options.headers.Authorization,'Bearer synthetic-session');
@@ -83,4 +83,15 @@ test('file library strips private paths, preserves merged index and requires exp
  assert.ok(f.calls.length>=before);
  await f.post({operation:'files.delete',input:{id:'file-one',approved:true},requestId:'files-delete-002'});
  assert.equal(f.calls.filter(c=>c.url.includes('film.example')).length,2);
+});
+
+
+test('signed image upload/view URLs use explicitly trusted public origin, independently of private bridge transport',async t=>{
+ for(const [operation,segment] of [['project.reference.ticket','film-reference'],['project.reference.view','film-reference-view']]){
+  const url='https://media.example.test/api/'+segment+'/image-one?expires=1234567890123&signature=abc';
+  const f=await fixture(t,{publicMediaOrigin:'https://media.example.test',bridgeResult:{url,expires:1234567890123,maxBytes:4000000}});
+  const r=await f.post({operation,input:{projectId:'project-one'},requestId:'image-ticket-001'});assert.equal((await r.json()).url,url);
+  const bad=await fixture(t,{publicMediaOrigin:'https://other.example.test',bridgeResult:{url,expires:1234567890123}});
+  const rejected=await bad.post({operation,input:{projectId:'project-one'},requestId:'image-ticket-002'});assert.equal((await rejected.json()).error,'REQUEST_STATE_UNKNOWN');
+ }
 });
