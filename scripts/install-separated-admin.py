@@ -1,5 +1,5 @@
 """Upgrade the existing scan/reels-admin site only; no DNS, account or GPU actions."""
-import hashlib,json,os,pathlib,re,shutil,subprocess,sys,urllib.request,urllib.error
+import hashlib,json,os,pathlib,re,shutil,subprocess,sys,time,urllib.request,urllib.error
 PAGES='ac1842cac2867e6fea62f5aef4703280047608d8'
 BASE='https://raw.githubusercontent.com/Basmali12/mashhad-ad-studio/'
 def run(args):return subprocess.run(args,capture_output=True,text=True,check=True,timeout=45)
@@ -40,7 +40,7 @@ def main():
   assert len(b)==item['bytes'] and hashlib.sha256(b).hexdigest()==item['sha256'],'PUBLIC_ASSET_HASH'
   target=release/name;assert target.resolve().is_relative_to(release.resolve());target.parent.mkdir(mode=0o755,parents=True,exist_ok=True);target.write_bytes(b);target.chmod(0o644)
  assert 'FilmAdminEntry-' in ''.join(p.read_text() for p in (release/'assets').glob('admin-*.js')),'MISSING_ENGINE_ADMIN'
- backup=pathlib.Path('/root/codex-separate-admin-before-20261030');backup.mkdir(mode=0o700)
+ backup=pathlib.Path('/root/codex-separate-admin-before-20261030-'+commit[:8]);backup.mkdir(mode=0o700)
  for name,b in [('gateway.mjs',old_code),('gateway.env',old_env.encode()),('Caddyfile',old_caddy.encode())]:
   p=backup/name;p.write_bytes(b);p.chmod(0o600)
  idle()
@@ -50,9 +50,16 @@ def main():
   current.parent.mkdir(mode=0o755,parents=True,exist_ok=True);current.symlink_to(release,target_is_directory=True)
   caddy.write_text(old_caddy.replace(old_root,'root * /srv/mashhad-admin/current'))
   run(['caddy','validate','--config',str(caddy)]);run(['systemctl','restart','mashhad-film-gateway']);assert run(['systemctl','is-active','mashhad-film-gateway']).stdout.strip()=='active'
+  # systemd active is not HTTP readiness; Node must finish loading the gateway first.
+  for attempt in range(30):
+   try:
+    if json.loads(get('http://127.0.0.1:3480/health',4096)).get('status')=='ok':break
+   except Exception:pass
+   time.sleep(.2)
+  else:raise AssertionError('GATEWAY_HTTP_NOT_READY')
   run(['systemctl','reload','caddy'])
   assert (release/'index.html').read_bytes()==get('https://scan.iraqaistudio.com/reels-admin/'),'PUBLIC_ADMIN_MISMATCH'
-  assert request_status('https://scan.iraqaistudio.com')==(204,'https://scan.iraqaistudio.com'),'ADMIN_CORS'
+  admin_cors=request_status('https://scan.iraqaistudio.com');assert admin_cors==(204,'https://scan.iraqaistudio.com'),'ADMIN_CORS_'+str(admin_cors)
   assert request_status('https://iraqaistudio.com')==(204,'https://iraqaistudio.com'),'CUSTOMER_CORS'
   assert request_status('https://untrusted.invalid')[0]==403,'FOREIGN_ORIGIN'
   assert request_status('https://scan.iraqaistudio.com','POST',b'{}')[0]==401,'MISSING_BEARER_NOT_DENIED'
