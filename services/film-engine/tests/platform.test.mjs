@@ -447,12 +447,12 @@ test('single production approval durably claims one launch; repeated requests ca
  await f.platform.close();
 });
 
-test('launch checks writer key and customer review funds before any rental or supplier dispatch',async t=>{
+test('launch of an already planned film does not require a review key or create review reservations',async t=>{
  const f=await fixture(t,{text:true}),p=await draft(f);await f.credit(alice);const saved=f.store.get('film-project',p.id);saved.state='planned';saved.scenes=[{status:'pending',attempted:false}];f.store.put('film-project',saved);
  const q=await f.invoke(alice,'rental.quote',{serverId:f.slot.id}),input={...q,projectId:p.id,approved:true,requestId:'preflight'};
- await assert.rejects(f.invoke(alice,'project.launch',input),/OPENAI_KEY_REQUIRED/);assert.equal(f.store.all('rental').length,0);assert.equal(f.provider.calls.length,0);
- f.store.put('config',{id:'openai-director',credentials:'synthetic-presence-only'});for(const lot of f.store.all('film-credit')){lot.remaining=0;f.store.put('film-credit',lot);}
- await assert.rejects(f.invoke(alice,'project.launch',input),/AI_INSUFFICIENT_CREDIT/);assert.equal(f.store.all('rental').length,0);assert.equal(f.provider.calls.length,0);assert.equal(f.store.get('film-project',p.id).launch,undefined);
+ await f.invoke(alice,'project.launch',input);await waitFor(()=>f.store.all('rental').length===1);
+ assert.equal(f.store.all('film-text-reservation').length,0);assert.equal(f.store.all('text-call').length,0);
+ await f.platform.close();
 });
 
 test('generated file library serves owned downloads with attachment headers, caps expiry and permanently removes approved files',async t=>{

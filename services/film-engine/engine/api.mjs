@@ -87,7 +87,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
     async function recoverArtifact(j) {
         try {
             const folder = path.resolve(store.folder, 'artifacts', j.id), receipt = JSON.parse(await fs.readFile(path.join(folder, 'audit.json'), 'utf8')), video = await fs.readFile(path.join(folder, 'video.mp4'));
-            if((j.quality?.textQualityRequired||receipt.audit?.pipeline==='DFRPipeline')&&receipt.textQuality?.status!=='passed')return false;
+            if(!j.tenantId&&(j.quality?.textQualityRequired||receipt.audit?.pipeline==='DFRPipeline')&&receipt.textQuality?.status!=='passed')return false;
             if (!receipt.videoVerified || hash(video) !== receipt.sha256 || !receipt.metadata?.ffprobe?.streams?.some(s => s.codec_type === 'audio'))
                 return false;
             const v = receipt.metadata.ffprobe.streams.find(s => s.codec_type === 'video');
@@ -95,6 +95,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
             if (v.width !== expected.width || v.height !== expected.height)
                 return false;
             j.result = { ...receipt, ...j.cleanup };
+            if(j.tenantId&&j.quality?.textQualityRequired&&receipt.textQuality?.status!=='passed')j.result.qualityWarning='TEXT_QUALITY_NOT_CERTIFIED_CONTINUATION_ALLOWED';
             j.status = 'completed';
             j.error = null;
             const scene = (await store.get('scene', j.sceneKey));
@@ -238,13 +239,14 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
             if(job.action==='generate'&&job.result.videoVerified&&job.quality?.textQualityRequired){
                 try{job.result=await textQuality.process(job,job.result,data=>event(job,data));}
                 catch{job.result={...job.result,generationSucceeded:true,textQuality:{status:'needs_review',error:'TEXT_QC_FAILED_ORIGINAL_PRESERVED'}};}
-                if(job.result.textQuality?.status!=='passed'){
+                if(job.result.textQuality?.status!=='passed'&&!job.tenantId){
                     job.status='needs_review';job.error='GENERATION_SUCCEEDED_TEXT_REVIEW_REQUIRED';
                     job.cloudStopped=job.result.cloud_stopped===true;
                     const scene=await store.get('scene',job.sceneKey);if(scene){scene.status='needs_review';await store.put('scene',scene);}
                     return;
                 }
             }
+            if(job.tenantId&&job.action==='generate'&&job.quality?.textQualityRequired&&job.result?.textQuality?.status!=='passed')job.result.qualityWarning='TEXT_QUALITY_NOT_CERTIFIED_CONTINUATION_ALLOWED';
             job.status = job.action === 'start' ? 'stopped' : 'completed';
             job.completedAt = Date.now();
             job.cloudStopped = job.result.cloud_stopped === true;
@@ -275,7 +277,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
             if(error?.message==='LOCAL_ARTIFACT_NOT_WRITABLE'&&!job.appId){job.status='failed';job.error='LOCAL_ARTIFACT_NOT_WRITABLE';job.cloudStopped=true;return;}
             const stopped=await store.get('job',job.id);if(stopped?.stopRequestedAt)job.stopRequestedAt=stopped.stopRequestedAt;
             // A local persistence/transport failure is NOT proof that cloud generation failed.
-            const heldForText=job.result?.videoVerified&&job.quality?.textQualityRequired&&job.result.textQuality?.status!=='passed';
+            const heldForText=!job.tenantId&&job.result?.videoVerified&&job.quality?.textQualityRequired&&job.result.textQuality?.status!=='passed';
             job.status = heldForText?'needs_review':job.result?.videoVerified ? 'completed' : 'uncertain';
             job.error = heldForText?'GENERATION_SUCCEEDED_TEXT_REVIEW_REQUIRED':job.result?.videoVerified ? 'GENERATION_SUCCEEDED_LOCAL_RECORDING_NEEDS_RECONCILIATION' : 'OPERATION_STATE_UNCERTAIN_DO_NOT_RESUBMIT';
             if (job.action === 'prepare'&&!isCloud(job)) {
@@ -893,12 +895,24 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                 json(res, 202, { id: j.id, status: 'queued' });
                 return true;
             }
-            const jm = route.match(/^jobs\/([a-f0-9-]+)(?:\/(stop|reconcile|video|raw-video|accept-review))?$/);
+            const jm = route.match(/^jobs\/([a-f0-9-]+)(?:\/(stop|reconcile|video|raw-video|accept-review|accept-output))?$/);
             if (jm) {
                 const j = (await store.get('job', jm[1]));
                 if (!j)
                     throw Error('JOB_NOT_FOUND');
                 if(scope?.tenantId&&(j.tenantId!==scope.tenantId||j.rentalId!==scope.rentalId||j.engineSlotId!==scope.engineSlotId))throw Error('RENTAL_SCOPE_DENIED');
+                if(req.method==='POST'&&jm[2]==='accept-output'){
+                    const p=j.projectId?await store.get('film-project',j.projectId):null;
+                    if(!scope?.tenantId||p?.customerId!==scope.tenantId||!p.scenes?.some(s=>s.jobId===j.id)||j.action!=='generate'||!j.result?.videoVerified)throw Error('VERIFIED_CUSTOMER_OUTPUT_REQUIRED');
+                    if(j.status==='completed'){json(res,200,j);return true;}
+                    if(j.status!=='needs_review'||j.error!=='GENERATION_SUCCEEDED_TEXT_REVIEW_REQUIRED')throw Error('VERIFIED_CUSTOMER_OUTPUT_REQUIRED');
+                    const bytes=await fs.readFile(path.resolve(store.folder,'artifacts',j.id,'video.mp4'));
+                    if(hash(bytes)!==j.result.sha256)throw Error('REVIEW_ARTIFACT_CHANGED');
+                    j.result.qualityWarning='TEXT_QUALITY_NOT_CERTIFIED_CONTINUATION_ALLOWED';
+                    j.status='completed';j.error=null;j.completedAt=Date.now();await store.put('job',j);
+                    if(j.sceneKey){const scene=await store.get('scene',j.sceneKey);if(scene?.jobId===j.id){scene.status='completed';scene.sha256=j.result.sha256;scene.artifact='/api/engine/jobs/'+j.id+'/video';await store.put('scene',scene);}}
+                    await store.audit('customer_verified_output_continuation',j.id);json(res,200,j);return true;
+                }
                 if(req.method==='POST'&&jm[2]==='accept-review'){
                     const b=await body(req);if(b.approved!==true)throw Error('QUALITY_REVIEW_APPROVAL_REQUIRED');
                     const review=typeof b.reviewCallId==='string'?await store.get('text-call',b.reviewCallId):null;
@@ -1029,9 +1043,9 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
     };
     // In-process capability only: never serialized or accepted from an HTTP header.
     const invoke=async(route,value,scope={admin:true},method=value?'POST':'GET')=>{
-        if(!/^(quote|execute|accounts(?:\/[a-f0-9-]+(?:\/(?:check|discover|activate|hf))?)?|jobs\/[a-f0-9-]+(?:\/(?:stop|reconcile|accept-review))?|llm\/(?:config|reviews|calls(?:\/[a-zA-Z0-9_-]+)?))$/.test(route))throw Error('INTERNAL_ROUTE_DENIED');
+        if(!/^(quote|execute|accounts(?:\/[a-f0-9-]+(?:\/(?:check|discover|activate|hf))?)?|jobs\/[a-f0-9-]+(?:\/(?:stop|reconcile|accept-review|accept-output))?|llm\/(?:config|reviews|calls(?:\/[a-zA-Z0-9_-]+)?))$/.test(route))throw Error('INTERNAL_ROUTE_DENIED');
         if(scope.tenantId&&!allowCustomerRentals)throw Error('CUSTOMER_PLATFORM_DISABLED');
-        if(scope.tenantId&&(!scope.rentalId||!scope.engineSlotId||!scope.accountId||! /^(quote|execute|jobs\/[a-f0-9-]+(?:\/(?:stop|reconcile|accept-review))?)$/.test(route)))throw Error('RENTAL_SCOPE_DENIED');
+        if(scope.tenantId&&(!scope.rentalId||!scope.engineSlotId||!scope.accountId||! /^(quote|execute|jobs\/[a-f0-9-]+(?:\/(?:stop|reconcile|accept-review|accept-output))?)$/.test(route)))throw Error('RENTAL_SCOPE_DENIED');
         const req=Readable.from(value?[Buffer.from(JSON.stringify(value))]:[]);Object.assign(req,{url:'/api/engine/'+route,method,headers:{origin,'x-csrf-token':'internal'},socket:{encrypted:true,remoteAddress:'127.0.0.1'},[internalScope]:scope});
         let status=200,output='';const res={setHeader(){},writeHead(code){status=code;},end(bytes=''){output+=bytes;}};
         await guardedHandler(req,res);const data=JSON.parse(output||'{}');if(status>=400){const error=Error(data.error||'ENGINE_REQUEST_FAILED');error.code=data.error;error.detail=data;throw error;}return data;

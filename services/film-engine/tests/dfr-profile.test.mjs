@@ -53,12 +53,12 @@ test('DFR startup does not run supplier or checker; missing configured checker f
   await assert.rejects(checker.available(),/TEXT_QC_NOT_CONFIGURED/);assert.equal(providerCalls,0);assert.equal(dispatches,0);
  }finally{await finish();}`);
 });
-test('DFR text rejection preserves generation success and blocks automatic/regeneration retry',()=>{
+test('customer DFR text warning preserves verified output and continues without falsely certifying text quality',()=>{
  run(setup+`try{
   qc='needs_review';const q=await quote({action:'generate',projectId:'p',sceneId:'s',prompt:'A chronological Arabic dialogue scene.',audioContract:{lines:[{speaker:'علي',text:'شلونك اليوم؟'}]}});
   const j=await api.invoke('execute',{quoteId:q.id,approvedCost:true},scope);
-  for(let n=0;n<100&&store.get('job',j.id).status!=='needs_review';n++)await new Promise(r=>setTimeout(r,5));
-  const saved=store.get('job',j.id);assert.equal(saved.status,'needs_review');assert.equal(saved.result.videoVerified,true);assert.equal(saved.result.generationSucceeded,true);assert.equal(saved.result.textQuality.status,'needs_review');assert.equal(dispatches,1);
+  for(let n=0;n<100&&store.get('job',j.id).status!=='completed';n++)await new Promise(r=>setTimeout(r,5));
+  const saved=store.get('job',j.id);assert.equal(saved.status,'completed');assert.equal(saved.result.qualityWarning,'TEXT_QUALITY_NOT_CERTIFIED_CONTINUATION_ALLOWED');assert.equal(saved.result.videoVerified,true);assert.equal(saved.result.generationSucceeded,true);assert.equal(saved.result.textQuality.status,'needs_review');assert.equal(dispatches,1);
   await assert.rejects(quote({action:'generate',projectId:'p',sceneId:'s',retryOfJobId:j.id,prompt:'A chronological Arabic dialogue scene.',audioContract:{lines:[{speaker:'علي',text:'شلونك اليوم؟'}]}}),/RETRY_REQUIRES_VERIFIED_FAILURE_AND_STOP/);assert.equal(dispatches,1);
  }finally{await finish();}`);
 });

@@ -25,3 +25,5 @@
 .film-setup-status{border:1px solid #3d7a76;border-radius:14px;padding:14px;margin:14px 0;background:linear-gradient(135deg,#142b38,#0b1724)}.film-setup-status progress{width:100%;accent-color:#61d8c4;height:8px}.film-setup-status ol{font-size:13px;padding-inline-start:22px}.film-account-setup bdi{overflow-wrap:anywhere}
 
 .film-quick-test textarea{min-height:72px!important;resize:vertical}.film-quick-test details{font-size:13px;margin:10px 0}.film-quick-test p{font-size:12px;color:#a9b8cb}
+
+.film-file.is-new-video{border:2px solid #f5cf57;box-shadow:0 0 0 2px #f5cf5720,0 8px 28px #0003;scroll-margin:110px}.film-new-video-label{color:#f5cf57;font-weight:700}

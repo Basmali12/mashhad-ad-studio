@@ -31,3 +31,24 @@ test('no approval, foreign tenant, wrong job/hash/project, visible writing and c
  }
  f.store.put('text-call',f.review);await writeFile(path.join(f.folder,'artifacts',f.j.id,'video.mp4'),'changed');await assert.rejects(f.accept(),/REVIEW_ARTIFACT_CHANGED/);assert.equal(f.calls(),0);
 });
+
+
+test('customer can release only its own intact verified OCR-held output, without review or a provider call',async t=>{
+ const f=await fixture(t),scope={tenantId:'alice',rentalId:'r',engineSlotId:'s',accountId:'account'};
+ f.store.put('film-project',{id:'p',customerId:'alice',scenes:[{jobId:f.j.id}]});
+ const finish=(scopeOverride=scope)=>f.api.invoke('jobs/'+f.j.id+'/accept-output',{},scopeOverride);
+ await assert.rejects(finish({...scope,tenantId:'bob'}),/RENTAL_SCOPE_DENIED/);
+ await assert.rejects(finish({}),/VERIFIED_CUSTOMER_OUTPUT_REQUIRED/);
+ const result=await finish();assert.equal(result.status,'completed');assert.equal(result.error,null);
+ assert.equal(result.result.textQuality.status,'needs_review');assert.equal(result.result.sha256,f.j.result.sha256);
+ assert.equal(result.result.qualityWarning,'TEXT_QUALITY_NOT_CERTIFIED_CONTINUATION_ALLOWED');
+ await finish();assert.equal(f.calls(),0);assert.equal(f.store.all('text-call').length,1);
+});
+test('release of a historical output refuses missing project ownership, uncertain generation or changed bytes',async t=>{
+ const f=await fixture(t),scope={tenantId:'alice',rentalId:'r',engineSlotId:'s',accountId:'account'};
+ const finish=()=>f.api.invoke('jobs/'+f.j.id+'/accept-output',{},scope);
+ await assert.rejects(finish(),/VERIFIED_CUSTOMER_OUTPUT_REQUIRED/);
+ f.store.put('film-project',{id:'p',customerId:'alice',scenes:[{jobId:f.j.id}]});
+ f.store.put('job',{...f.j,status:'uncertain'});await assert.rejects(finish(),/VERIFIED_CUSTOMER_OUTPUT_REQUIRED/);
+ f.store.put('job',f.j);await writeFile(path.join(f.folder,'artifacts',f.j.id,'video.mp4'),'changed');await assert.rejects(finish(),/REVIEW_ARTIFACT_CHANGED/);assert.equal(f.calls(),0);
+});

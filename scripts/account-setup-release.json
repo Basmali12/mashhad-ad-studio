@@ -1,11 +1,11 @@
 {
-  "pagesCommit": "c58c68edde38b27a49fb740e8a8bf5bd8db7981b",
+  "pagesCommit": "abd79df27459056e1ac2a019180491a7692518ff",
   "expectedAdminRelease": "eac2e3044617",
   "files": [
     {
       "path": "index.html",
       "bytes": 906,
-      "sha256": "7403db2f664e1daeec52b88054301484ba547550f429bf877d90f45c14de86d6"
+      "sha256": "c228a2cd01cb86230c2345cdff69b52a1af5bae2f9e1a83f6222c1c82639ed44"
     },
     {
       "path": "admin.webmanifest",
@@ -20,7 +20,7 @@
     {
       "path": "version.json",
       "bytes": 53,
-      "sha256": "6e9a26cc018316a1ac593ea1fd9055c6202a2813af6b189c660f2560e9e0b2a0"
+      "sha256": "c3cd15159428a6d05c78e7990a6e879f6b05e8f2399fcfb1a4f6f76aad216c64"
     },
     {
       "path": "mashhad-admin-icon-v1-180.png",
@@ -38,14 +38,24 @@
       "sha256": "e7038fdb3a2636c1bff14f4757615b92c5d838f39346ae71d08d90d45aabc623"
     },
     {
+      "path": "mashhad-logo-128.webp",
+      "bytes": 10388,
+      "sha256": "f16568e6362a4bc46d8d48b4ba09d78ce7cc8c4c29e2ac2b4cd2fe2b07d515f4"
+    },
+    {
+      "path": "mashhad-logo-192.webp",
+      "bytes": 16712,
+      "sha256": "95cd64e71c19552de7cc61f6c5af7f075b7d7f3fc1928315324f73e25ee770c0"
+    },
+    {
+      "path": "assets/admin-Cr_YJc_t.js",
+      "bytes": 56334,
+      "sha256": "26a85d2afca6a27d477523dbba035600f50c78d043004c1b9892c1d176c613ac"
+    },
+    {
       "path": "assets/admin-D5ITKqNh.css",
       "bytes": 66144,
       "sha256": "81b9000366b4f6c433f85d29dac4d9fdddb90ade6964dbac2f7312842eea713f"
-    },
-    {
-      "path": "assets/admin-WcXNIHcS.js",
-      "bytes": 56334,
-      "sha256": "afd588655407964e6bd5dd79f5a1063c359128412a445a6d9a8e95ca25f20c09"
     },
     {
       "path": "assets/auth-arabic-DVh29meS.js",
@@ -63,20 +73,20 @@
       "sha256": "ce383598de9d351ab6e1ff43ecf93e5c4255d9034e7df0e62b44543048ae7538"
     },
     {
-      "path": "assets/FilmAdminEntry-B734V2Cp.js",
+      "path": "assets/FilmAdminEntry-BG75WGhk.js",
       "bytes": 34148,
-      "sha256": "604d6336d643fab3c182a93b8cfa0c32a381006043bfbc42e9adadbc658175df"
+      "sha256": "463cf1089ec92b5d0b293f41775dba03df4a21bd22fcd29a2c1710c7952d2d30"
     },
     {
-      "path": "assets/FilmAdminEntry-Bmmhxyg1.css",
-      "bytes": 20974,
-      "sha256": "4bac66f892e3a76d81023dd84351d6e36d1897a40735fc3bdbe4e4fa6e1b9961"
+      "path": "assets/FilmAdminEntry-ligId4sQ.css",
+      "bytes": 21143,
+      "sha256": "5cac065d59b14029ee51b29999a024c24a535d3b88194911e7c1bdae0a4d5630"
     }
   ],
   "sources": {
     "services/film-engine/engine/api.mjs": {
       "before": "ce8f6a26852321a345bafcc7c88185c56b816a84369714c1842201430ca34143",
-      "after": "727497ffb81b2ef918b93c082a8c9fe5ead690749b33c40168083c9debd56b5e"
+      "after": "997cdd6c09ee6e67fb408d16a4dc24dd01de6369be13ddfaeaad8dcdeb7418f9"
     },
     "services/film-engine/engine/film-money.mjs": {
       "before": "cf1691fc21f255580353c3b53cd92e80670b79acd2bff025cf38ef971d05ee09",
@@ -84,7 +94,7 @@
     },
     "services/film-engine/engine/film-platform.mjs": {
       "before": "8a851b5be9dd5c5ac28c46e3dea84ab31c1914c1a3595cea1c0c9680baee69f3",
-      "after": "1eb41a070a2d5ed44326a6073627fa0f754ab3c72812b42eb4dd94fce41d996f"
+      "after": "254ca5fc448234fc036d14c1aa22591c31d6730f26337daa3e72ebf2a47e6ba1"
     },
     "services/film-engine/engine/openai-director.mjs": {
       "before": "fc42d37479561ca295122b723560c399633aa6e8019c0ce7d845a5c06e424bb2",
