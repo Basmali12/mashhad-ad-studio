@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "pagesCommit": "ac17b9fe9ba3754562201c36ca1e01495af1c81f",
-  "expectedAdminRelease": "a318164f7de2",
+  "expectedAdminRelease": "2bd7e5b6a6b0",
   "files": [
     {
       "path": "index.html",
@@ -100,30 +100,11 @@
     }
   ],
   "sources": {
-    "services/film-engine/engine/admin-commissioning.mjs": {
-      "before": [
-        null
-      ],
-      "after": "e839990cba7be5eba13355cdf8d46bd936ec1561bf236a40b6644b1849018898"
-    },
-    "services/film-engine/engine/film-platform.mjs": {
-      "before": [
-        "bf58ada378de0eb3e0952a89ad27cf8d0d1db239a6d39a5025c6bd27c1d99e1b",
-        "254ca5fc448234fc036d14c1aa22591c31d6730f26337daa3e72ebf2a47e6ba1"
-      ],
-      "after": "30bf9741857542a5b6a3fef0facd379d1372a7fcacbf3fe44cbda25e22b81ce7"
-    },
-    "services/film-engine/engine/film-contracts.ts": {
+    "shared/film-contracts.ts": {
       "before": [
         "e914a80391f6a5edb6d7650d30dad132751946c67f22d1901581a5e251e9cf6b"
       ],
       "after": "8ac41c1529261aa3eb504780eec2f88c3d1c0721fd81c6b15ea23c0df69e7958"
-    },
-    "services/film-gateway/film-bridge.mjs": {
-      "before": [
-        "1063e6dbcb2cdaceee98341807e093bf102bb68e2965647ab1ab1dd26264d27b"
-      ],
-      "after": "a10f2354589e8a82f4ba3bc48c1a38a3115b25ef1cbd9a9aa0344d89d44d1f91"
     }
   }
 }
