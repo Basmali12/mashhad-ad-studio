@@ -33,7 +33,7 @@ def main():
   if b is not None:
    p=backup/n.replace('/','-');p.write_bytes(b);p.chmod(0o600)
  (backup/'admin-root.txt').write_text(str(old_release));idle()
- units=(['iraq-ai-film-platform-staging'] if any(n.startswith('services/film-engine/') for n in targets) else [])+(['mashhad-film-gateway'] if any(n.startswith('services/film-gateway/') for n in targets) else [])
+ units=(['iraq-ai-film-platform-staging'] if any(n.startswith('services/film-engine/') for n in targets) else [])+(['mashhad-film-gateway'] if any(n.startswith('services/film-gateway/') or n.startswith('shared/') for n in targets) else [])
  try:
   for n,p in targets.items():
    candidate=p.with_name(p.stem+'.setup-candidate'+p.suffix);candidate.write_bytes(payload[n]);candidate.chmod(0o644)
