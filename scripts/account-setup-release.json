@@ -1,6 +1,6 @@
 {
   "pagesCommit": "d30660c557b00adab4e525dcc38e3ad022c3270e",
-  "expectedAdminRelease": "f97a9744e769",
+  "expectedAdminRelease": "17d044eac5d5",
   "files": [
     {
       "path": "index.html",
@@ -74,13 +74,17 @@
     }
   ],
   "sources": {
-    "services/film-engine/engine/film-platform.mjs": {
-      "before": "59dac7148a56a1e246427a2b925c784579b6f0b4365566da1154df8f0305e4d5",
-      "after": "adf355b41bb41746964335354decfb88d2179f5168261499959617631280ccf9"
+    "services/film-engine/engine/openai-director.mjs": {
+      "before": "268e446c24f84620d3fed8e969c04b1d17d3ed2387a3d6592c5b19b869a40a6e",
+      "after": "3e6c75f7f2787a5f7dbdc18f920283c39698c70174478e519c4fb4833b07512d"
     },
-    "services/film-gateway/film-bridge.mjs": {
-      "before": "2acc2d81ccc6346f96a2ebf37b7fff397604a083a9d3f81ed58ae8abef9d9cec",
-      "after": "9fe6a680517c37f289b76dcf149971dfd1833548b3756e9f381a36211bec23e3"
+    "services/film-engine/engine/film-platform.mjs": {
+      "before": "adf355b41bb41746964335354decfb88d2179f5168261499959617631280ccf9",
+      "after": "f31968da7803e1f367d9991a818c81e9a1c285fa7fe23a6f0a70efdae286f225"
+    },
+    "services/film-engine/engine/film-orientation.mjs": {
+      "before": "4ac5ab173b081be2c9e8e9e05210fe16104339eca28747005616530dc1284eaa",
+      "after": "0fc59057bf425565fe194174a3a3955bc8c460c0bfad9c03459a627699cfe7df"
     }
   }
 }

@@ -10,7 +10,8 @@ export function applyDiscussionOrientation(project,discussion,message){
  // A model default cannot silently override a preference or answer for a user.
  const explicit=isOrientation(selected)&&(selected==='portrait'?/عمودي|portrait|9\s*[:：]\s*16/i:/[اأ]فقي|landscape|16\s*[:：]\s*9/i).test(message);
  if(explicit){project.orientation=selected;project.orientationConfirmed=true;}
- if(project.orientationConfirmed===false){
+ const creative=discussion?.proposed_duration_seconds!=null||discussion?.intent==='draft'||discussion?.intent==='image_preview'||discussion?.ready_to_write===true;
+ if(project.orientationConfirmed===false&&creative){
   discussion.ready_to_write=false;
   if(!/عمودي/.test(discussion.reply||'')||!/[اأ]فقي/.test(discussion.reply||''))discussion.reply=String(discussion.reply||'')+'\n\nتريده عمودي 9:16 لو أفقي 16:9؟';
  }
