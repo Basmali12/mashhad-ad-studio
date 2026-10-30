@@ -62,3 +62,15 @@ test('one approved thirty-second film advances through three distinct scenes and
  assert.equal(f.quoted[2].previousSceneId,'scene-1');assert.ok(f.quoted[2].prompt.includes('elderly owner'));
  assert.equal(p.scenes.every(s=>s.status==='done'),true);
 });
+
+test('explicit resume keeps the successful first clip, preserves prior launch receipt and completes only missing clips',async t=>{
+ const f=await fixture(t,{clips:3});const p=f.store.get('film-project','p');
+ p.state='needs_review';p.rentalId='old-r';p.launch={state:'needs_review',approvedAt:1000,finishedAt:2000,rentalId:'old-r'};
+ p.scenes[0]={...p.scenes[0],status:'done',attempted:true,jobId:'old-clip'};f.store.put('film-project',p);
+ f.store.put('rental',{id:'old-r',customerId:p.customerId,state:'closed',engineJobId:'old-warm'});f.store.put('job',{id:'old-warm',cloudStopped:true,status:'stopped'});
+ f.store.put('job',{id:'old-clip',tenantId:p.customerId,projectId:'p',rentalId:'r',status:'completed',result:{videoVerified:true}});
+ await f.platform.dispatch(f.actor,'project.resume',{projectId:'p',rentalId:'r',approved:true});
+ const started=f.store.get('film-project','p');assert.equal(started.launch.state,'generating');assert.equal(started.launch.finishedAt,null);assert.equal(started.launchHistory[0].finishedAt,2000);
+ const done=await f.settled();assert.equal(done.scenes[0].jobId,'old-clip');assert.equal(done.merge.status,'completed');assert.equal(f.events.filter(x=>x==='execute').length,2);
+ await assert.rejects(f.platform.dispatch(f.actor,'project.resume',{projectId:'p',rentalId:'r',approved:true}),/PRIOR_RENTAL_STOP_REQUIRED|SCENE_ALREADY_ATTEMPTED/);assert.equal(f.events.filter(x=>x==='execute').length,2);
+});
