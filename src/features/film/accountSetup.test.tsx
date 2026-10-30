@@ -36,6 +36,12 @@ it('hashing bytes remain a stage measurement, not fabricated upload progress',()
  const view=transferView({events:[{phase:'transfer',kind:'progress',transferred:50,required:100,unit:'source_bytes_hashed'},{phase:'upload',kind:'phase_start'},{phase:'integrity',kind:'file_verified',file:'one'},{phase:'integrity',kind:'file_verified',file:'one'}]});
  expect(view.phase).toBe('integrity');expect(view.measurement).toBeUndefined();expect(view.verified).toBe(1);expect(view.ready).toBe(false);
 });
+it('uncertain transport is followed until resources are confirmed stopped, never advertised as ready',()=>{
+ expect(transferView({status:'uncertain',cloudStopped:false}).terminal).toBe(false);
+ expect(transferView({status:'failed',cloudStopped:false}).terminal).toBe(false);
+ expect(transferView({status:'failed',cloudStopped:true}).terminal).toBe(true);
+ expect(transferView({status:'completed',cloudStopped:false,result:{ready:true}}).ready).toBe(false);
+});
 it('rendering is inert and exposes saved job follow-up without any secrets or automatic GPU',()=>{
  const html=renderToStaticMarkup(<AccountSetup request={async()=>{throw Error('NO_NETWORK');}} accounts={[{id:'a',label:'نور',prepareJobId:'job'}]} onRefresh={async()=>{}}/>);
  expect(html).toContain('حفظ وفحص التجهيز');expect(html).toContain('متابعة تجهيز نور');expect(html).not.toContain('value="ak-');

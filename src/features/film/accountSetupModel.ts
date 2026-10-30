@@ -24,5 +24,5 @@ export function transferView(job:{status?:string;cloudStopped?:boolean;result?:{
  const completed=events.filter(e=>e.kind==='file_verified').map(e=>String(e.file));
  return {phase:String(latest?.phase||'connection'),measurement,verified:new Set(completed).size,
   ready:job.status==='completed'&&job.cloudStopped===true&&job.result?.ready===true,
-  terminal:['completed','failed','stopped','uncertain','needs_review'].includes(job.status||'')};
+  terminal:job.cloudStopped===true&&['completed','failed','stopped','needs_review','uncertain'].includes(job.status||'')};
 }

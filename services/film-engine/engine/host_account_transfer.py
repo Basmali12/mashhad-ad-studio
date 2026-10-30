@@ -4,6 +4,7 @@ import modal
 from transfer_contract import *
 from transfer_orchestrator import advance
 from transfer_verified_copy import validated_receipt, copy_with_destination_verification, finalize_verified_copy, TransferScopeChanged
+from transfer_setup import checkpoint, setup_events
 
 
 def require_external_control():
@@ -133,9 +134,20 @@ def dispatch(request, source, state, destination, workspace):
         'appId':state.get('deployment')['appId'], 'hostOrchestrated':True}
     if not state.put(key, record, skip_if_exists=True):
         raise RuntimeError('TRANSFER_DISPATCH_UNCERTAIN_NO_RETRY')
-    verifier = ensure_destination_verifier(destination, request['volume'], create_volume=record['mode'] != 'verify-only')
+    def progress(phase):
+        checkpoint(state, key, record, phase)
+        from modal_bridge import emit
+        emit('event', {'kind':'phase_start', 'phase':phase})
+    try:
+        verifier = ensure_destination_verifier(destination, request['volume'], create_volume=record['mode'] != 'verify-only', progress=progress)
+    except BaseException as error:
+        checkpoint(state, key, record, record.get('setup', {}).get('phase', 'destination_lookup'), error)
+        from modal_bridge import emit
+        emit('event', {'kind':'phase_error', 'phase':record['setup']['phase'],
+                       'error_type':record['setup']['errorCode']})
+        raise
     record['verifier'] = verifier
-    state.put(key, record)
+    checkpoint(state, key, record, 'destination_ready')
     if not state.get('cancel:'+job, False):
         # First CPU call belongs to destination; source CPU is not started yet.
         advance(state, job, record, AccountTransfer(request, record, source, state, destination))
@@ -152,5 +164,13 @@ def status(request, record, source, state, cancel=False):
     if not record.get('verifier'):
         if cancel:
             state.put('cancel:'+request['jobId'], True)
-        return {'cloud_stopped':False, 'state':'setup_unknown', 'events':[]}
+        # A deploy may have succeeded before its response/HostHatch was lost.
+        # Reattach only an independently verified existing deployment; NEVER
+        # retry a build or a paid spawn after an ambiguous response.
+        from destination_verifier_control import lookup_destination_verifier
+        existing = lookup_destination_verifier(destination, request['volume'])
+        if not existing:
+            return {'cloud_stopped':False, 'state':'setup_unknown', 'events':setup_events(record)}
+        record['verifier'] = existing
+        checkpoint(state, 'dispatch:'+request['jobId'], record, 'destination_ready')
     return advance(state, request['jobId'], record, AccountTransfer(request, record, source, state, destination), cancel=cancel)

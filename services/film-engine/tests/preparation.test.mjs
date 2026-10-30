@@ -11,7 +11,7 @@ import {inferenceManifest,manifest} from '../engine/config.mjs';
 import {transferIdentity,workerFingerprint,assertTransferPlan} from '../engine/transfer-profile.mjs';
 
 // Metadata and dispatch fixtures only; no SDK, provider network, model bytes or GPU.
-async function fixture(t,{existing=[],sourceMissing=[],corrupt=[],wrongWorker=false,failDispatch=false}={}){
+async function fixture(t,{existing=[],sourceMissing=[],corrupt=[],wrongWorker=false,failDispatch=false,recovering=false}={}){
  const folder=await mkdtemp(path.join(tmpdir(),'film-prepare-fixture-')),key=randomBytes(32).toString('base64'),store=new Store(folder,key);store.installRentalSchema();
  const source={id:randomUUID(),mode:'local_profile',workspace:'basm1998ali',role:'primary',volume:'modal-ltx25-test-models'};
  const destination={id:randomUUID(),mode:'local_profile',workspace:'destination-fixture',role:'backup',volume:'iff-ltx25-1234abcd',corruptFiles:corrupt};store.put('account',source);store.put('account',destination);
@@ -25,13 +25,24 @@ async function fixture(t,{existing=[],sourceMissing=[],corrupt=[],wrongWorker=fa
   if(action==='cloud_transfer_stop')return {cloud_stopped:!failDispatch,running_containers:failDispatch?null:0,tasks:failDispatch?null:0};
   throw Error('UNEXPECTED_PROVIDER_BOUNDARY');
  }};
+ const recoveredId=randomUUID();
+ if(recovering)store.put('job',{id:recoveredId,action:'prepare',accountId:destination.id,sourceId:source.id,status:'running',cloudStopped:false,createdAt:Date.now(),startedAt:Date.now(),events:[],estimate:{rate:0.00003508},plan:{transport:'modal-cpu-cloud',workerApp:'iff-ltx25-cloud-copy-v1',compute:{totalWindowSeconds:5000}}});
  const api=await createEngineAPI({folder,key,store,provider,allowPaid:true,cloudTransferApp:'iff-ltx25-cloud-copy-v1'});
  t.after(async()=>{await api.close();await rm(folder,{recursive:true,force:true});});
  const quote=extra=>api.invoke('quote',{action:'prepare',accountId:destination.id,settings:{budget:0},source:'volume',...extra});
  const execute=q=>api.invoke('execute',{quoteId:q.id,approvedCost:true});
- return {api,store,calls,source,destination,quote,execute};
+ return {api,store,calls,source,destination,quote,execute,recoveredId};
 }
 const files=Object.entries(inferenceManifest.files);
+
+test('actual API startup follows persisted preparation with no page request and no paid redispatch',async t=>{
+ const f=await fixture(t,{recovering:true});
+ for(let n=0;n<100&&!f.store.get('job',f.recoveredId).cloudStopped;n++)await new Promise(r=>setTimeout(r,5));
+ assert.equal(f.store.get('job',f.recoveredId).status,'completed');
+ assert.equal(f.store.get('account',f.destination.id).discovery.ready,true);
+ assert.equal(f.calls.some(c=>c.action==='cloud_transfer_status'),true);
+ assert.equal(f.calls.some(c=>/dispatch|generate|transfer$/.test(c.action)),false);
+});
 test('DFR preparation quotes exactly six bound files, CPU source+destination cost and no HostHatch staging',async t=>{
  const f=await fixture(t),q=await f.quote();assert.equal(q.plan.profile,'dfr-main');assert.equal(q.plan.files.length,6);assert.equal(q.plan.files.some(f=>f.name.includes('-conv-')),false);assert.equal(q.plan.usesHostDisk,false);assert.equal(q.plan.localStagingRequiredBytes,0);assert.equal(q.plan.gpuUsed,false);
  assert.deepEqual(q.plan.files,files.map(([name,f])=>({name,size:f.size,sha256:f.sha256})));

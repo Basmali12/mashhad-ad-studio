@@ -18,6 +18,7 @@ import {AudioCleanupQueue,audioCapability,publicCleanup} from './audio-cleanup.m
 import {OpenAIDirector} from './openai-director.mjs';
 import {TextQuality} from './text-quality.mjs';
 import {cloudTransferPlan,cloudRequest,observeCloudTransfer} from './cloud-transfer.mjs';
+import {preparationRecovery} from './preparation-recovery.mjs';
 const SAFE = /^[a-zA-Z0-9_-]{1,100}$/;
 const publicAccount = a => { const { credentials, hf, ...safe } = a; return { ...safe, hasHF: !!hf, billing:{creditBalanceUSD:null,creditRenewalAt:null,subscriptionExpiresAt:null,availability:'not_exposed_by_supported_modal_sdk',source:'https://modal.com/docs/guide/billing'} }; };
 function publicEvents(job){
@@ -62,6 +63,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
     const attempts = new Map(), controllers = new Map(), cancellations = new Map(), activeTasks = new Set();
     const cancelledApps=new Set();
     const cloudMonitors=new Set();
+    const cloudMonitorShutdown=new AbortController();
     const isCloud=j=>j?.action==='prepare'&&j.plan?.transport==='modal-cpu-cloud';
     const requirePrimary=a=>{if(primaryOnly&&(a.workspace!=='basm1998ali'||a.role!=='primary'))throw Error('PRIMARY_ACCOUNT_IS_FIXED');};
     if (store)
@@ -191,13 +193,13 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
         job.updatedAt=Date.now();await persistAccountMetadata(a);await store.put('job',job);
     }
     async function watchCloud(job,a){
-        const result=await observeCloudTransfer({provider,request:await transferControl(job,a),onEvent:e=>event(job,e),deadline:(job.startedAt||job.createdAt)+((job.plan.compute?.totalWindowSeconds??job.plan.compute?.windowSeconds??3782)+120)*1000});
+        const result=await observeCloudTransfer({provider,request:await transferControl(job,a),onEvent:e=>event(job,e),signal:cloudMonitorShutdown.signal,deadline:(job.startedAt||job.createdAt)+((job.plan.compute?.totalWindowSeconds??job.plan.compute?.windowSeconds??3782)+120)*1000});
         await finishCloud(job,a,result);return result;
     }
     function resumeCloud(job){
         if(cloudMonitors.has(job.id))return;
         cloudMonitors.add(job.id);
-        const task=(async()=>{try{await watchCloud(job,await account(job.accountId));}catch{job.status='uncertain';job.error='CLOUD_TRANSFER_RECONCILIATION_REQUIRED';job.cloudStopped=false;await store.put('job',job);}finally{cloudMonitors.delete(job.id);}})();
+        const task=(async()=>{try{await watchCloud(job,await account(job.accountId));}catch{if(!cloudMonitorShutdown.signal.aborted){job.status='uncertain';job.error='CLOUD_TRANSFER_RECONCILIATION_REQUIRED';job.cloudStopped=false;await store.put('job',job);}}finally{cloudMonitors.delete(job.id);}})();
         activeTasks.add(task);void task.finally(()=>activeTasks.delete(task));
     }
     async function run(job, a, source) {
@@ -274,6 +276,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
         }
         catch (error) {
             await events;
+            if(isCloud(job)&&cloudMonitorShutdown.signal.aborted){job.status='recovery_required';job.error='SERVER_RESTART_FOLLOW_SAME_TRANSFER';return;}
             if(error?.message==='LOCAL_ARTIFACT_NOT_WRITABLE'&&!job.appId){job.status='failed';job.error='LOCAL_ARTIFACT_NOT_WRITABLE';job.cloudStopped=true;return;}
             const stopped=await store.get('job',job.id);if(stopped?.stopRequestedAt)job.stopRequestedAt=stopped.stopRequestedAt;
             // A local persistence/transport failure is NOT proof that cloud generation failed.
@@ -320,13 +323,13 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
             }
             cancellations.delete(job.id);
             job.updatedAt = Date.now();
-            job.finishedAt = Date.now();
+            if(!isCloud(job)||job.cloudStopped)job.finishedAt = Date.now();
             if (job.cloudStopped)
                 job.stoppedAt = Date.now();
             job.elapsedSeconds = (Date.now() - job.startedAt) / 1000;
             job.estimatedUSD = job.error==='LOCAL_ARTIFACT_NOT_WRITABLE'?0:job.action === 'prepare'&&!isCloud(job) ? null : job.elapsedSeconds * job.estimate.rate;
             (await store.put('job', job));
-            (await store.audit('operation_finished', job.id));
+            (await store.audit(isCloud(job)&&!job.cloudStopped?'operation_detached':'operation_finished', job.id));
         }
     }
     async function handler(req, res) {
@@ -1050,13 +1053,17 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
         let status=200,output='';const res={setHeader(){},writeHead(code){status=code;},end(bytes=''){output+=bytes;}};
         await guardedHandler(req,res);const data=JSON.parse(output||'{}');if(status>=400){const error=Error(data.error||'ENGINE_REQUEST_FAILED');error.code=data.error;error.detail=data;throw error;}return data;
     };
+    // Recovery follows original approved child-call IDs; it never calls dispatch.
+    const preparationWatcher=store?preparationRecovery({store,resume:resumeCloud}):null;
     return { handler:guardedHandler, hasAdminSession, invoke,store,allowPaid,quality, close: async () => {
+            preparationWatcher?.close();
+            cloudMonitorShutdown.abort(); // Detach CPU observation, not the approved cloud transfer.
             for (const c of controllers.values())
                 c.stop();
             for (const c of cancellations.values())
                 c.abort();
             if (store) {
-                const jobs=(await store.all('job')).filter(unconfirmedResource),roots=new Set(jobs.map(j=>j.id));
+                const jobs=(await store.all('job')).filter(j=>unconfirmedResource(j)&&!isCloud(j)),roots=new Set(jobs.map(j=>j.id));
                 const stops = jobs.filter(j=>!j.attachedEngineId||!roots.has(j.attachedEngineId)).map(j=>invoke('jobs/'+j.id+'/stop',{confirmCancel:true}).catch(()=>{}));
                 let deadline;try{await Promise.race([Promise.allSettled([...activeTasks, ...stops]),new Promise(r=>{deadline=setTimeout(r,30000);})]);}finally{clearTimeout(deadline);}
             }

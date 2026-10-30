@@ -19,14 +19,32 @@ export function cloudTransferPlan(plan,preflight,mode='full'){
 export function cloudRequest(job,a,source,workerApp,credentials){
  return {jobId:job.id,source,credentials,workerApp,volume:a.volume,destinationWorkspace:a.workspace};
 }
-export async function observeCloudTransfer({provider,request,onEvent,deadline,now=Date.now,sleep=ms=>new Promise(r=>setTimeout(r,ms))}){
- let sequence=0,last;
+export async function observeCloudTransfer({provider,request,onEvent,deadline,now=Date.now,sleep=ms=>new Promise(r=>setTimeout(r,ms)),signal}){
+ const check=()=>{if(signal?.aborted)throw Error('CLOUD_MONITOR_DETACHED');};
+ const pause=async ms=>{
+  check();let abort;
+  try{await Promise.race([sleep(ms),new Promise((_,reject)=>{abort=()=>reject(Error('CLOUD_MONITOR_DETACHED'));signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)abort();})]);}
+  finally{if(abort)signal?.removeEventListener('abort',abort);}
+  check();
+ };
+ let sequence=0,last,failures=0;
  while(now()<deadline){
-  last=await provider.call('cloud_transfer_status',request);
+  check();
+  try{last=await provider.call('cloud_transfer_status',request,()=>{},90000,signal);failures=0;}
+  catch{
+   check();
+   // Retry only observation of this same durable job, never dispatch/build.
+   // A dropped status request is not a reason to cancel a healthy transfer.
+   failures++;
+   if(failures===1)await onEvent({kind:'connection_wait',phase:'connection',error_type:'TRANSFER_STATUS_TEMPORARILY_UNAVAILABLE'});
+   await pause(Math.max(0,Math.min(30000,3000*2**Math.min(failures-1,4),deadline-now())));
+   continue;
+  }
   for(const event of last.events||[])if(event.sequence>sequence){sequence=event.sequence;await onEvent(event);}
   if(last.cloud_stopped===true){return {...(last.result||{}),...last,events:undefined,gpuUsed:false};}
-  await sleep(3000);
+  await pause(Math.max(0,Math.min(3000,deadline-now())));
  }
+ check();
  // A timeout never means the remote CPU call stopped. Cancel only this recorded job.
  last=await provider.call('cloud_transfer_stop',request);
  if(!last.cloud_stopped)throw Error('CLOUD_TRANSFER_STOP_UNCONFIRMED');

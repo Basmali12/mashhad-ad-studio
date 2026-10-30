@@ -6,21 +6,26 @@ import modal
 from transfer_contract import FINGERPRINT, MANIFEST, VERIFY_TIMEOUT, STARTUP, verifier_names, IDENTITY
 
 
-def deploy_destination_verifier(client, volume, create_volume=True):
+def deploy_destination_verifier(client, volume, create_volume=True, progress=lambda phase:None):
+    progress('destination_deploy')
     from destination_verifier_app import create_verifier_app
     app, _, state = create_verifier_app(volume, create_volume=create_volume)
     app.deploy(name=app.name, client=client, environment_name='main')
     # Hydrate the otherwise lazy control registry during the approved deployment.
     name, state_name = verifier_names(volume)
+    progress('destination_registry')
     state = modal.Dict.from_name(state_name, create_if_missing=True, client=client, environment_name='main')
+    progress('destination_function')
     fn = modal.Function.from_name(name, 'verify_models', client=client, environment_name='main')
     fn.hydrate()
     deployment = {'fingerprint':FINGERPRINT, 'appId':app.app_id, 'functionId':fn.object_id}
+    progress('destination_metadata')
     state.put('deployment', deployment)
     return deployment
 
 
-def ensure_destination_verifier(client, volume, create_volume=True):
+def lookup_destination_verifier(client, volume):
+    """Read-only lookup: never deploy, create storage, or start a CPU/GPU call."""
     name, state_name = verifier_names(volume)
     try:
         state = modal.Dict.from_name(state_name, create_if_missing=False, client=client, environment_name='main')
@@ -29,8 +34,16 @@ def ensure_destination_verifier(client, volume, create_volume=True):
         if deployment and deployment.get('fingerprint') == FINGERPRINT and deployment.get('functionId') == fn.object_id:
             return deployment
     except modal.exception.NotFoundError:
-        pass
-    return deploy_destination_verifier(client, volume, create_volume=create_volume)
+        return None
+    return None
+
+
+def ensure_destination_verifier(client, volume, create_volume=True, progress=lambda phase:None):
+    progress('destination_lookup')
+    existing = lookup_destination_verifier(client, volume)
+    if existing:
+        return existing
+    return deploy_destination_verifier(client, volume, create_volume=create_volume, progress=progress)
 
 
 def verify_destination(client, source_state, job, volume, phase, emit, check):
