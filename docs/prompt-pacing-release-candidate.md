@@ -1,5 +1,19 @@
 # Prompt and pacing candidate — 2026-10-31
 
+## Deployment record
+
+The nine engine files from source `6f9f0e83eed93f88f4485882c4711bbacdc98a34`
+were installed on muhtaj-app via installer release
+`df1467aa2f08346906686a75af6d2b07fd9fd9e7`. Preflight confirmed zero active
+work and matching previous file hashes. Syntax checks, the film-platform
+service restart, post-install file hashes and the local health endpoint passed.
+Rollback files remain in `/root/codex-prompt-pacing-before-df1467aa2f08`.
+The authenticated customer Files refresh also completed after installation.
+No GPU, transfer, database migration or new media generation was invoked.
+There are 185 passing local engine tests, plus passing lint and typecheck.
+GPU quality/pacing behavior is still unverified for this revision; Nor remains
+private because its earlier run visibly contained text.
+
 ## Confirmed observation
 
 The approved Nor commissioning run produced a 720x1280, 10.005-second MP4
