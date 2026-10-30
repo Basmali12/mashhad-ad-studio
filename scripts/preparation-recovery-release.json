@@ -1,0 +1,113 @@
+{
+  "schema": 1,
+  "pagesCommit": "8a0141d84b52d5fddf6cf9316f7595abb329ea07",
+  "expectedAdminRelease": "de83596a2a58",
+  "files": [
+    {
+      "path": "index.html",
+      "bytes": 906,
+      "sha256": "bffa2901a6af5f227fd4ce2a7c1f2bc63831c398de007a5819239766c97a4139"
+    },
+    {
+      "path": "admin.webmanifest",
+      "bytes": 628,
+      "sha256": "465d138c27600abd613b3416cf4304d10aaab35ecf68cd52674788dee19bf32c"
+    },
+    {
+      "path": "sw.js",
+      "bytes": 233,
+      "sha256": "482ecb61c11a2275561f55118dee6603d3595b78b9bbe3189f62a7b2b40cc2f7"
+    },
+    {
+      "path": "version.json",
+      "bytes": 53,
+      "sha256": "607f0b26b9680f7e04e87cd56a461fadacd90042aed7866bb3a54537491edad2"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-180.png",
+      "bytes": 43994,
+      "sha256": "1a2ed09489d66fc63f5a4dea78aa1afd4dc1aee100af3e5c9c9c4fbd4bce58a8"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-192.png",
+      "bytes": 49434,
+      "sha256": "0ccfdb1a979f05a4793b6ef67cb9eecf4a92849eab4d8c5e3cf9c1ba0260e5cb"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-512.png",
+      "bytes": 311309,
+      "sha256": "e7038fdb3a2636c1bff14f4757615b92c5d838f39346ae71d08d90d45aabc623"
+    },
+    {
+      "path": "mashhad-logo-128.webp",
+      "bytes": 10388,
+      "sha256": "f16568e6362a4bc46d8d48b4ba09d78ce7cc8c4c29e2ac2b4cd2fe2b07d515f4"
+    },
+    {
+      "path": "mashhad-logo-192.webp",
+      "bytes": 16712,
+      "sha256": "95cd64e71c19552de7cc61f6c5af7f075b7d7f3fc1928315324f73e25ee770c0"
+    },
+    {
+      "path": "assets/admin-D5ITKqNh.css",
+      "bytes": 66144,
+      "sha256": "81b9000366b4f6c433f85d29dac4d9fdddb90ade6964dbac2f7312842eea713f"
+    },
+    {
+      "path": "assets/admin-i1BGodQR.js",
+      "bytes": 56334,
+      "sha256": "466855a63c9cd36fecdb7bc90c33179c34d837a90eaabcc9a9bcfc44969ab758"
+    },
+    {
+      "path": "assets/auth-arabic-DVh29meS.js",
+      "bytes": 75282,
+      "sha256": "46feb7e9a2f22cc56fa67c812afc8bc57402b38ad898c6083ab9f4f06688c9d6"
+    },
+    {
+      "path": "assets/auth-CTprXwLg.js",
+      "bytes": 308647,
+      "sha256": "a3fffef42b786f18ff5c81b1b82b5212a31126fab32be35f591e67a2e2d0ee2d"
+    },
+    {
+      "path": "assets/convex-BTZqt167.js",
+      "bytes": 86320,
+      "sha256": "ce383598de9d351ab6e1ff43ecf93e5c4255d9034e7df0e62b44543048ae7538"
+    },
+    {
+      "path": "assets/FilmAdminEntry-CO6cUUej.js",
+      "bytes": 34553,
+      "sha256": "a03b9c3ef4cdbcb8badfbcbe5156a7c196b9fc111b7e27491655d2254cb86050"
+    },
+    {
+      "path": "assets/FilmAdminEntry-ligId4sQ.css",
+      "bytes": 21143,
+      "sha256": "5cac065d59b14029ee51b29999a024c24a535d3b88194911e7c1bdae0a4d5630"
+    }
+  ],
+  "sources": {
+    "services/film-engine/engine/api.mjs": {
+      "before": "997cdd6c09ee6e67fb408d16a4dc24dd01de6369be13ddfaeaad8dcdeb7418f9",
+      "after": "2ae5ff2ed074da1066afb670d0b08feb1ddc3bd4d63299c8543510ed9def71e7"
+    },
+    "services/film-engine/engine/cloud-transfer.mjs": {
+      "before": "f419ff3fb7249136af9556c3a6373f43e3c1eb149ac93bb5e0ca3b89c2ecc2f2",
+      "after": "4979b2380c30d7f3978c14c58ca30bb11af1195a989f041639c4b13809c07986"
+    },
+    "services/film-engine/engine/destination_verifier_control.py": {
+      "before": "186bb810bc6269306594cafa3202c1094df6417ca661d7b2bd62f30e294ee1db",
+      "after": "13fe2a3bba05744066fcfcc17f915da7d70b60e6a1bd7b388aefb319e36633b9"
+    },
+    "services/film-engine/engine/host_account_transfer.py": {
+      "before": "cc12c3d56612f2259316db721597d6cbfd9cb29827f1aab81d45e981624eed41",
+      "after": "dbbb35254aa8e20e119e269114305ce9c4c94366390b011099ba5a593462578d"
+    },
+    "services/film-engine/engine/preparation-recovery.mjs": {
+      "before": null,
+      "after": "909bcc50f0467e16282f37f1c49265a78c36693a8d37f387a49712c87664903f"
+    },
+    "services/film-engine/engine/transfer_setup.py": {
+      "before": null,
+      "after": "e6e8cc4af248113256cbdff327f49957e820b92f8effa0dd424c9d36533cf89f"
+    }
+  }
+}
