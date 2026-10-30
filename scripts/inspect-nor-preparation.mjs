@@ -1,12 +1,18 @@
 // Read-only inspection of the single owner-approved attempt. Never deploy/spawn.
 import fs from 'node:fs';
-import {spawnSync} from 'node:child_process';
+import {spawnSync,execFileSync} from 'node:child_process';
 const base='/srv/iraq-ai-studio-staging/current/services/film-engine/engine';
+const pid=execFileSync('systemctl',['show','-p','MainPID','--value','iraq-ai-film-platform-staging'],{encoding:'utf8'}).trim();
+if(!/^[1-9][0-9]*$/.test(pid))throw Error('SERVICE_NOT_RUNNING');
+for(const entry of fs.readFileSync('/proc/'+pid+'/environ','utf8').split('\0')){
+ const i=entry.indexOf('=');if(i>0&&/^(ENGINE_|LTX_)/.test(entry))process.env[entry.slice(0,i)]=entry.slice(i+1);
+}
 for(const line of fs.readFileSync('/etc/iraq-ai-film-platform-staging/film.env','utf8').split('\n')){
  const i=line.indexOf('=');if(i>0&&!line.startsWith('#'))process.env[line.slice(0,i)]=line.slice(i+1);
 }
 const {PostgresStore}=await import(base+'/postgres.mjs');
-const store=new PostgresStore(process.env.ENGINE_DATA_DIR,process.env.ENGINE_MASTER_KEY);
+const {masterKey}=await import(base+'/keyring.mjs');
+const store=new PostgresStore(process.env.ENGINE_DATA_DIR,masterKey(process.env.ENGINE_DATA_DIR));
 try{
  await store.ready();const job=await store.get('job','de473f07-a395-48d3-891e-cd7c55f822e3');
  if(job?.action!=='prepare'||job.accountId!=='0e77a689-6b46-493a-827c-346091f5c76b')throw Error('SCOPE_MISMATCH');
