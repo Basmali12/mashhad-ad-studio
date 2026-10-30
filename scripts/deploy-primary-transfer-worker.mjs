@@ -22,6 +22,27 @@ try{
  const provider=new ModalProvider(),input={source:credentials,workerApp:'iff-ltx25-cloud-copy-v1'};
  let checked=await provider.call('cloud_transfer_preflight',input);
  console.log(JSON.stringify({stage:'inspect',...checked}));
+ if(process.argv.includes('--diagnose-only')){
+  const code=`import os,sys,json
+from modal_bridge import client
+from transfer_contract import *
+import modal
+try:
+ c,w=client(json.loads(sys.stdin.readline()))
+ state=modal.Dict.from_name(DICT_NAME,client=c,create_if_missing=False,environment_name='main')
+ active=state.get('active');deployment=state.get('deployment',{})
+ print(json.dumps({'activeTransfer':active,'deployedFingerprint':deployment.get('fingerprint'),'expectedFingerprint':FINGERPRINT}))
+ os.environ['IFF_DEFINE_TRANSFER_WORKER']='YES'
+ import transfer_worker
+ print(json.dumps({'localDefinitionReady':True}))
+except BaseException as e:
+ print(json.dumps({'diagnosticErrorClass':type(e).__name__}))
+`;
+  const child=spawn(provider.python,['-c',code],{cwd:root,env:providerEnvironment({credentials}),stdio:['pipe','pipe','pipe']});
+  let output='';child.stdout.on('data',b=>{output+=b;if(output.length>20000)child.kill();});child.stderr.on('data',()=>{});
+  child.stdin.on('error',()=>{});child.stdin.end(JSON.stringify(credentials)+'\n');await new Promise(resolve=>{child.once('close',resolve);child.once('error',resolve);});
+  for(const line of output.split('\n'))try{const d=JSON.parse(line);console.log(JSON.stringify({stage:'safe_diagnostic',activeTransfer:d.activeTransfer??null,deployedFingerprint:d.deployedFingerprint??null,expectedFingerprint:d.expectedFingerprint??null,localDefinitionReady:d.localDefinitionReady??null,diagnosticErrorClass:d.diagnosticErrorClass??null}));}catch{/* Raw SDK output is never forwarded. */}
+ }
  if(!checked.workerReady&&process.argv.includes('--approve-worker-deploy')){
   const outcome=await new Promise(resolve=>{
    const child=spawn(provider.python,[root+'/deploy_transfer_worker.py','--approve-worker-deploy','--credentials-stdin'],{cwd:root,env:providerEnvironment({credentials}),stdio:['pipe','pipe','pipe']});
