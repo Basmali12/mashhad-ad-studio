@@ -20,7 +20,7 @@ const digest=s=>createHash('sha256').update(s).digest('hex');
 function errorCode(status){return status===401?'OPENAI_KEY_INVALID':status===403?'OPENAI_ACCESS_DENIED':status===404?'OPENAI_MODEL_UNAVAILABLE':status===429?'OPENAI_RATE_OR_CREDIT_LIMIT':'OPENAI_REQUEST_FAILED';}
 async function limitedJSON(response){const reader=response.body?.getReader();if(!reader)throw Error('OPENAI_REQUEST_FAILED');let size=0;const parts=[];try{while(true){const r=await reader.read();if(r.done)break;size+=r.value.length;if(size>1500000)throw Error('OPENAI_RESPONSE_TOO_LARGE');parts.push(Buffer.from(r.value));}return JSON.parse(Buffer.concat(parts).toString());}finally{reader.releaseLock();}}
 export class OpenAIDirector{
- constructor(store,{fetcher=fetch,model=TEXT_MODEL,pricing=TEXT_PRICING,keyId='openai-director',recordKind='text-call',frameLoader=extractReviewFrames}={}){this.model=model;this.pricing=pricing;this.keyId=keyId;this.recordKind=recordKind;this.store=store;this.fetcher=fetcher;this.frameLoader=frameLoader;this.busy=false;this.pending=new Set();this.shutdown=new AbortController();}
+ constructor(store,{fetcher=fetch,model=TEXT_MODEL,pricing=TEXT_PRICING,keyId='openai-director',recordKind='text-call',frameLoader=extractReviewFrames}={}){this.model=model;this.pricing=pricing;this.keyId=keyId;this.recordKind=recordKind;this.store=store;this.fetcher=fetcher;this.frameLoader=frameLoader;this.busy=false;this.pending=new Set();this.submissionTail=Promise.resolve();this.queueTail=Promise.resolve();this.shutdown=new AbortController();}
  async close(){this.shutdown.abort();await Promise.allSettled([...this.pending]);}
  async initialize(){for(const r of await this.store.all(this.recordKind))if(['queued','running'].includes(r.status)){r.status='uncertain';r.error='OPENAI_INTERRUPTED_NO_AUTOMATIC_RETRY';await this.store.put(this.recordKind,r);}}
  async config(){const c=await this.store.get('config',this.keyId);return {configured:!!c?.credentials,model:this.model,savedAt:c?.savedAt||null,pricing:this.pricing,maximumOutputTokens:6000,monthlyLimitUSD:null,note:'المفتاح محفوظ مشفراً ولا يعود إلى المتصفح. لا يوجد حد شهري للنص داخل التطبيق؛ كلفة النص مستقلة عن GPU. لا طلب مدفوع عند فتح الصفحة.'};}
@@ -74,20 +74,27 @@ export class OpenAIDirector{
     }
    }
   }
-  const signature=digest(JSON.stringify({projectId:b.projectId,mode:b.mode,messages,instruction,...(referenceSHA?{referenceSHA}:{}),...(previewSHA?{previewSHA}:{})})),old=await this.store.get(this.recordKind,b.requestId);
-  if(old){if(old.signature!==signature)throw Error('TEXT_REQUEST_ID_CONFLICT');return this.public(old);}
-  if(this.busy)throw Error('ONE_TEXT_REQUEST_AT_A_TIME');
-  // Claim before any asynchronous credential/persistence work, across projects too.
-  this.busy=true;this.activeId=b.requestId;
+  const signature=digest(JSON.stringify({projectId:b.projectId,mode:b.mode,messages,instruction,...(referenceSHA?{referenceSHA}:{}),...(previewSHA?{previewSHA}:{})}));
+  const previousSubmission=this.submissionTail;let releaseSubmission;this.submissionTail=new Promise(resolve=>releaseSubmission=resolve);await previousSubmission;
   try{
-  const c=await this.store.get('config',this.keyId);if(!c?.credentials)throw Error('OPENAI_KEY_REQUIRED');
-  const maxTokens=b.mode==='discuss'?1600:Math.min(6000,Math.max(500,Math.floor(Number(b.maxTokens)||3500)));
-  const estimatedMaxUSD=(Buffer.byteLength(MASTER+CINEMATOGRAPHY+FILM_DIRECTION+instruction+JSON.stringify(messages))*this.pricing.inputPerMillionUSD+maxTokens*this.pricing.outputPerMillionUSD)/1e6+(b.mode==='review'?.05:0);
-  const record={id:b.requestId,projectId:b.projectId,mode:b.mode,signature,status:'queued',createdAt:Date.now(),model:this.model,estimatedMaxUSD,estimateIsInvoiceCap:false,pricing:this.pricing,invoiceUSD:null,...(b[REVIEW_INPUT]?{evidence:b[REVIEW_INPUT].evidence}:{})};
-  await this.store.put(this.recordKind,record);this.busy=true;
-  const task=this.run(record,{messages,instruction,maxTokens,frames:b[REVIEW_INPUT]?.frames,referenceImage,previewImage},c.credentials).finally(()=>{this.busy=false;this.activeId=null;this.pending.delete(task);});this.pending.add(task);return this.public(record);
-  }catch(e){this.busy=false;this.activeId=null;throw e;}
+   const old=await this.store.get(this.recordKind,b.requestId);
+   if(old){if(old.signature!==signature)throw Error('TEXT_REQUEST_ID_CONFLICT');return this.public(old);}
+   // New discussions may queue across conversations. Production/review policy is unchanged.
+   if(this.busy&&b.mode!=='discuss')throw Error('ONE_TEXT_REQUEST_AT_A_TIME');
+   const c=await this.store.get('config',this.keyId);if(!c?.credentials)throw Error('OPENAI_KEY_REQUIRED');
+   const maxTokens=b.mode==='discuss'?1600:Math.min(6000,Math.max(500,Math.floor(Number(b.maxTokens)||3500)));
+   const estimatedMaxUSD=(Buffer.byteLength(MASTER+CINEMATOGRAPHY+FILM_DIRECTION+(b.mode==='discuss'?CHAT_PERSONA:'')+instruction+JSON.stringify(messages))*this.pricing.inputPerMillionUSD+maxTokens*this.pricing.outputPerMillionUSD)/1e6+(b.mode==='review'?.05:0);
+   const record={id:b.requestId,projectId:b.projectId,mode:b.mode,signature,status:'queued',createdAt:Date.now(),model:this.model,estimatedMaxUSD,estimateIsInvoiceCap:false,pricing:this.pricing,invoiceUSD:null,...(b[REVIEW_INPUT]?{evidence:b[REVIEW_INPUT].evidence}:{})};
+   await this.store.put(this.recordKind,record);this.busy=true;
+   const task=this.queueTail.then(async()=>{
+    if(this.shutdown.signal.aborted){record.status='uncertain';record.error='OPENAI_INTERRUPTED_NO_AUTOMATIC_RETRY';await this.store.put(this.recordKind,record);return;}
+    this.activeId=b.requestId;
+    await this.run(record,{messages,instruction,maxTokens,frames:b[REVIEW_INPUT]?.frames,referenceImage,previewImage},c.credentials);
+   }).finally(()=>{this.pending.delete(task);if(this.activeId===b.requestId)this.activeId=null;this.busy=this.pending.size>0;});
+   this.queueTail=task.catch(()=>{});this.pending.add(task);return this.public(record);
+  }finally{releaseSubmission();}
  }
+
  public(record){const {signature,...safe}=record;if(this.busy&&this.activeId===record.id&&['completed','failed','uncertain'].includes(record.status))safe.status='running';return safe;}
  async get(id){if(!safeId(id))throw Error('INVALID_DIRECTOR_REQUEST');const r=await this.store.get(this.recordKind,id);if(!r)throw Error('TEXT_CALL_NOT_FOUND');return this.public(r);}
  async run(r,{messages,instruction,maxTokens,frames,referenceImage,previewImage},credentials){

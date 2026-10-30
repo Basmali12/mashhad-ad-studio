@@ -128,6 +128,16 @@ test('text submission claims atomically, remains visible pending and shutdown is
  const result=await Promise.allSettled([f.invoke(alice,'plan.submit',{projectId:p.id,approved:true}),f.invoke(alice,'plan.submit',{projectId:p.id,approved:true})]);assert.equal(result.filter(r=>r.status==='fulfilled').length,1);assert.equal((await f.invoke(alice,'plan.status',{projectId:p.id})).textPending,true);await waitFor(()=>calls===1);const start=Date.now();await f.platform.close();assert.ok(Date.now()-start<500);
 });
 
+test('a same-title first message creates a distinct conversation; settled estimates never exhaust daily chat by count alone',async t=>{
+ const f=await fixture(t,{text:true}),input={name:'هلو',story:'هلو',seconds:10,orientation:null};
+ const a=await f.invoke(alice,'project.save',input),b=await f.invoke(alice,'project.save',input);assert.notEqual(a.id,b.id);
+ for(let n=0;n<40;n++){const id='old-'+n;f.store.put('film-text-reservation',{id,projectId:a.id,customerId:f.users.alice,calls:1,reservedMicroUSD:250000,createdAt:f.now()});f.store.put('text-call',{id:id+'-0',projectId:a.id,status:'completed',usage:{computedUSD:.001}});}
+ const raw=f.store.get('film-project',b.id);raw.textCalls=40;f.store.put('film-project',raw);
+ let calls=0;f.engine.invoke=async(route)=>{if(route==='llm/calls'){calls++;return {status:'queued'};}return {status:'completed',discussion:{reply:'هلا بيك',intent:'discuss',proposed_duration_seconds:null,ready_to_write:false}};};
+ assert.equal((await f.invoke(alice,'chat.submit',{projectId:b.id,message:'هلو',approved:true})).accepted,true);await waitFor(()=>calls===1&&!f.store.get('film-project',b.id).textPending);
+ assert.equal((await f.invoke(alice,'project.get',{id:a.id})).messages.length,0);assert.equal((await f.invoke(alice,'project.get',{id:b.id})).messages.length,2);assert.equal(f.provider.calls.length,0);
+});
+
 test('every new chat message is durably accepted while the previous response runs, then processed once in order',async t=>{
  const f=await fixture(t,{text:true}),p=await f.invoke(alice,'project.save',{name:'chat',story:'fiction',seconds:10,orientation:'portrait'});
  let release;const first=new Promise(r=>release=r),calls=[];let active;

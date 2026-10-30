@@ -13,6 +13,12 @@ test('admin transfer monitoring preserves only approved progress fields and save
  const f=await fixture(t,{role:'super-admin',bridgeResult:[{id:'account',prepareJobId:'job',events:[{kind:'progress',phase:'transfer',file:'weights',transferred:10,required:100,unit:'source_bytes_hashed'}],tokenSecret:'PRIVATE_DO_NOT_RETURN'}]});
  const r=await f.post({operation:'admin.accounts.list',input:{},requestId:'transfer-progress-check'}),data=await r.json();assert.equal(data[0].prepareJobId,'job');assert.equal(data[0].events[0].transferred,10);assert.equal(data[0].events[0].unit,'source_bytes_hashed');assert.equal(JSON.stringify(data).includes('PRIVATE_DO_NOT_RETURN'),false);
 });
+
+test('an explicit text budget rejection is reported as service capacity, never a previous ambiguous paid request',async t=>{
+ const f=await fixture(t,{bridgeResult:{error:'TEXT_BUDGET_LIMIT',message:'PRIVATE_DO_NOT_RETURN'}});
+ const r=await f.post({operation:'chat.submit',input:{projectId:'p',message:'هلو',approved:true},requestId:'known-text-rejection'}),data=await r.json();
+ assert.equal(data.error,'TEXT_BUDGET_LIMIT');assert.equal(data.followExisting,false);assert.match(data.message,/خدمة المحادثة/);assert.equal(data.message.includes('PRIVATE_DO_NOT_RETURN'),false);
+});
 async function fixture(t,{role='customer',profileFailure=false,bridgeFailure=false,legacyOwner,bridgeResult,publicMediaOrigin,adminOrigin}={}){
  const calls=[];
  const handler=createFilmGateway({env:{...env,...(adminOrigin?{MASHHAD_FILM_ADMIN_ORIGIN:adminOrigin}:{}),...(publicMediaOrigin?{FILM_PUBLIC_MEDIA_ORIGIN:publicMediaOrigin}:{}),...(legacyOwner?{MASHHAD_FILM_LEGACY_OWNER_ID:legacyOwner}:{})},fetchImpl:async(url,options)=>{

@@ -1,3 +1,4 @@
+import {textBudgetExposure} from './film-money.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHmac,timingSafeEqual} from 'node:crypto';
@@ -21,7 +22,7 @@ export function createFilmImagePreview({store,secret,origin,origins,now=Date.now
    const disk=await fs.statfs(store.folder);if(Number(disk.bavail)*Number(disk.bsize)<32*1024*1024)throw Error('PREVIEW_STORAGE_UNAVAILABLE');
    const config=await store.get('config','openai-director');if(!config?.credentials)throw Error('OPENAI_KEY_REQUIRED');
    if((await store.all('film-image-preview')).filter(r=>r.projectId===p.id).length>=3)throw Error('PREVIEW_LIMIT');
-   const used=(await store.all('film-text-reservation')).filter(r=>r.createdAt>now()-30*86400000).reduce((a,r)=>a+r.reservedMicroUSD,0);
+   const used=textBudgetExposure((await store.all('film-text-reservation')).filter(r=>r.createdAt>now()-30*86400000),await store.all('text-call'));
    if(!Number.isSafeInteger(budgetMicroUSD)||used+100000>budgetMicroUSD)throw Error('TEXT_BUDGET_LIMIT');
    record={id:quoteId,projectId:p.id,customerId:p.customerId,status:'queued',prompt:current.preview.prompt,orientation:current.orientation,createdAt:now(),expiresAt:now()+LIFE,estimatedUSD:PREVIEW_ESTIMATE_USD};
    await store.put('film-text-reservation',{id:'image-'+quoteId,customerId:p.customerId,projectId:p.id,calls:1,reservedMicroUSD:100000,createdAt:now(),source:'image_preview_reservation_not_invoice'});

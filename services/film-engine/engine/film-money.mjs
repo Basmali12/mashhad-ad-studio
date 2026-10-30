@@ -21,3 +21,15 @@ export function debit(lots,amount,at){
  }
  return {entries,captured:amount-remaining,uncovered:remaining};
 }
+
+// Keep the original reservation/audit. Completed usage releases only its estimate.
+// Unknown, queued and interrupted calls retain their reservation; this is not an invoice.
+export function textBudgetExposure(reservations,calls){
+ return reservations.reduce((total,r)=>{
+  const matching=calls.filter(c=>c.projectId===r.projectId&&typeof c.id==='string'&&c.id.startsWith(r.id+'-')&&/^\d+$/.test(c.id.slice(r.id.length+1)));
+  const known=matching.filter(c=>['completed','failed'].includes(c.status)&&Number.isFinite(c.usage?.computedUSD)&&c.usage.computedUSD>=0);
+  const count=Number.isSafeInteger(r.calls)&&r.calls>0?r.calls:1;
+  if(known.length>count)return total+r.reservedMicroUSD; // Inconsistent receipt: do not release.
+  return total+Math.ceil(r.reservedMicroUSD*(count-known.length)/count)+known.reduce((sum,c)=>sum+Math.ceil(c.usage.computedUSD*1e6),0);
+ },0);
+}

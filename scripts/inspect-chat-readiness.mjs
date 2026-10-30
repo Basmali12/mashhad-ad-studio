@@ -1,3 +1,5 @@
+import process from 'node:process';
+import console from 'node:console';
 // Read-only operational diagnosis. Never print messages, credentials or raw errors.
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';

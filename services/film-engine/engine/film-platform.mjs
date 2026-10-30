@@ -1,3 +1,4 @@
+import {textBudgetExposure} from './film-money.mjs';
 import fs from 'node:fs';
 import {initialOrientation,isOrientation,applyDiscussionOrientation} from './film-orientation.mjs';
 import {createFilmImagePreview} from './film-image-preview.mjs';
@@ -145,7 +146,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
      if(!(await store.get('config','openai-director'))?.credentials)throw Error('OPENAI_KEY_REQUIRED');
      const calls=latest.scenes.filter(s=>!s.attempted).length,reserve=calls*250000;
      const usage=(await store.all('film-text-reservation')).filter(x=>x.createdAt>now()-CREDIT_LIFETIME);
-     if(usage.reduce((v,x)=>v+x.reservedMicroUSD,0)+reserve>textBudgetMicroUSD)throw Error('TEXT_BUDGET_LIMIT');
+     if(textBudgetExposure(usage,await store.all('text-call'))+reserve>textBudgetMicroUSD)throw Error('TEXT_BUDGET_LIMIT');
      if(usage.filter(x=>x.customerId===c.id&&x.createdAt>now()-86400000).reduce((v,x)=>v+x.calls,0)+calls>60)throw Error('TEXT_LIMIT');
      const request=id();await store.put('film-text-reservation',{id:request,customerId:c.id,projectId:latest.id,calls,reservedMicroUSD:reserve,createdAt:now(),source:'administrator_director_follow_reservation_not_invoice'});
      latest.directorFollow={id:request,approvedAt:now(),calls:[],failed:false};latest.visualReviews=[];latest.reviewState='awaiting_next_scene';
@@ -497,7 +498,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    if(!jobs.length)throw Error('REVIEW_VERIFIED_VIDEO_REQUIRED');
    const usage=(await store.all('film-text-reservation')).filter(x=>x.createdAt>now()-CREDIT_LIFETIME);
    const reserve=jobs.length*250000;
-   if(usage.reduce((v,x)=>v+x.reservedMicroUSD,0)+reserve>textBudgetMicroUSD)throw Error('TEXT_BUDGET_LIMIT');
+   if(textBudgetExposure(usage,await store.all('text-call'))+reserve>textBudgetMicroUSD)throw Error('TEXT_BUDGET_LIMIT');
    if(usage.filter(x=>x.customerId===c.id&&x.createdAt>now()-86400000).reduce((v,x)=>v+x.calls,0)+jobs.length>30)throw Error('TEXT_LIMIT');
    request={id:id(),jobs};
    await store.put('film-text-reservation',{id:request.id,customerId:c.id,projectId:p.id,calls:jobs.length,reservedMicroUSD:reserve,createdAt:now(),source:'administrator_budget_reservation_not_invoice'});
@@ -543,10 +544,8 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    const pref=(await store.get('film-preferences',c.id))?.orientation;if(p.orientationConfirmed===false&&isOrientation(pref)){p.orientation=pref;p.orientationConfirmed=true;}
    if(operation==='plan.submit'&&p.orientationConfirmed===false)throw Error('ORIENTATION_REQUIRED');
    if(operation==='plan.submit'&&['queued','running','uncertain'].includes(p.preview?.status))throw Error('PREVIEW_PENDING');if(operation==='plan.submit'&&p.referenceUploading)throw Error('REFERENCE_LOCKED');if(p.textPending)throw Error('TEXT_ALREADY_PENDING');
-   if((p.textCalls||0)+batches>30)throw Error('TEXT_LIMIT');
    const usage=(await store.all('film-text-reservation')).filter(x=>x.createdAt>now()-CREDIT_LIFETIME);
-   if(usage.reduce((v,x)=>v+x.reservedMicroUSD,0)+reserve>textBudgetMicroUSD)throw Error('TEXT_BUDGET_LIMIT');
-   if(usage.filter(x=>x.customerId===c.id&&x.createdAt>now()-86400000).reduce((v,x)=>v+x.calls,0)+batches>30)throw Error('TEXT_LIMIT');
+   if(textBudgetExposure(usage,await store.all('text-call'))+reserve>textBudgetMicroUSD)throw Error('TEXT_BUDGET_LIMIT');
    await store.put('film-text-reservation',{id:request,customerId:c.id,projectId:p.id,calls:batches,reservedMicroUSD:reserve,createdAt:now(),source:'administrator_budget_reservation_not_invoice'});
    p.textPending=request;p.textUncertain=false;p.textCalls=(p.textCalls||0)+batches;p.textRequests=[];p.error=null;
    if(input.queuedMessageId)p.chatQueue=p.chatQueue.filter(m=>m.id!==input.queuedMessageId);

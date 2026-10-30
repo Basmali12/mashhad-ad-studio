@@ -76,15 +76,27 @@
   "sources": {
     "services/film-engine/engine/openai-director.mjs": {
       "before": "268e446c24f84620d3fed8e969c04b1d17d3ed2387a3d6592c5b19b869a40a6e",
-      "after": "3e6c75f7f2787a5f7dbdc18f920283c39698c70174478e519c4fb4833b07512d"
+      "after": "fc42d37479561ca295122b723560c399633aa6e8019c0ce7d845a5c06e424bb2"
     },
     "services/film-engine/engine/film-platform.mjs": {
       "before": "adf355b41bb41746964335354decfb88d2179f5168261499959617631280ccf9",
-      "after": "f31968da7803e1f367d9991a818c81e9a1c285fa7fe23a6f0a70efdae286f225"
+      "after": "8a851b5be9dd5c5ac28c46e3dea84ab31c1914c1a3595cea1c0c9680baee69f3"
     },
     "services/film-engine/engine/film-orientation.mjs": {
       "before": "4ac5ab173b081be2c9e8e9e05210fe16104339eca28747005616530dc1284eaa",
       "after": "0fc59057bf425565fe194174a3a3955bc8c460c0bfad9c03459a627699cfe7df"
+    },
+    "services/film-engine/engine/film-money.mjs": {
+      "before": "f19a49598147110a20488e9d82c7ea8023e49732eaac9e031a01bc589a5d96fc",
+      "after": "cf1691fc21f255580353c3b53cd92e80670b79acd2bff025cf38ef971d05ee09"
+    },
+    "services/film-engine/engine/film-image-preview.mjs": {
+      "before": "4f99ba66ff782efba416335ae1297934807548a3a3c040ec42f53e3533cb161b",
+      "after": "cc729ff91ac6990268f0a460080e51932b959fc488bf384ae458f0324e8e2b88"
+    },
+    "services/film-gateway/film-bridge.mjs": {
+      "before": "9fe6a680517c37f289b76dcf149971dfd1833548b3756e9f381a36211bec23e3",
+      "after": "eef5a126eff526a4dae13e12e02e3aa525f359d722725f340ef29df1553946df"
     }
   }
 }

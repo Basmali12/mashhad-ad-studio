@@ -34,3 +34,18 @@ test('discussion persona does not replace production output with a conversationa
  }});
  const r={id:'production',projectId:'story1',mode:'details'};await director.run(r,{messages:[{role:'user',content:'إعلان لشركة برمجة'}],instruction:'Write scenes',maxTokens:6000},{});assert.equal(r.status,'completed');await director.close();
 });
+
+test('two independent conversations are accepted promptly and processed once without a busy rejection',async()=>{
+ const records=new Map(),store={get:async(k,id)=>k==='config'?{credentials:{}}:records.get(k+':'+id),put:async(k,r)=>records.set(k+':'+r.id,{...r}),open:()=>({key:'synthetic-test-only'}),audit:async()=>{}};
+ let release;const hold=new Promise(r=>release=r),calls=[];
+ const director=new OpenAIDirector(store,{fetcher:async(url,options)=>{
+  const p=JSON.parse(options.body);calls.push(p.input.at(-1).content);if(calls.length===1)await hold;
+  return Response.json({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({reply:'هلا بيك',intent:'discuss',proposed_duration_seconds:null,ready_to_write:false,continuity_notes:''})}]}]});
+ }});
+ try{
+  const a={requestId:'a',projectId:'new-a',mode:'discuss',approvedTextCost:true,messages:[{role:'user',content:'هلو'}]},b={...a,requestId:'b',projectId:'new-b'};
+  await director.submit(a);await director.submit(b);await director.submit(b);
+  assert.equal((await director.get('b')).status,'queued');assert.deepEqual(calls,['هلو']);
+  release();await Promise.all([...director.pending]);assert.deepEqual(calls,['هلو','هلو']);assert.equal((await director.get('b')).status,'completed');
+ }finally{release();await director.close();}
+});
