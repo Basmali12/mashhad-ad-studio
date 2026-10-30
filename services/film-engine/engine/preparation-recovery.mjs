@@ -1,4 +1,12 @@
 // Reattach approved persisted transfers without a browser, never redispatch them.
+export async function persistCloudRecoveryFailure(store,id){
+ return store.transaction(async()=>{
+  const latest=await store.get('job',id);
+  if(!latest||latest.cloudStopped===true)return false;
+  await store.put('job',{...latest,status:'uncertain',error:'CLOUD_TRANSFER_RECONCILIATION_REQUIRED',cloudStopped:false});
+  return true;
+ });
+}
 export function preparationRecovery({store,resume,intervalMs=15000,now=Date.now,onError=()=>{}}){
  let closed=false,scanning=false;const next=new Map();
  const scan=async()=>{

@@ -11,7 +11,7 @@ import {inferenceManifest,manifest} from '../engine/config.mjs';
 import {transferIdentity,workerFingerprint,assertTransferPlan} from '../engine/transfer-profile.mjs';
 
 // Metadata and dispatch fixtures only; no SDK, provider network, model bytes or GPU.
-async function fixture(t,{existing=[],sourceMissing=[],corrupt=[],wrongWorker=false,failDispatch=false,recovering=false}={}){
+async function fixture(t,{existing=[],sourceMissing=[],corrupt=[],wrongWorker=false,failDispatch=false,recovering=false,unstartedClosed=false}={}){
  const folder=await mkdtemp(path.join(tmpdir(),'film-prepare-fixture-')),key=randomBytes(32).toString('base64'),store=new Store(folder,key);store.installRentalSchema();
  const source={id:randomUUID(),mode:'local_profile',workspace:'basm1998ali',role:'primary',volume:'modal-ltx25-test-models'};
  const destination={id:randomUUID(),mode:'local_profile',workspace:'destination-fixture',role:'backup',volume:'iff-ltx25-1234abcd',corruptFiles:corrupt};store.put('account',source);store.put('account',destination);
@@ -21,7 +21,7 @@ async function fixture(t,{existing=[],sourceMissing=[],corrupt=[],wrongWorker=fa
   if(action==='quality_discover'){const files=rows(input.volume);return {profile:inferenceManifest.id,ready:files.every(f=>f.present),files};}
   if(action==='cloud_transfer_preflight')return {workerReady:true,fingerprint:wrongWorker?'old-five-file-worker':workerFingerprint,...transferIdentity,workerApp:'iff-ltx25-cloud-copy-v1'};
   if(action==='cloud_transfer_dispatch'){if(failDispatch)throw Error('AMBIGUOUS_FIXTURE_DISPATCH');return {host_orchestrated:true,worker_app_id:'fixture-cpu-worker'};}
-  if(action==='cloud_transfer_status')return {cloud_stopped:true,callFinished:true,running_containers:0,tasks:0,events:[],result:{ready:true,gpuUsed:false,status:'completed',inspection:{ready:true,files:rows(source.volume)}}};
+  if(action==='cloud_transfer_status')return {cloud_stopped:true,callFinished:true,running_containers:0,tasks:0,events:[],result:unstartedClosed?{ready:false,gpuUsed:false,status:'failed',noModelCallsStarted:true,setupFailedAt:Date.now()/1000,error:'TRANSFER_IMAGE_BUILDER_INCOMPATIBLE'}:{ready:true,gpuUsed:false,status:'completed',inspection:{ready:true,files:rows(source.volume)}}};
   if(action==='cloud_transfer_stop')return {cloud_stopped:!failDispatch,running_containers:failDispatch?null:0,tasks:failDispatch?null:0};
   throw Error('UNEXPECTED_PROVIDER_BOUNDARY');
  }};
@@ -34,6 +34,12 @@ async function fixture(t,{existing=[],sourceMissing=[],corrupt=[],wrongWorker=fa
  return {api,store,calls,source,destination,quote,execute,recoveredId};
 }
 const files=Object.entries(inferenceManifest.files);
+
+test('unstarted setup closure does not count control-plane waiting as paid CPU compute',async t=>{
+ const f=await fixture(t,{unstartedClosed:true}),job=await f.execute(await f.quote());
+ for(let n=0;n<100&&!f.store.get('job',job.id).cloudStopped;n++)await new Promise(r=>setTimeout(r,5));
+ const saved=f.store.get('job',job.id);assert.equal(saved.status,'failed');assert.equal(saved.cloudStopped,true);assert.equal(saved.modelComputeUSD,0);assert.equal(saved.estimatedUSD,null);assert.ok(saved.elapsedSeconds<60);assert.equal(saved.result.ready,false);
+});
 
 test('actual API startup follows persisted preparation with no page request and no paid redispatch',async t=>{
  const f=await fixture(t,{recovering:true});

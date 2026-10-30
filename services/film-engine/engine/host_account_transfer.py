@@ -161,6 +161,20 @@ def status(request, record, source, state, cancel=False):
     destination, workspace = client(request['credentials'])
     if workspace != record['workspace'] or record['fingerprint'] != FINGERPRINT:
         raise RuntimeError('TRANSFER_CLAIM_MISMATCH')
+    closure = state.get('operator-closure:'+request['jobId'])
+    if (closure and closure.get('jobId') == request['jobId']
+            and closure.get('noModelCallsStarted') is True
+            and closure.get('error') == 'TRANSFER_IMAGE_BUILDER_INCOMPATIBLE'
+            and record.get('setup', {}).get('errorClass') == 'VersionError'
+            and not record.get('verifier')
+            and not any(state.get('orchestrator:'+request['jobId']+':'+s) for s in ('before','copy','after'))):
+        # A durable operator receipt, not a new success claim or a new call.
+        # This scoped job can never be resurrected by a stale status response.
+        return {'cloud_stopped':True,'callFinished':True,'state':'finished','events':setup_events(record),
+                'source_containers':0,'destination_containers':0,'tasks':0,'gpuUsed':False,
+                'result':{'status':'failed','ready':False,'error':closure['error'],
+                          'noModelCallsStarted':True,'setupFailedAt':record['setup'].get('updatedAt'),
+                          'gpuUsed':False,'recordedCost':None}}
     if not record.get('verifier'):
         if cancel:
             state.put('cancel:'+request['jobId'], True)

@@ -25,6 +25,18 @@ class State:
 
 
 class TransferSetupTests(unittest.TestCase):
+    def test_verified_unstarted_closure_is_terminal_and_never_redeploys(self):
+        state = State()
+        record = {'workspace':'destination','fingerprint':host.FINGERPRINT,'setup':{'errorClass':'VersionError'}}
+        request = {'jobId':'job','credentials':{},'volume':'iff-ltx25-1234abcd'}
+        state.put('operator-closure:job',{'jobId':'job','noModelCallsStarted':True,'error':'TRANSFER_IMAGE_BUILDER_INCOMPATIBLE'})
+        with patch.object(host,'require_external_control'), patch('modal_bridge.client',return_value=(object(),'destination')), \
+             patch('destination_verifier_control.lookup_destination_verifier') as lookup, patch.object(host,'advance') as advance:
+            result=host.status(request,record,object(),state)
+            self.assertTrue(result['cloud_stopped'])
+            self.assertEqual(result['result']['status'],'failed')
+            lookup.assert_not_called();advance.assert_not_called()
+
     def test_safe_checkpoint_does_not_record_exception_text_or_custom_class(self):
         state, record = State(), {}
         secret_error = type('as_PRIVATE_SECRET', (Exception,), {})('ak_PRIVATE_SECRET credentials and traceback')

@@ -1,6 +1,16 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {preparationRecovery} from '../engine/preparation-recovery.mjs';
+import {preparationRecovery,persistCloudRecoveryFailure} from '../engine/preparation-recovery.mjs';
+
+test('a stale observer cannot reopen a durably closed preparation',async()=>{
+ let saved={id:'same',status:'failed',cloudStopped:true,error:'VERIFIED_CLOSED'};
+ const store={transaction:fn=>fn(),get:async()=>saved,put:async(_,value)=>{saved=value;}};
+ assert.equal(await persistCloudRecoveryFailure(store,'same'),false);
+ assert.deepEqual(saved,{id:'same',status:'failed',cloudStopped:true,error:'VERIFIED_CLOSED'});
+ saved={id:'same',status:'running',cloudStopped:false,stopRequestedAt:42};
+ assert.equal(await persistCloudRecoveryFailure(store,'same'),true);
+ assert.equal(saved.status,'uncertain');assert.equal(saved.stopRequestedAt,42);
+});
 
 test('server reattaches persisted CPU preparation without page requests or new dispatch',async()=>{
  let clock=100000;const resumed=[];

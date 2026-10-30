@@ -18,7 +18,7 @@ import {AudioCleanupQueue,audioCapability,publicCleanup} from './audio-cleanup.m
 import {OpenAIDirector} from './openai-director.mjs';
 import {TextQuality} from './text-quality.mjs';
 import {cloudTransferPlan,cloudRequest,observeCloudTransfer} from './cloud-transfer.mjs';
-import {preparationRecovery} from './preparation-recovery.mjs';
+import {preparationRecovery,persistCloudRecoveryFailure} from './preparation-recovery.mjs';
 const SAFE = /^[a-zA-Z0-9_-]{1,100}$/;
 const publicAccount = a => { const { credentials, hf, ...safe } = a; return { ...safe, hasHF: !!hf, billing:{creditBalanceUSD:null,creditRenewalAt:null,subscriptionExpiresAt:null,availability:'not_exposed_by_supported_modal_sdk',source:'https://modal.com/docs/guide/billing'} }; };
 function publicEvents(job){
@@ -141,6 +141,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
         if(isCloud(job)&&data.sequence&&data.sequence<=(job.transferSequence||0))return;
         if(isCloud(job)&&data.sequence)job.transferSequence=data.sequence;
         const latest = (await store.get('job', job.id));
+        if(isCloud(job)&&latest?.cloudStopped===true)return;
         const safe = {};
         for (const field of ['kind', 'phase', 'seconds', 'completed', 'total', 'global_completed','global_total','unit', 'transferred', 'required', 'file', 'app_id', 'ready_until', 'running_containers', 'cloud_stopped', 'state', 'time', 'rate', 'eta', 'status', 'error_type', 'device', 'allocated_vram_bytes', 'reserved_vram_bytes','sequence','call_id','worker_app_id'])
             if (Object.hasOwn(data, field))
@@ -184,7 +185,8 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
         const latest=await store.get('job',job.id);if(latest?.stopRequestedAt)job.stopRequestedAt=latest.stopRequestedAt;
         job.result=result;job.cloudStopped=true;job.finishedAt=Date.now();job.stoppedAt=Date.now();
         if(result.verifiedFiles)job.verifiedFiles=result.verifiedFiles;
-        job.elapsedSeconds=(Date.now()-(job.startedAt||job.createdAt))/1000;job.estimatedUSD=(job.elapsedSeconds+(result.destinationComputeSeconds||0))*job.estimate.rate;
+        if(result.noModelCallsStarted){job.modelComputeUSD=0;job.estimatedUSD=null;job.monitorWallSeconds=(Date.now()-(job.startedAt||job.createdAt))/1000;if(Number.isFinite(result.setupFailedAt))job.elapsedSeconds=Math.max(0,result.setupFailedAt-(job.startedAt||job.createdAt)/1000);}
+        else{job.elapsedSeconds=(Date.now()-(job.startedAt||job.createdAt))/1000;job.estimatedUSD=(job.elapsedSeconds+(result.destinationComputeSeconds||0))*job.estimate.rate;}
         if(result.verificationOnly&&!result.requiresNewPlan){job.status='completed';job.error=null;a.lastIntegrityVerification={jobId:job.id,at:Date.now(),verifiedFiles:result.verifiedFiles||[]};}
         else if(result.probeVerified){job.status='completed';job.error=null;a.lastTransferProbe={verified:true,jobId:job.id,at:Date.now(),bytes:result.transferredBytes};}
         else if(result.requiresNewPlan){job.status='needs_review';job.error='INTEGRITY_CHANGED_SCOPE_APPROVE_NEW_PLAN';a.corruptFiles=result.corruptFiles;a.discovery={...a.discovery,ready:false};}
@@ -199,7 +201,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
     function resumeCloud(job){
         if(cloudMonitors.has(job.id))return;
         cloudMonitors.add(job.id);
-        const task=(async()=>{try{await watchCloud(job,await account(job.accountId));}catch{if(!cloudMonitorShutdown.signal.aborted){job.status='uncertain';job.error='CLOUD_TRANSFER_RECONCILIATION_REQUIRED';job.cloudStopped=false;await store.put('job',job);}}finally{cloudMonitors.delete(job.id);}})();
+        const task=(async()=>{try{await watchCloud(job,await account(job.accountId));}catch{if(!cloudMonitorShutdown.signal.aborted)await persistCloudRecoveryFailure(store,job.id);}finally{cloudMonitors.delete(job.id);}})();
         activeTasks.add(task);void task.finally(()=>activeTasks.delete(task));
     }
     async function run(job, a, source) {
@@ -313,6 +315,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
             if(job.stopRequestedAt&&job.cloudStopped&&!job.result?.videoVerified){job.status='stopped';job.error=null;}
         }
         finally {
+            if(isCloud(job)){const settled=await store.get('job',job.id);if(settled?.cloudStopped===true)Object.assign(job,settled);}
             if(isCloud(job))cloudMonitors.delete(job.id);
             if(job.action==='start')controllers.delete(job.id);
             if(job.action==='start'&&job.cloudStopped){
@@ -326,8 +329,8 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
             if(!isCloud(job)||job.cloudStopped)job.finishedAt = Date.now();
             if (job.cloudStopped)
                 job.stoppedAt = Date.now();
-            job.elapsedSeconds = (Date.now() - job.startedAt) / 1000;
-            job.estimatedUSD = job.error==='LOCAL_ARTIFACT_NOT_WRITABLE'?0:job.action === 'prepare'&&!isCloud(job) ? null : job.elapsedSeconds * job.estimate.rate;
+            if(!job.result?.noModelCallsStarted)job.elapsedSeconds = (Date.now() - job.startedAt) / 1000;
+            job.estimatedUSD = job.result?.noModelCallsStarted?null:job.error==='LOCAL_ARTIFACT_NOT_WRITABLE'?0:job.action === 'prepare'&&!isCloud(job) ? null : job.elapsedSeconds * job.estimate.rate;
             (await store.put('job', job));
             (await store.audit(isCloud(job)&&!job.cloudStopped?'operation_detached':'operation_finished', job.id));
         }
@@ -986,7 +989,9 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                     if (!a)
                         throw Error('ACCOUNT_RELINK_REQUIRED_FOR_CLOUD_CHECK');
                     if(isCloud(j)){
+                        if(j.cloudStopped===true){json(res,200,j);return true;}
                         const check=await provider.call('cloud_transfer_status',await transferControl(j,a));
+                        const settled=await store.get('job',j.id);if(settled?.cloudStopped===true){json(res,200,settled);return true;}
                         for(const eventData of check.events||[])await event(j,eventData);
                         j.cleanup=check;j.cloudStopped=check.cloud_stopped===true;
                         if(j.cloudStopped)await finishCloud(j,a,{...(check.result||{}),...check});else{await store.put('job',j);resumeCloud(j);}
