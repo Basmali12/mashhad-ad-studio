@@ -1,7 +1,7 @@
 /* One pure contract shared by the planner and the trusted server. No inference. */
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.ArabicDialogue=factory();})(typeof window!=='undefined'?window:globalThis,function(){
  'use strict';
- const version='arabic-dialogue-v1';
+ const version='arabic-dialogue-v3-soundtrack';
  const fail=message=>{throw Error('ARABIC_DIALOGUE_REQUIRED: '+message);};
  const arabic=/[\u0621-\u063a\u0641-\u064a\u066e-\u06d3]/u;
  function validate(value,{silenceAllowed=true}={}){
@@ -32,7 +32,7 @@
   const dialect={iraqi:'natural Iraqi Arabic colloquial',msa:'Modern Standard Arabic',egyptian:'Egyptian Arabic',gulf:'Gulf Arabic',levantine:'Levantine Arabic',maghrebi:'Maghrebi Arabic'}[c.dialect];
   return ['The characters speak '+dialect+' naturally, with synchronized human voices and native action sounds.',
    ...c.lines.map(l=>l.speaker+' alone says aloud exactly: «'+l.text+'». The other characters listen with their mouths closed. Each speaker finishes before the next begins.'),
-   'Only these Arabic words are heard, once, without translation, paraphrasing or additional speech. Speaker descriptions are not spoken. After the final sentence, only quiet location ambience remains. The image contains no subtitles, captions or written dialogue.'].join(' ');
+   'Only these Arabic words are heard in the soundtrack, once, without translation, paraphrasing or additional speech. Speaker descriptions are not spoken. Do not slow or stretch speech to fill the shot. After the final sentence, continue only the authored physical action, reactions and their native sounds without invented dialogue or an idle waiting pose. Preserve a deliberate pause only when the scene explicitly calls for it.'].join(' ');
  }
  function checkPrompt(prompt,value){
   const c=validate(value);

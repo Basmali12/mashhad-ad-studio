@@ -1,3 +1,6 @@
+import {mergeVisualWorld,visualScene} from './visual-world.mjs';
+import {createSceneEditor,sceneContinuation} from './scene-editor.mjs';
+import {scenePacing,pacingPrompt,PACING_PLAN_INSTRUCTION} from './scene-pacing.mjs';
 import {createAIWallet} from './film-money.mjs';
 import {createAdminCommissioning} from './admin-commissioning.mjs';
 import fs from 'node:fs';
@@ -41,7 +44,7 @@ messages.MEDIA_IN_USE='الفيديو مستخدم في إنتاج أو دمج �
 messages.ACCOUNT_IN_USE='أوقف جلسات الحسابين وتأكد من توقفها قبل تغيير الربط.';
 messages.WEIGHTS_NOT_READY='ملفات نسخة النموذج الحالية غير مكتملة؛ يلزم تجهيز الحساب من الإدارة أولاً، بدون بدء GPU.';
 messages.REFERENCE_QUOTA='بلغت مساحة الصور المرجعية المتاحة لحسابك. راجع الإدارة؛ لم تُحذف صورك.';
-export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.now,mediaOrigins=[],startWorker=true,textEnabled=false,textBudgetMicroUSD=0,closeTimeoutMs=2000,merger=createFilmMerger(),referenceCustomerByteLimit=REFERENCE_CUSTOMER_LIMIT,imageFetcher=fetch}){
+export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.now,mediaOrigins=[],startWorker=true,textEnabled=false,textBudgetMicroUSD=0,closeTimeoutMs=2000,merger=createFilmMerger(),sceneEditor=createSceneEditor(),referenceCustomerByteLimit=REFERENCE_CUSTOMER_LIMIT,imageFetcher=fetch}){
  const store=engine.store,pending=new Set(),working=new Set();let closed=false,lastMediaSweep=0;
  const commissioning=createAdminCommissioning({store,engine,origin,secret,now,mediaOrigins});
  const aiWallet=store?createAIWallet(store,{now}):null;
@@ -204,9 +207,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    let continuity={};
    if(!index&&project.reference)continuity.initialFrame=await references.data(project);
    if(index){const prior=project.scenes[index-1],priorJob=prior.jobId?await store.get('job',prior.jobId):null;
-    if(prior.status!=='done'||priorJob?.tenantId!==c.id||priorJob.projectId!==project.id||!priorJob.result?.videoVerified)throw Error('CONTINUITY_REQUIRES_REVIEW');
-    if(priorJob.rentalId===r.id)continuity.previousSceneId='scene-'+(index-1);
-    else{const file=path.resolve(store.folder,'artifacts',priorJob.id,'last-frame.png'),stat=await fs.promises.stat(file);if(stat.size>4000000||stat.size<8)throw Error('CONTINUITY_REQUIRES_REVIEW');const bytes=await fs.promises.readFile(file);if(bytes.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')throw Error('CONTINUITY_REQUIRES_REVIEW');continuity.initialFrame='data:image/png;base64,'+bytes.toString('base64');}
+    continuity=await sceneContinuation({store,project,prior,job:priorJob,rentalId:r.id,index});
    }
    const q=await engine.invoke('quote',{action:'generate',accountId:r.accountId,settings:{...r.settings,orientation:project.orientation},engineJobId:r.engineJobId,prompt:scene.prompt,audioContract:scene.audioContract,projectId:project.id,sceneId:'scene-'+index,...continuity},scope(r));
    await store.transaction(async()=>{project=await owned('film-project',p.id,c.id);if(project.scenes[index].attempted)throw Error('SCENE_ALREADY_ATTEMPTED');project.scenes[index].attempted=true;project.scenes[index].quoteId=q.id;project.scenes[index].status='submitted';await store.put('film-project',project);});
@@ -215,7 +216,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    project=await owned('film-project',p.id,c.id);project.scenes[index].jobId=result.id;await store.put('film-project',project);
    let done=false;for(let poll=0;poll<1200;poll++){
     const job=await store.get('job',result.id);
-    if(job?.status==='completed'&&job.result?.videoVerified){project=await owned('film-project',p.id,c.id);project.scenes[index].status='done';await store.put('film-project',project);done=true;break;}
+    if(job?.status==='completed'&&job.result?.videoVerified){project=await owned('film-project',p.id,c.id);if(project.scenes[index].pacing){let edit;try{edit=await sceneEditor.prepare({store,project,scene:project.scenes[index],job});}catch{edit={status:'kept',reason:'editor_failed_original_retained'};}project=await owned('film-project',p.id,c.id);project.scenes[index].edit=edit;}project.scenes[index].status='done';await store.put('film-project',project);done=true;break;}
     if(['failed','uncertain','stopped','needs_review','recovery_required'].includes(job?.status))throw Error('GENERATION_REQUIRES_REVIEW');
     if(closed)throw Error('SERVER_SHUTTING_DOWN');await pause();
    }
@@ -232,7 +233,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   return {orientationConfirmed:p.orientationConfirmed!==false,pinned:!!p.pinned,archived:!!p.archived,preview:imagePreview.publicDTO(p.preview),id:p.id,name:clean(p.name),story:clean(p.story),messages:(p.messages||[]).map(m=>({role:m.role,content:clean(m.content),hasReference:!!(m.referenceId&&m.referenceId===p.reference?.id)})),textPending:!!p.textPending,textUncertain:!!p.textUncertain,planningCompletedScenes:p.planningCompletedScenes||0,textCostPolicy:'customer_wallet_openai_usage_no_markup',seconds:p.seconds,orientation:p.orientation,state:p.state,discussion:p.discussion||null,launch:p.launch?{state:p.launch.state,approvedAt:p.launch.approvedAt,finishedAt:p.launch.finishedAt||null}:null,reference:p.reference?{mime:p.reference.mime,size:p.reference.size,width:p.reference.width,height:p.reference.height,uploadedAt:p.reference.uploadedAt}:null,merge:p.merge?{status:p.merge.status,error:p.merge.error||null,duration:p.merge.duration||null,width:p.merge.width||null,height:p.merge.height||null,nativeAudio:p.merge.audio===true}:null,
    directorFollow:!!p.directorFollow,reviewPending:!!p.reviewPending,reviewState:p.reviewState||'not_requested',visualReviews:p.visualReviews||[],
    scenes:await Promise.all((p.scenes||[]).map(async(s,index)=>{const candidate=s.jobId?await store.get('job',s.jobId):null,j=candidate?.tenantId===p.customerId&&candidate?.projectId===p.id?candidate:null;const telemetry=observedProgress(j?.events||[]);
-    return {index,title:'المشهد '+(index+1),visualPrompt:clean(s.prompt||''),status:s.status,dialogue:(s.audioContract?.lines||[]).map(l=>({speaker:clean(l.speaker),text:clean(l.text)})),...telemetry,durationSeconds:verifiedVideoSeconds(j),ready:await media.sceneAvailable(p,j),mediaExpired:!!j&&(!!j.mediaRemovedAt||await media.deadline(j)<=now())};})),error:p.error==='AI_INSUFFICIENT_CREDIT'?'عبّي رصيدك حتى نكمل الدردشة أو التحليل.':p.error?'تعذر إكمال العملية. الفيديو المنجز محفوظ؛ لم تبدأ إعادة توليد تلقائية.':null};
+    return {index,title:'المشهد '+(index+1),visualPrompt:clean(s.prompt||''),status:s.status,dialogue:(s.audioContract?.lines||[]).map(l=>({speaker:clean(l.speaker),text:clean(l.text)})),...telemetry,durationSeconds:s.edit?.status==='trimmed'?s.edit.durationSeconds:verifiedVideoSeconds(j),ready:await media.sceneAvailable(p,j),mediaExpired:!!j&&(!!j.mediaRemovedAt||await media.deadline(j)<=now())};})),error:p.error==='AI_INSUFFICIENT_CREDIT'?'عبّي رصيدك حتى نكمل الدردشة أو التحليل.':p.error?'تعذر إكمال العملية. الفيديو المنجز محفوظ؛ لم تبدأ إعادة توليد تلقائية.':null};
  }
  async function dispatch(actor,operation,input={}){
   await recovery;
@@ -284,7 +285,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    const choice=initialOrientation(input.orientation,old,(await store.get('film-preferences',c.id))?.orientation);
    const name=label(input.name),story=prose(input.story,20000),changed=old&&(old.story!==story||old.seconds!==seconds||old.orientation!==choice.orientation);
    const p={...old,id:old?.id||id(),customerId:c.id,name,story,seconds,...choice,messages:old?.messages||[],scenes:changed?[]:(old?.scenes||[]),state:changed?'draft':(old?.state||'draft'),createdAt:old?.createdAt??now(),updatedAt:now()};
-   if(changed){p.planningCompletedScenes=0;p.error=null;p.textUncertain=false;delete p.merge;}
+   if(changed){delete p.visualWorld;p.planningCompletedScenes=0;p.error=null;p.textUncertain=false;delete p.merge;}
    await store.put('film-project',p);return projectDTO(p);
   });
   if(operation==='project.launch'){
@@ -515,28 +516,29 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    await store.put('film-text-reservation',{id:request,customerId:c.id,projectId:p.id,calls:batches,reservedMicroUSD:reserve,createdAt:now(),source:'administrator_budget_reservation_not_invoice'});
    p.textPending=request;p.textUncertain=false;p.textCalls=(p.textCalls||0)+batches;p.textRequests=[];p.error=null;
    if(input.queuedMessageId)p.chatQueue=p.chatQueue.filter(m=>m.id!==input.queuedMessageId);
-   if(message&&!frozen){p.scenes=[];p.state='draft';p.discussion=null;delete p.merge;}
+   if(message&&!frozen){delete p.visualWorld;p.scenes=[];p.state='draft';p.discussion=null;delete p.merge;}
    if(message&&!input.queuedMessageId)p.messages=[...(p.messages||[]),{role:'user',content:message,chatMessageId:request,...(p.reference&&!(p.messages||[]).some(m=>m.referenceId===p.reference.id)?{referenceId:p.reference.id}:{})}];await store.put('film-project',p);
   });
   if(queued){if(!p.textPending&&p.chatQueue?.[0]?.approved)runTask(()=>drainChatQueue(c,p.id));return {accepted:true,textCostPolicy:'customer_wallet_openai_usage_no_markup'};}
   runTask(async()=>{
    try{
-    const scenes=[];
+    const scenes=[];let world=null;
     for(let batch=0;batch<batches;batch++){
      if(closed)throw Error('SERVER_SHUTTING_DOWN');
      const latest=await owned('film-project',p.id,c.id),callId=request+'-'+batch,count=Math.min(6,p.seconds/10-batch*6);
      const instruction=operation==='plan.submit'?
-      'Return JSON {scenes:[{prompt,audioContract:{language:"ar",dialect:"iraqi",mode:"dialogue",lines:[{speaker,text}]}}]}. Write exactly '+count+' chronological 10-second scenes numbered '+(batch*6+1)+' through '+(batch*6+count)+' of '+(p.seconds/10)+'. English visual action only in prompt, no dialogue or quotes. Iraqi Arabic dialogue must be complete Arabic-script sentences, 1-3 short lines, <=26 words total per scene. Named speakers with stable descriptions. Preserve explicitly requested formal Arabic. Native synchronized audio, no subtitles/lettering. Follow story and preceding scenes.':
+      PACING_PLAN_INSTRUCTION+' Return JSON {scenes:[{prompt,audioContract:{language:"ar",dialect:"iraqi",mode:"dialogue",lines:[{speaker,text}]}}]}. Write exactly '+count+' chronological 10-second scenes numbered '+(batch*6+1)+' through '+(batch*6+count)+' of '+(p.seconds/10)+'. English visual action only in prompt, no dialogue or quotes. Iraqi Arabic dialogue must be complete Arabic-script sentences, 1-3 short lines, <=26 words total per scene. Named speakers with stable descriptions. Preserve explicitly requested formal Arabic. Native synchronized audio, no subtitles/lettering. Follow story and preceding scenes.':
       (frozen?'The existing film is already submitted or completed. Discuss the new message without altering its production plan. Do not claim to run or restart video tools. ':'')+'Respond to the current message in natural Iraqi Arabic, including everyday chat, identity questions and creative requests. Do not require a film topic or redirect to an old session. Only for a requested film, propose duration within 10–300 seconds in multiples of 10 and explain unsupported durations. Only ask duration and orientation when relevant to a film. Set ready_to_write only after the user asks you to draft the agreed story. For general chat or coding-service refusals keep intent=discuss, ready_to_write=false and proposed_duration_seconds=null. No video tools are invoked.';
      latest.textRequests.push(callId);await store.put('film-project',latest); // durable before paid submission; never retry ambiguous call.
      const waiting=new Set((latest.chatQueue||[]).map(m=>m.id)),history=(latest.messages||[]).filter(m=>!waiting.has(m.chatMessageId)),active=history.find(m=>m.chatMessageId===(input.queuedMessageId||request)),context=active?[...history.filter(m=>m!==active),active]:history;
-     await engine.invoke('llm/calls',{requestId:callId,projectId:p.id,mode:operation==='plan.submit'?'details':'discuss',approvedTextCost:true,instruction,maxTokens:6000,messages:[{role:'user',content:latest.story},...context.slice(-20).map(m=>({role:m.role,content:m.content})),...(scenes.length?[{role:'assistant',content:JSON.stringify({precedingScenes:scenes.slice(-6)})}]:[])]});
+     await engine.invoke('llm/calls',{requestId:callId,projectId:p.id,mode:operation==='plan.submit'?'details':'discuss',approvedTextCost:true,instruction,maxTokens:6000,messages:[{role:'user',content:latest.story},...context.slice(-20).map(m=>({role:m.role,content:m.content})),...(scenes.length?[{role:'assistant',content:JSON.stringify({visualWorld:world,precedingScenes:scenes.slice(-6)})}]:[])]});
      let response;for(let poll=0;poll<130;poll++){if(closed)throw Error('SERVER_SHUTTING_DOWN');response=await engine.invoke('llm/calls/'+callId,undefined,undefined,'GET');if(['completed','failed','uncertain'].includes(response.status))break;await pause();}
      if(response?.status!=='completed')throw Error('TEXT_REQUIRES_REVIEW');
      const updated=await owned('film-project',p.id,c.id);
      if(operation==='plan.submit'){
       const plan=JSON.parse(response.text);if(!Array.isArray(plan.scenes)||plan.scenes.length!==count)throw Error('INVALID_PLAN');
-      scenes.push(...plan.scenes.map(scene=>({prompt:prose(scene.prompt,9000),audioContract:Arabic.checkPrompt(scene.prompt,scene.audioContract),status:'pending',attempted:false})));
+      world=mergeVisualWorld(world,plan.visualWorld);const offset=scenes.length;scenes.push(...plan.scenes.map((scene,i)=>{const audioContract=Arabic.checkPrompt(scene.prompt,scene.audioContract),pacing=scenePacing({...scene,audioContract},offset+i),visual=visualScene(scene,world);return {prompt:prose(pacingPrompt(visual.prompt,pacing),12000),audioContract,pacing,visualContext:visual.visualContext,status:'pending',attempted:false};}));
+      if(world)updated.visualWorld=world;
       updated.planningCompletedScenes=scenes.length;
       if(batch===batches-1){updated.scenes=scenes;updated.state='planned';}
      }else {

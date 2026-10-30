@@ -20,6 +20,23 @@ class Provider{
  session(input,event){this.calls.push({action:'session',input});let resolve;const done=new Promise(r=>resolve=r);const stop=()=>resolve(this.uncertain?{cloud_stopped:false}:{cloud_stopped:true,running_containers:0,tasks:0});this.sessions.set(input.jobId,{stop});setImmediate(()=>event({kind:'ready',phase:'ready'}));return {done,stop,generate:async()=>{throw Error('GPU_GENERATION_FORBIDDEN_IN_LOCAL_TEST');}};}
 }
 const admin={id:'admin',name:'Admin',email:'admin@fixture.test',isAdmin:true},alice={id:'alice',name:'Alice',email:'alice@fixture.test'},bob={id:'bob',name:'Bob',email:'bob@fixture.test'};
+
+test('planning persists one visual world across scene batches, preserves heritage and modern settings, and clears it for a changed unsubmitted story without GPU',async t=>{
+ const f=await fixture(t,{text:true}),originalInvoke=f.engine.invoke.bind(f.engine),requests=[];
+ const location=(id,era)=>({id,era,location:id==='heritage'?'Historical Baghdad lane':'Current software office',architecture:id==='heritage'?'Shanashil and old timber':'Glass and steel',wardrobe:'Agreed wardrobe',lighting:'Soft window light',palette:'Warm neutral colors'});
+ const visualWorld={style:'Realistic cinema',settings:[location('heritage','heritage'),location('office','contemporary')],characters:[{id:'hasan',description:'Young man, olive shirt, short black hair'}],props:[{id:'wallet',description:'Small brown leather pocket wallet'}]};
+ const scene=i=>({prompt:'The man takes one new step in the agreed story.',settingId:i<3?'heritage':'office',characterIds:['hasan'],propIds:['wallet'],continuity:{before:'Wallet held in the right hand',after:'Wallet remains in the right hand'},audioContract:{language:'ar',dialect:'iraqi',lines:[{speaker:'حسن',text:'هلا بيك صديقي'}]}});
+ f.engine.invoke=async(route,input,...rest)=>{
+  if(route==='llm/calls'){requests.push(input);return {status:'completed'};}
+  if(route.startsWith('llm/calls/')){const batch=requests.length;return {status:'completed',text:JSON.stringify({visualWorld:batch===1?visualWorld:{...visualWorld,style:'Wrong replacement style',settings:[{...location('heritage','contemporary'),architecture:'Wrong replacement'}]},scenes:batch===1?Array.from({length:6},(_,i)=>scene(i)):[scene(6)]})};}
+  return originalInvoke(route,input,...rest);
+ };
+ const p=await f.invoke(alice,'project.save',{name:'World continuity fixture',story:'A story with a heritage opening and a planned transition to a modern office.',seconds:70,orientation:'portrait'});
+ await f.invoke(alice,'plan.submit',{projectId:p.id,approved:true});await waitFor(()=>f.store.get('film-project',p.id)?.state==='planned');
+ const saved=f.store.get('film-project',p.id);assert.equal(saved.scenes.length,7);assert.equal(saved.visualWorld.style,'Realistic cinema');assert.equal(saved.visualWorld.settings[0].era,'heritage');assert.match(saved.scenes[0].prompt,/Shanashil/);assert.match(saved.scenes[6].prompt,/Current software office/);assert.equal(saved.scenes[6].visualContext.settingId,'office');
+ assert.ok(requests[1].messages.some(m=>m.content.includes('visualWorld')&&m.content.includes('Small brown leather pocket wallet')));assert.equal(f.provider.calls.length,0);
+ await f.invoke(alice,'project.save',{id:p.id,name:p.name,story:'An entirely different story.',seconds:70,orientation:'portrait'});assert.equal(f.store.get('film-project',p.id).visualWorld,undefined);
+});
 async function fixture(t,{enabled=true,paid=true,text=false,textCredit=true,referenceCustomerByteLimit=67108864}={}){
  const folder=await mkdtemp(path.join(tmpdir(),'film-platform-')),key=randomBytes(32).toString('base64'),store=new Store(folder,key);store.installRentalSchema();
  const provider=new Provider(),account={id:randomUUID(),mode:'local_profile',workspace:'private-workspace',volume:'private-volume',activated:true,discovery:{ready:true,checkedAt:Date.now()}};store.put('account',account);

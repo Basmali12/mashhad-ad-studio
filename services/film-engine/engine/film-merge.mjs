@@ -1,11 +1,12 @@
 import fs from 'node:fs/promises';
-import {createReadStream} from 'node:fs';
+import {fileDigest} from './media-digest.mjs';
+import {pacedArtifact} from './scene-editor.mjs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 const exec=promisify(execFile);
-export async function fileDigest(file){const h=createHash('sha256');for await(const chunk of createReadStream(file))h.update(chunk);return h.digest('hex');}
+export {fileDigest};
 const run=(binary,args)=>exec(binary,args,{windowsHide:true,timeout:120000,maxBuffer:2*1024*1024});
 export function createFilmMerger({ffmpeg=process.env.FILM_FFMPEG_PATH||'ffmpeg',ffprobe=process.env.FILM_FFPROBE_PATH||'ffprobe'}={}){
  const decodeProbe=async file=>{
@@ -24,11 +25,12 @@ export function createFilmMerger({ffmpeg=process.env.FILM_FFMPEG_PATH||'ffmpeg',
   for(const scene of project.scenes||[]){const j=scene.jobId?await store.get('job',scene.jobId):null;if(scene.status!=='done'||j?.tenantId!==project.customerId||j?.projectId!==project.id||!j?.result?.videoVerified)throw Error('MERGE_SCENES_NOT_READY');jobs.push(j);}
   if(jobs.some(j=>!/^[a-zA-Z0-9_-]{1,100}$/.test(j.id))||!/^[a-zA-Z0-9_-]{1,100}$/.test(project.id))throw Error('MERGE_INVALID_ID');
   if(!jobs.length)throw Error('MERGE_SCENES_NOT_READY');
-  const outputId=createHash('sha256').update(JSON.stringify(jobs.map(j=>j.id))).digest('hex'),folder=path.resolve(store.folder,'film-exports',project.id,outputId);await fs.mkdir(folder,{recursive:true,mode:0o700});
+  const edits=project.scenes.map(s=>s.edit?.status==='trimmed'?s.edit.sha256:null);
+  const outputId=createHash('sha256').update(JSON.stringify(edits.some(Boolean)?jobs.map((j,i)=>[j.id,edits[i]]):jobs.map(j=>j.id))).digest('hex'),folder=path.resolve(store.folder,'film-exports',project.id,outputId);await fs.mkdir(folder,{recursive:true,mode:0o700});
   let expected=0,contract,first;const lines=[];
   for(let i=0;i<jobs.length;i++){
-   const file=path.resolve(store.folder,'artifacts',jobs[i].id,'video.mp4'),p=await probe(file),sha=await fileDigest(file);
-   if(jobs[i].result.sha256&&sha!==jobs[i].result.sha256)throw Error('MERGE_SOURCE_HASH_MISMATCH');
+   const artifact=await pacedArtifact(store,jobs[i],project.scenes[i].edit),file=artifact.file,p=await probe(file),sha=await fileDigest(file);
+   if(artifact.sha256&&sha!==artifact.sha256)throw Error('MERGE_SOURCE_HASH_MISMATCH');
    if(contract&&contract!==p.contract)throw Error('MERGE_FORMAT_MISMATCH');contract=p.contract;first??=p;expected+=p.duration;
    const name='scene-'+i+'.mp4',target=path.join(folder,name);try{await fs.link(file,target);}catch(e){if(e.code!=='EEXIST')await fs.copyFile(file,target);}if(await fileDigest(target)!==sha)throw Error('MERGE_SOURCE_HASH_MISMATCH');lines.push("file '"+name+"'");
   }
