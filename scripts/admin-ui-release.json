@@ -1,0 +1,136 @@
+{
+  "pagesCommit": "1f90e31cb6743040b066d5958fd71284e039e618",
+  "version": "2026.10.31.1-mashhad-film-1793398065109",
+  "files": [
+    {
+      "path": "admin.html",
+      "bytes": 906,
+      "sha256": "2a5656716ea6a081d9d1694286c794433b7ecacca49b0094e82d527dd929d1ac"
+    },
+    {
+      "path": "admin.webmanifest",
+      "bytes": 628,
+      "sha256": "465d138c27600abd613b3416cf4304d10aaab35ecf68cd52674788dee19bf32c"
+    },
+    {
+      "path": "app-192.png",
+      "bytes": 5288,
+      "sha256": "de2f0ea17f8807cf6a7a0288590cf16d670dfe13175bfebe3ecc62a852cb2690"
+    },
+    {
+      "path": "app-512.png",
+      "bytes": 18104,
+      "sha256": "6bebca2a671c16210763a4bc295df9b905da5b79ae9105a73a64cc2f70fc36e1"
+    },
+    {
+      "path": "assets/FilmAdminEntry-Dqrn-X4g.css",
+      "bytes": 24814,
+      "sha256": "c373fd9fdc78b51423026729900cc2465f675fed2074a0da61b1b3875c517e44"
+    },
+    {
+      "path": "assets/FilmAdminEntry-wIhiF5UC.js",
+      "bytes": 43891,
+      "sha256": "cf3d178d3aa79f55e52aed1617bb55b7e556a927a444dbd51ce1a7a48b227b51"
+    },
+    {
+      "path": "assets/admin-C-L7d1Bo.js",
+      "bytes": 56334,
+      "sha256": "24e7784c2a90ec08964130f72a5d7a9a101f9cf47df983b0f8578c12ad6c50eb"
+    },
+    {
+      "path": "assets/admin-D5ITKqNh.css",
+      "bytes": 66144,
+      "sha256": "81b9000366b4f6c433f85d29dac4d9fdddb90ade6964dbac2f7312842eea713f"
+    },
+    {
+      "path": "assets/auth-CTprXwLg.js",
+      "bytes": 308647,
+      "sha256": "a3fffef42b786f18ff5c81b1b82b5212a31126fab32be35f591e67a2e2d0ee2d"
+    },
+    {
+      "path": "assets/auth-arabic-DVh29meS.js",
+      "bytes": 75282,
+      "sha256": "46feb7e9a2f22cc56fa67c812afc8bc57402b38ad898c6083ab9f4f06688c9d6"
+    },
+    {
+      "path": "assets/convex-BTZqt167.js",
+      "bytes": 86320,
+      "sha256": "ce383598de9d351ab6e1ff43ecf93e5c4255d9034e7df0e62b44543048ae7538"
+    },
+    {
+      "path": "data-deletion.html",
+      "bytes": 1810,
+      "sha256": "91891c26aac993fa1efe694f1f6194154e96c5d20a20b536231238d08a416edd"
+    },
+    {
+      "path": "index.html",
+      "bytes": 906,
+      "sha256": "2a5656716ea6a081d9d1694286c794433b7ecacca49b0094e82d527dd929d1ac"
+    },
+    {
+      "path": "manifest.webmanifest",
+      "bytes": 654,
+      "sha256": "fddc6afcf52f6185cfb710ed01afd60e2d5e0534ae6627ced2abc9b0bfeb1d5c"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-180.png",
+      "bytes": 43994,
+      "sha256": "1a2ed09489d66fc63f5a4dea78aa1afd4dc1aee100af3e5c9c9c4fbd4bce58a8"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-192.png",
+      "bytes": 49434,
+      "sha256": "0ccfdb1a979f05a4793b6ef67cb9eecf4a92849eab4d8c5e3cf9c1ba0260e5cb"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-512.png",
+      "bytes": 311309,
+      "sha256": "e7038fdb3a2636c1bff14f4757615b92c5d838f39346ae71d08d90d45aabc623"
+    },
+    {
+      "path": "mashhad-icon-192.png",
+      "bytes": 70501,
+      "sha256": "46173d652f18b31b7842d9c64c00df451a12ed94c7c3c1c1ceb0e1c76f0000ec"
+    },
+    {
+      "path": "mashhad-icon-512.png",
+      "bytes": 439462,
+      "sha256": "15cddc0b6c136ffeb6110d8e21c775627bd7e40da9266f53d2afa67a492a2851"
+    },
+    {
+      "path": "mashhad-logo-128.webp",
+      "bytes": 10388,
+      "sha256": "f16568e6362a4bc46d8d48b4ba09d78ce7cc8c4c29e2ac2b4cd2fe2b07d515f4"
+    },
+    {
+      "path": "mashhad-logo-192.webp",
+      "bytes": 16712,
+      "sha256": "95cd64e71c19552de7cc61f6c5af7f075b7d7f3fc1928315324f73e25ee770c0"
+    },
+    {
+      "path": "mashhad-logo.png",
+      "bytes": 1541135,
+      "sha256": "2b40e8341fcb6e432057abbcca3d1ddb97345374efc31310b463b556fd152c6c"
+    },
+    {
+      "path": "privacy.html",
+      "bytes": 3117,
+      "sha256": "62fbbde917cd180e3e041ea6956e9e5e0ccdb6885e8c8ddd993810d1d14ea137"
+    },
+    {
+      "path": "sw.js",
+      "bytes": 233,
+      "sha256": "482ecb61c11a2275561f55118dee6603d3595b78b9bbe3189f62a7b2b40cc2f7"
+    },
+    {
+      "path": "ui-warmup.json",
+      "bytes": 65,
+      "sha256": "22a5a228f3fe0a3cb82f1b066bcbb62a21460e68cb711cd28ae05bca4d1a6f43"
+    },
+    {
+      "path": "version.json",
+      "bytes": 53,
+      "sha256": "b282a55f0649e40329b6d45246c12e8874b9ba224c25a5d0ebec51dc36d4a6e0"
+    }
+  ]
+}
