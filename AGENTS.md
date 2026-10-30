@@ -151,3 +151,5 @@ Customer public asset warmup: shared/public-ui-warmup.ts limits the pre-auth que
 Pages publications must copy/stage ui-warmup.json and mashhad-logo-{128,192}.webp together with index.html, version.json and hashed assets. A stale warmup manifest safely disables code prefetch rather than loading mismatched chunks.
 
 Separated admin origin: the optional MASHHAD_FILM_ADMIN_ORIGIN admits only verified super-admins and admin.* operations, plus the access endpoint. Never grant customer generation/rental operations to the admin-only origin or replace the customer origin. Preserve existing Clerk membership/role verification and immutable billing.
+
+Admin system split: features/admin/admin-navigation.tsx owns two top-level systems and separate fixed bottom navigation. ReelsAdmin keeps scheduling controls out of film administration. FilmAdmin panels retain mounted account-transfer monitoring across its internal tabs. Credential validation rejects malformed input before clearing password fields or network dispatch; filmTransport maps only allowlisted HTTP error codes and never echoes arbitrary upstream messages.

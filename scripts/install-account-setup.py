@@ -14,7 +14,8 @@ def main():
  query="select count(*) from iff_records where (kind='film-image-preview' and data->>'status' in ('queued','running')) or (kind='job' and coalesce(data->>'cloudStopped','false')!='true' and data->>'action' in ('start','generate','prepare')) or (kind='rental' and data->>'state'!='closed') or (kind='text-call' and data->>'status' in ('queued','running')) or (kind='film-project' and coalesce(data->>'textPending','false') not in ('false','null',''))"
  def idle():assert run(['runuser','-u','postgres','--','psql','-d',env['ENGINE_DATABASE_NAME'],'-Atc',query]).stdout.strip()=='0','ACTIVE_WORK_NO_RESTART'
  idle();current=pathlib.Path('/srv/mashhad-admin/current');assert current.is_symlink(),'ADMIN_RELEASE_UNKNOWN'
- old_release=current.resolve();assert old_release==pathlib.Path('/srv/mashhad-admin/releases/18861a59422a'),'ADMIN_RELEASE_CHANGED'
+ old_release=current.resolve();assert re.fullmatch('[a-f0-9]{12}',m['expectedAdminRelease'])
+ assert old_release==pathlib.Path('/srv/mashhad-admin/releases')/m['expectedAdminRelease'],'ADMIN_RELEASE_CHANGED'
  targets={n:pathlib.Path('/srv/iraq-ai-studio-staging/current' if n.startswith('services/film-engine/') else '/srv/mashhad-film/current')/n for n in m['sources']}
  old={n:p.read_bytes() for n,p in targets.items()}
  for n,b in old.items():assert sha(b)==m['sources'][n]['before'],'SOURCE_CHANGED_'+n
@@ -30,7 +31,7 @@ def main():
  backup=pathlib.Path('/root/codex-account-setup-before-'+commit[:12]);backup.mkdir(mode=0o700)
  for n,b in old.items():p=backup/n.replace('/','-');p.write_bytes(b);p.chmod(0o600)
  (backup/'admin-root.txt').write_text(str(old_release));idle()
- units=['iraq-ai-film-platform-staging','mashhad-film-gateway']
+ units=(['iraq-ai-film-platform-staging'] if any(n.startswith('services/film-engine/') for n in targets) else [])+(['mashhad-film-gateway'] if any(n.startswith('services/film-gateway/') for n in targets) else [])
  try:
   for n,p in targets.items():
    candidate=p.with_name(p.stem+'.setup-candidate.mjs');candidate.write_bytes(payload[n]);candidate.chmod(0o644)

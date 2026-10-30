@@ -160,7 +160,7 @@ function adminDTO(value, secrets, depth = 0) {
 }
 const safeErrors = {
     ACCOUNT_ALREADY_LINKED:'الحساب مربوط مسبقاً. ابحث عنه في قائمة الحسابات؛ لم يُنشأ حساب مكرر.',
-    INVALID_TOKEN_FORMAT:'تنسيق المفاتيح غير صحيح. أدخل Token ID وToken Secret فقط في حقليهما، دون أمر الطرفية.',
+    INVALID_TOKEN_FORMAT:'تنسيق المفاتيح غير صحيح. أدخل Token ID الذي يبدأ بـ ak- وToken Secret الذي يبدأ بـ as- في حقليهما، دون أمر الطرفية.',
     MODAL_OPERATION_FAILED_CHECK_PERMISSIONS:'تعذر التحقق من حساب Modal. راجع صلاحية التوكن واتصال الخدمة؛ لا يعني ذلك بالضرورة أن المفتاح خاطئ.',
     PROVIDER_TIMEOUT_STATE_UNKNOWN:'انتهى انتظار التحقق. حدّث قائمة الحسابات قبل إعادة إدخال المفاتيح؛ النتيجة غير مؤكدة.',
     ORIENTATION_REQUIRED:'حدد عمودي أو أفقي في الدردشة قبل بدء الفيلم.',
@@ -214,6 +214,8 @@ export async function requestFilm(actor, args, env) {
     if (operation.startsWith('admin.') && !actor.isAdmin)
         return fail('FORBIDDEN', 'هذه العملية للمسؤول فقط.');
     try {
+        if(operation==='admin.account.link'&&record(input)&&(!fields[operation].tokenId(input.tokenId)||!fields[operation].tokenSecret(input.tokenSecret)))
+            return fail('INVALID_TOKEN_FORMAT',safeErrors.INVALID_TOKEN_FORMAT);
         if (!id(requestId) || !validInput(operation, input) || Buffer.byteLength(JSON.stringify(input)) > LIMIT - 4096)
             return fail('INVALID_INPUT', 'راجع الحقول المطلوبة.');
     }

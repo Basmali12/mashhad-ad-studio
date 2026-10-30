@@ -1,5 +1,11 @@
 import {isFailure,type FilmRequest} from './filmClient';
 export type SetupStage='connection'|'inspection'|'quote'|'approval'|'transfer'|'ready'|'error';
+export function accountInputError(input:Record<string,unknown>){
+ if(typeof input.name!=='string'||!input.name.trim())return 'اكتب اسم الحساب.';
+ if(typeof input.tokenId!=='string'||!/^ak-[A-Za-z0-9_-]{8,200}$/.test(input.tokenId))return 'حقل Token ID يحتاج القيمة التي تبدأ بـ ak- فقط، وليس أمر modal token set.';
+ if(typeof input.tokenSecret!=='string'||!/^as-[A-Za-z0-9_-]{8,200}$/.test(input.tokenSecret))return 'حقل Token Secret يحتاج القيمة التي تبدأ بـ as- فقط. لا تضع Token ID هنا.';
+ return null;
+}
 export async function setupCall(request:FilmRequest,operation:Parameters<FilmRequest>[0],input:Record<string,unknown>={}){
  const value=await request(operation,input,crypto.randomUUID());
  if(isFailure(value))throw Error(value.message);

@@ -4,6 +4,11 @@ import {createServer} from 'node:http';
 import {createHmac} from 'node:crypto';
 import {createFilmGateway} from '../gateway.mjs';
 const env={MASHHAD_FILM_ENABLED:'YES',MASHHAD_FILM_ORIGIN:'https://studio.example.test',MASHHAD_CONVEX_URL:'https://fixture.convex.cloud',FILM_BACKEND_ORIGIN:'https://film.example.test',FILM_BRIDGE_SECRET:'synthetic-film-bridge-secret-at-least-32'};
+test('malformed account credentials return a specific safe error without reaching the engine or Modal',async t=>{
+ const f=await fixture(t,{role:'super-admin'}),response=await f.post({operation:'admin.account.link',input:{name:'نور',tokenId:'invalid-id',tokenSecret:'invalid-secret'},requestId:'bad-fields-check'});
+ const value=await response.json();assert.equal(value.error,'INVALID_TOKEN_FORMAT');assert.match(value.message,/ak-/);assert.equal(JSON.stringify(value).includes('invalid-secret'),false);
+ assert.equal(f.calls.filter(c=>c.url.includes('film.example')).length,0);
+});
 async function fixture(t,{role='customer',profileFailure=false,bridgeFailure=false,legacyOwner,bridgeResult,publicMediaOrigin,adminOrigin}={}){
  const calls=[];
  const handler=createFilmGateway({env:{...env,...(adminOrigin?{MASHHAD_FILM_ADMIN_ORIGIN:adminOrigin}:{}),...(publicMediaOrigin?{FILM_PUBLIC_MEDIA_ORIGIN:publicMediaOrigin}:{}),...(legacyOwner?{MASHHAD_FILM_LEGACY_OWNER_ID:legacyOwner}:{})},fetchImpl:async(url,options)=>{

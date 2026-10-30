@@ -2,8 +2,15 @@ import React from 'react';
 import {it,expect} from 'vitest';
 import {renderToStaticMarkup} from 'react-dom/server';
 import AccountSetup from './AccountSetup';
-import {linkAndPlan,transferView} from './accountSetupModel';
+import {linkAndPlan,transferView,accountInputError} from './accountSetupModel';
 import type {FilmRequest} from './filmClient';
+it('validates each credential field and rejects command text or swapped tokens before dispatch',()=>{
+ const good={name:'نور',tokenId:'ak-synthetic12345678',tokenSecret:'as-synthetic12345678'};
+ expect(accountInputError(good)).toBeNull();
+ expect(accountInputError({...good,tokenId:'modal token set --token-id ak-synthetic12345678'})).toContain('Token ID');
+ expect(accountInputError({...good,tokenSecret:good.tokenId})).toContain('Token Secret');
+ expect(accountInputError({...good,tokenId:'invalid-id'})).toContain('ak-');
+});
 it('saving verifies, inspects and quotes in order, without dispatching paid work',async()=>{
  const calls:string[]=[],stages:string[]=[],linked:string[]=[];
  const request:FilmRequest=async op=>{calls.push(op);return op==='admin.account.link'?{id:'account'}:op==='admin.prepare.quote'?{id:'quote'}:{ready:false};};
