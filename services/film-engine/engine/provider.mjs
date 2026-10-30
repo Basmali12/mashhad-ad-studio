@@ -8,6 +8,10 @@ export function providerEnvironment(input,base=process.env) {
  const env={...base};
  for(const key of Object.keys(env))if(key.startsWith('ENGINE_')||key.startsWith('PG')||(key.endsWith('_API_KEY')||['DATABASE_URL','HF_TOKEN','HUGGING_FACE_HUB_TOKEN'].includes(key)))delete env[key];
  if(input.credentials?.mode!=='local_profile'&&input.source?.mode!=='local_profile')for(const key of Object.keys(env))if(key.startsWith('MODAL_'))delete env[key];
+ // SDK 1.6.2 and the verified primary/destination environments use 2025.06.
+ // Pin the SDK's local override; never mutate workspace settings or inherit an
+ // operator profile's incompatible builder during a different account deploy.
+ env.MODAL_IMAGE_BUILDER_VERSION='2025.06';
  return env;
 }
 // Credentials are sent over a private pipe, never argv, stdout, HTTP responses, or logs.

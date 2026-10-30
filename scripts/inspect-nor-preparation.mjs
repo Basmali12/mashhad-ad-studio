@@ -1,5 +1,7 @@
 // Read-only inspection of the single owner-approved attempt. Never deploy/spawn.
 import fs from 'node:fs';
+import process from 'node:process';
+import console from 'node:console';
 import {spawnSync,execFileSync} from 'node:child_process';
 const base='/srv/iraq-ai-studio-staging/current/services/film-engine/engine';
 const pid=execFileSync('systemctl',['show','-p','MainPID','--value','iraq-ai-film-platform-staging'],{encoding:'utf8'}).trim();
@@ -20,7 +22,8 @@ try{
  if(job?.action!=='prepare'||job.accountId!=='0e77a689-6b46-493a-827c-346091f5c76b')throw Error('SCOPE_MISMATCH');
  const source=await store.get('account',job.sourceId),dest=await store.get('account',job.accountId);
  const credentials=a=>({...store.open(a.credentials,a.id),expectedWorkspace:a.workspace});
- const input={source:credentials(source),credentials:credentials(dest),jobId:job.id,volume:dest.volume,workerApp:job.plan.workerApp};
+ const closeUnstarted=process.argv.includes('--close-unstarted-version-failure');
+ const input={source:credentials(source),credentials:credentials(dest),jobId:job.id,volume:dest.volume,workerApp:job.plan.workerApp,closeUnstarted};
  const code=`import sys,json,pathlib,traceback
 sys.path.insert(0,${JSON.stringify(base)})
 request=json.loads(sys.stdin.readline())
@@ -56,6 +59,17 @@ configured=config.get('image_builder_version')
 result['configuredBuilder']=configured if configured is None or __import__('re').fullmatch(r'20[0-9]{2}\\.[0-9]{2}|PREVIEW',str(configured)) else 'unrecognized'
 try:result['effectiveBuilder']=_get_image_builder_version(result['destinationMetadata']['imageBuilderVersion'])
 except Exception as error:result['effectiveBuilderError']=type(error).__name__
+if request.get('closeUnstarted'):
+ assert result['setup']['phase']=='destination_deploy' and result['setup']['errorClass']=='VersionError'
+ assert not result['verifierRecorded'] and not result['existingVerifier'] and result['cancelRequested']
+ assert not any(result['stages'].values())
+ assert result['sourceMetadata']['workspaceRunningTasks']==0 and result['destinationMetadata']['workspaceRunningTasks']==0
+ from modal_proto import api_pb2
+ assert all(a['state']==api_pb2.APP_STATE_STOPPED and a['runningTasks']==0 for a in result['destinationMetadata']['transferApps'])
+ proof={'jobId':request['jobId'],'error':'TRANSFER_IMAGE_BUILDER_INCOMPATIBLE','sourceRunningTasks':0,'destinationRunningTasks':0,'noModelCallsStarted':True,'gpuUsed':False}
+ state.put('operator-closure:'+request['jobId'],proof)
+ if state.get('active')==request['jobId']:state.pop('active',None)
+ result['closure']=proof
 try:
  from destination_verifier_app import create_verifier_app
  create_verifier_app(request['volume'])
@@ -68,5 +82,10 @@ print(json.dumps(result))
  const {providerEnvironment}=await import(base+'/provider.mjs');
  const child=spawnSync(process.env.ENGINE_PYTHON,['-c',code],{input:JSON.stringify(input)+'\n',encoding:'utf8',timeout:90000,env:providerEnvironment(input),maxBuffer:200000,windowsHide:true});
  let result;try{result=JSON.parse(child.stdout.trim());}catch{throw Error('READONLY_DIAGNOSTIC_FAILED_NO_RAW_OUTPUT');}
- console.log(JSON.stringify({jobId:job.id,status:job.status,cloudStopped:job.cloudStopped,elapsedSeconds:job.elapsedSeconds,estimatedUSD:job.estimatedUSD,diagnostic:result}));
+ if(closeUnstarted){
+  if(result.closure?.jobId!==job.id||result.closure.noModelCallsStarted!==true)throw Error('CLOSURE_NOT_VERIFIED');
+  await store.transaction(async()=>{const current=await store.get('job',job.id);if(current?.status!=='uncertain'||current.cloudStopped===true)throw Error('JOB_STATE_CHANGED');current.status='failed';current.error='TRANSFER_IMAGE_BUILDER_INCOMPATIBLE';current.cloudStopped=true;current.finishedAt=Date.now();current.stoppedAt=Date.now();current.updatedAt=Date.now();current.cleanup={...result.closure,cloud_stopped:true};current.setupDiagnostic=result.setup;await store.put('job',current);await store.audit('unstarted_setup_failure_verified_closed',job.id);});
+ }
+ const saved=await store.get('job',job.id);
+ console.log(JSON.stringify({jobId:saved.id,status:saved.status,cloudStopped:saved.cloudStopped,elapsedSeconds:saved.elapsedSeconds,estimatedUSD:saved.estimatedUSD,diagnostic:result}));
 }finally{await store.close();}
