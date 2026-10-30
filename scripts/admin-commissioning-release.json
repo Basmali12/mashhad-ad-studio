@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "pagesCommit": "ac17b9fe9ba3754562201c36ca1e01495af1c81f",
+  "expectedAdminRelease": "a318164f7de2",
+  "files": [
+    {
+      "path": "index.html",
+      "bytes": 906,
+      "sha256": "3a82c844c8a4862e1ded60850060c213ee25a0005e6a5ee0c39ec9c7684f988c"
+    },
+    {
+      "path": "admin.webmanifest",
+      "bytes": 628,
+      "sha256": "465d138c27600abd613b3416cf4304d10aaab35ecf68cd52674788dee19bf32c"
+    },
+    {
+      "path": "sw.js",
+      "bytes": 233,
+      "sha256": "482ecb61c11a2275561f55118dee6603d3595b78b9bbe3189f62a7b2b40cc2f7"
+    },
+    {
+      "path": "version.json",
+      "bytes": 53,
+      "sha256": "df0e1d026b1b86823a3e88012381269ab3b534eaee933c0ad5c0a31239b99977"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-180.png",
+      "bytes": 43994,
+      "sha256": "1a2ed09489d66fc63f5a4dea78aa1afd4dc1aee100af3e5c9c9c4fbd4bce58a8"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-192.png",
+      "bytes": 49434,
+      "sha256": "0ccfdb1a979f05a4793b6ef67cb9eecf4a92849eab4d8c5e3cf9c1ba0260e5cb"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-512.png",
+      "bytes": 311309,
+      "sha256": "e7038fdb3a2636c1bff14f4757615b92c5d838f39346ae71d08d90d45aabc623"
+    },
+    {
+      "path": "mashhad-logo-128.webp",
+      "bytes": 10388,
+      "sha256": "f16568e6362a4bc46d8d48b4ba09d78ce7cc8c4c29e2ac2b4cd2fe2b07d515f4"
+    },
+    {
+      "path": "mashhad-logo-192.webp",
+      "bytes": 16712,
+      "sha256": "95cd64e71c19552de7cc61f6c5af7f075b7d7f3fc1928315324f73e25ee770c0"
+    },
+    {
+      "path": "assets/admin-D5ITKqNh.css",
+      "bytes": 66144,
+      "sha256": "81b9000366b4f6c433f85d29dac4d9fdddb90ade6964dbac2f7312842eea713f"
+    },
+    {
+      "path": "assets/admin-i1BGodQR.js",
+      "bytes": 56334,
+      "sha256": "466855a63c9cd36fecdb7bc90c33179c34d837a90eaabcc9a9bcfc44969ab758"
+    },
+    {
+      "path": "assets/auth-arabic-DVh29meS.js",
+      "bytes": 75282,
+      "sha256": "46feb7e9a2f22cc56fa67c812afc8bc57402b38ad898c6083ab9f4f06688c9d6"
+    },
+    {
+      "path": "assets/auth-CTprXwLg.js",
+      "bytes": 308647,
+      "sha256": "a3fffef42b786f18ff5c81b1b82b5212a31126fab32be35f591e67a2e2d0ee2d"
+    },
+    {
+      "path": "assets/convex-BTZqt167.js",
+      "bytes": 86320,
+      "sha256": "ce383598de9d351ab6e1ff43ecf93e5c4255d9034e7df0e62b44543048ae7538"
+    },
+    {
+      "path": "assets/FilmAdminEntry-CO6cUUej.js",
+      "bytes": 34553,
+      "sha256": "a03b9c3ef4cdbcb8badfbcbe5156a7c196b9fc111b7e27491655d2254cb86050"
+    },
+    {
+      "path": "assets/FilmAdminEntry-ligId4sQ.css",
+      "bytes": 21143,
+      "sha256": "5cac065d59b14029ee51b29999a024c24a535d3b88194911e7c1bdae0a4d5630"
+    },
+    {
+      "path": "assets/FilmAdminEntry-C5qpMpsL.css",
+      "bytes": 21698,
+      "sha256": "445ccabc16637d6689ff552d18f2b89f8efd52e42cfe970f933582ebeb3b8cb1"
+    },
+    {
+      "path": "assets/FilmAdminEntry-C7eADTHD.js",
+      "bytes": 43891,
+      "sha256": "651f441d210d0d0ca953992d144f007391767bf29623757492d24509953dd1ea"
+    },
+    {
+      "path": "assets/admin-PBeUZ_hT.js",
+      "bytes": 56334,
+      "sha256": "2e9bfdc68bfdf1d7bf2ae76772bcd388defc214ca20feb299b23e423f5789317"
+    }
+  ],
+  "sources": {
+    "services/film-engine/engine/admin-commissioning.mjs": {
+      "before": [
+        null
+      ],
+      "after": "e839990cba7be5eba13355cdf8d46bd936ec1561bf236a40b6644b1849018898"
+    },
+    "services/film-engine/engine/film-platform.mjs": {
+      "before": [
+        "bf58ada378de0eb3e0952a89ad27cf8d0d1db239a6d39a5025c6bd27c1d99e1b",
+        "254ca5fc448234fc036d14c1aa22591c31d6730f26337daa3e72ebf2a47e6ba1"
+      ],
+      "after": "30bf9741857542a5b6a3fef0facd379d1372a7fcacbf3fe44cbda25e22b81ce7"
+    },
+    "services/film-engine/engine/film-contracts.ts": {
+      "before": [
+        "e914a80391f6a5edb6d7650d30dad132751946c67f22d1901581a5e251e9cf6b"
+      ],
+      "after": "8ac41c1529261aa3eb504780eec2f88c3d1c0721fd81c6b15ea23c0df69e7958"
+    },
+    "services/film-gateway/film-bridge.mjs": {
+      "before": [
+        "1063e6dbcb2cdaceee98341807e093bf102bb68e2965647ab1ab1dd26264d27b"
+      ],
+      "after": "a10f2354589e8a82f4ba3bc48c1a38a3115b25ef1cbd9a9aa0344d89d44d1f91"
+    }
+  }
+}

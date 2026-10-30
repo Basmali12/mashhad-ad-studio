@@ -4,6 +4,17 @@ import {createServer} from 'node:http';
 import {createHmac} from 'node:crypto';
 import {createFilmGateway} from '../gateway.mjs';
 const env={MASHHAD_FILM_ENABLED:'YES',MASHHAD_FILM_ORIGIN:'https://studio.example.test',MASHHAD_CONVEX_URL:'https://fixture.convex.cloud',FILM_BACKEND_ORIGIN:'https://film.example.test',FILM_BRIDGE_SECRET:'synthetic-film-bridge-secret-at-least-32'};
+
+test('commissioning preview preserves opaque signed bytes only for the configured public media origin',async t=>{
+ const url='https://media.example.test/api/film-media/test-ticket?expires=123&signature=opaque_signature';
+ const f=await fixture(t,{role:'super-admin',publicMediaOrigin:'https://media.example.test',bridgeResult:{url,expires:123,tokenSecret:'PRIVATE_DO_NOT_RETURN'}});
+ const response=await f.post({operation:'admin.test.ticket',input:{id:'slot',jobId:'job'},requestId:'admin-test-preview'});
+ assert.deepEqual(await response.json(),{url,expires:123});
+ const bad=await fixture(t,{role:'super-admin',publicMediaOrigin:'https://media.example.test',bridgeResult:{url:'https://evil.test/api/film-media/test-ticket',expires:123}});
+ assert.equal((await (await bad.post({operation:'admin.test.ticket',input:{id:'slot',jobId:'job'},requestId:'admin-test-invalid'})).json()).error,'SERVICE_UNAVAILABLE');
+ const customer=await fixture(t);assert.equal((await customer.post({operation:'admin.test.ticket',input:{id:'slot',jobId:'job'},requestId:'customer-cannot-preview'})).status,403);
+ assert.equal(customer.calls.filter(c=>c.url.includes('film.example')).length,0);
+});
 test('malformed account credentials return a specific safe error without reaching the engine or Modal',async t=>{
  const f=await fixture(t,{role:'super-admin'}),response=await f.post({operation:'admin.account.link',input:{name:'نور',tokenId:'invalid-id',tokenSecret:'invalid-secret'},requestId:'bad-fields-check'});
  const value=await response.json();assert.equal(value.error,'INVALID_TOKEN_FORMAT');assert.match(value.message,/ak-/);assert.equal(JSON.stringify(value).includes('invalid-secret'),false);

@@ -1,4 +1,5 @@
 import {createAIWallet} from './film-money.mjs';
+import {createAdminCommissioning} from './admin-commissioning.mjs';
 import fs from 'node:fs';
 import {initialOrientation,isOrientation,applyDiscussionOrientation} from './film-orientation.mjs';
 import {createFilmImagePreview} from './film-image-preview.mjs';
@@ -42,6 +43,7 @@ messages.WEIGHTS_NOT_READY='ملفات نسخة النموذج الحالية غ
 messages.REFERENCE_QUOTA='بلغت مساحة الصور المرجعية المتاحة لحسابك. راجع الإدارة؛ لم تُحذف صورك.';
 export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.now,mediaOrigins=[],startWorker=true,textEnabled=false,textBudgetMicroUSD=0,closeTimeoutMs=2000,merger=createFilmMerger(),referenceCustomerByteLimit=REFERENCE_CUSTOMER_LIMIT,imageFetcher=fetch}){
  const store=engine.store,pending=new Set(),working=new Set();let closed=false,lastMediaSweep=0;
+ const commissioning=createAdminCommissioning({store,engine,origin,secret,now,mediaOrigins});
  const aiWallet=store?createAIWallet(store,{now}):null;
  const media=createFilmMediaLibrary({store,now});
  const imagePreview=createFilmImagePreview({store,secret,origin,origins:mediaOrigins,now,budgetMicroUSD:textBudgetMicroUSD,fetcher:imageFetcher,billing:aiWallet});
@@ -236,6 +238,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   await recovery;
   if(typeof operation!=='string'||!input||typeof input!=='object'||Array.isArray(input))throw Error('INVALID_INPUT');
   const c=await customer(actor);if(operation.startsWith('admin.')&&actor.isAdmin!==true)throw Error('FORBIDDEN');
+  if(['admin.test.status','admin.test.ticket','admin.test.publish'].includes(operation))return commissioning.dispatch(actor,operation,input,c.id);
   if(operation==='session')return {user:{id:c.id,name:c.name},wallet:await wallet(c.id),servers:await listServers(),enabled,planningEnabled:textEnabled,capabilities:{referenceUpload:mediaOrigins.length>0,ingredients:false,voiceCloning:false,lastFrameContinuity:true,nativeAudio:true,wholeFilmMerge:true}};
   if(operation==='preferences.get')return {orientation:(await store.get('film-preferences',c.id))?.orientation??null};
   if(operation==='preferences.save'){if(input.orientation!==null&&!isOrientation(input.orientation))throw Error('INVALID_INPUT');const pref={id:c.id,orientation:input.orientation};await store.put('film-preferences',pref);return {orientation:pref.orientation};}
@@ -366,11 +369,14 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   if(operation==='admin.test.quote'){
    const slot=await store.get('film-slot',input.id);if(!slot)throw Error('NOT_FOUND');if(slot.retired)throw Error('SLOT_RETIRED');
    const q=await engine.invoke('quote',{action:'generate',accountId:slot.accountId,settings:slot.settings,projectId:id(),sceneId:'sample',prompt:prose(input.prompt,9000),audioContract:input.audioContract});
-   await store.put('film-admin-test',{id:q.id,slotId:slot.id,revision:slot.revision});return q;
+   await store.put('film-admin-test',{id:q.id,slotId:slot.id,revision:slot.revision,createdAt:now()});return q;
   }
   if(operation==='admin.test.execute'){
    if(input.approved!==true)throw Error('APPROVAL_REQUIRED');const proof=await store.get('film-admin-test',input.quoteId),q=await store.get('quote',input.quoteId),slot=proof?await store.get('film-slot',proof.slotId):null;
-   if(slot?.retired)throw Error('SLOT_RETIRED');if(!proof||!slot||slot.revision!==proof.revision||q?.action!=='generate'||q.tenantId||q.accountId!==slot.accountId||q.settings?.gpu!==slot.gpu)throw Error('COST_CHANGED');return engine.invoke('execute',{quoteId:q.id,approvedCost:true});
+   if(slot?.retired)throw Error('SLOT_RETIRED');if(!proof||!slot||slot.revision!==proof.revision||q?.action!=='generate'||q.tenantId||q.accountId!==slot.accountId||q.settings?.gpu!==slot.gpu)throw Error('COST_CHANGED');
+   proof.submittedAt??=now();await store.put('film-admin-test',proof);
+   try{return await engine.invoke('execute',{quoteId:q.id,approvedCost:true});}
+   catch(error){if(!await store.intentGet(q.id)&&['QUOTE_EXPIRED','EXPLICIT_COST_APPROVAL_REQUIRED','APPLICATION_MONTHLY_LIMIT_EXCEEDED','ONE_ACTIVE_OR_UNCERTAIN_JOB_ONLY','LOCAL_ARTIFACT_NOT_WRITABLE'].includes(error.code||error.message)){proof.rejected=true;await store.put('film-admin-test',proof);}throw error;}
   }
   if(operation==='admin.prepare.quote')return engine.invoke('quote',{action:'prepare',accountId:input.accountId,settings:settings({gpu:'RTX-PRO-6000',cpu:4,ram:96}),source:'volume'});
   if(operation==='admin.prepare.execute'){if(input.approved!==true)throw Error('APPROVAL_REQUIRED');const q=await store.get('quote',input.quoteId);if(q?.action!=='prepare')throw Error('INVALID_INPUT');return engine.invoke('execute',{quoteId:q.id,approvedCost:true});}
@@ -555,7 +561,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
  }
 
  async function handler(req,res){
-  const url=new URL(req.url,origin);if(await imagePreview.handle(req,res,url,secureRequest(req)))return true;if(await references.handle(req,res,url,secureRequest(req)))return true;if(url.pathname.startsWith('/api/film-media/')){
+  const url=new URL(req.url,origin);if(await commissioning.handle(req,res,url,secureRequest(req)))return true;if(await imagePreview.handle(req,res,url,secureRequest(req)))return true;if(await references.handle(req,res,url,secureRequest(req)))return true;if(url.pathname.startsWith('/api/film-media/')){
    const jid=url.pathname.slice('/api/film-media/'.length);if(!secureRequest(req)||!['GET','HEAD'].includes(req.method)||!SAFE.test(jid)||!validMediaSignature(secret,jid,url.searchParams.get('expires'),url.searchParams.get('signature'),now())){send(res,403,{error:'ACCESS_DENIED'});return true;}
    const ticket=await store?.get('film-media-ticket',jid),project=ticket?await store?.get('film-project',ticket.projectId):null,mediaJob=ticket?.jobId?await store?.get('job',ticket.jobId):null;
    const validOwner=ticket&&ticket.expires===Number(url.searchParams.get('expires'))&&project?.customerId===ticket.customerId;
@@ -576,7 +582,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    let length=0,parts=[];for await(const part of req){length+=part.length;if(length>262144)throw Error('INVALID_INPUT');parts.push(part);}
    const raw=Buffer.concat(parts).toString(),nonce=verifyBridge(secret,req.headers,raw,now()),b=JSON.parse(raw);requireStore();
    if(!SAFE.test(b.requestId||''))throw Error('INVALID_INPUT');
-   const readOnly=/^(session|preferences.get|wallet|files.list|servers.list|rental.quote|rental.status|projects.list|project.get|project.follow|text.status|plan.status|admin\.(customers.list|accounts.list|rentals.list|billing.list|alerts.list|operation.status|text.config))$/.test(b.operation);
+   const readOnly=/^(session|preferences.get|wallet|files.list|servers.list|rental.quote|rental.status|projects.list|project.get|project.follow|text.status|plan.status|admin\.(customers.list|accounts.list|rentals.list|billing.list|alerts.list|operation.status|test.status|text.config))$/.test(b.operation);
    await store.transaction(async()=>{if(await store.get('film-bridge-nonce',nonce))throw Error('BRIDGE_UNAUTHORIZED');await store.put('film-bridge-nonce',{id:nonce,at:now()});for(const old of await store.all('film-bridge-nonce'))if(old.at<now()-120000)await store.delete('film-bridge-nonce',old.id);});
    const fingerprint=hash(raw),prior=readOnly?null:await store.get('film-bridge-request',b.requestId);
    if(prior){if(prior.hash!==fingerprint)throw Error('BRIDGE_UNAUTHORIZED');if(prior.finished){send(res,200,prior.result);return true;}throw Error('REQUEST_STATE_UNKNOWN');}

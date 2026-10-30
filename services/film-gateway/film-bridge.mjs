@@ -44,6 +44,7 @@ const fields = {
     'admin.prepare.quote': { accountId: id }, 'admin.prepare.execute': { quoteId: id, approved: yes },
     'admin.test.quote': { id, prompt: x => text(x, 9000), audioContract: x => record(x) && JSON.stringify(x).length <= 20000 },
     'admin.test.execute': { quoteId: id, approved: yes }, 'admin.operation.status': { id },
+    'admin.test.status': {id}, 'admin.test.ticket': {id,jobId:id,'download?':bool}, 'admin.test.publish': {id,jobId:id,reviewed:yes},
     'admin.slot.save': { 'id?': id, accountId: id, name: short, hourPriceUSD: money, 'gpu?': x => ['RTX-PRO-6000', 'L40S'].includes(x) },
     'admin.slot.reassign': { id, accountId: id, approved: yes },
     'admin.slot.verify': { id, jobId: id, reviewed: yes }, 'admin.slot.publish': { id, 'testingOnly?': bool, 'approved?': yes },
@@ -262,6 +263,10 @@ export async function requestFilm(actor, args, env) {
             if (typeof data.error === 'string' && Object.hasOwn(safeErrors, data.error))
                 return fail(data.error, safeErrors[data.error]);
             return mayDispatchPaidWork(operation)?fail('REQUEST_STATE_UNKNOWN', 'النتيجة تحتاج متابعة آمنة.', true):fail('SERVICE_UNAVAILABLE','تعذر الاتصال حالياً؛ أعد الاتصال دون بدء توليد.');
+        }
+        if(operation==='admin.test.ticket'){
+            if(!record(data)||new URL(data.url).origin!==publicMediaOrigin)throw Error('INVALID_MEDIA');
+            return projectShape(data,{url:'url',expires:'value'},secrets,publicMediaOrigin);
         }
         return operation.startsWith('admin.') ? adminDTO(data, secrets) : projectShape(data, customerShapes[operation], secrets, publicMediaOrigin);
     }
