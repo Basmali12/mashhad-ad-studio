@@ -70,6 +70,7 @@ test('platform review is owned, explicit, one durable intent, separate budget an
  const platform=createFilmPlatform({engine,origin:'https://fixture.test',secret:'synthetic-bridge-secret-at-least-32-chars',startWorker:false,textEnabled:true,textBudgetMicroUSD:1000000});
  cleanup.push(()=>platform.close());
  const customer=(await platform.dispatch(actor,'session')).user.id;
+ store.put('film-credit',{id:'review-credit',customerId:customer,amount:1000000,remaining:1000000,createdAt:Date.now(),expiresAt:Date.now()+86400000});
  const job={id:'owned-job',projectId:'owned-project',tenantId:customer,status:'completed',result:{videoVerified:true,sha256:'b'.repeat(64)}};store.put('job',job);
  store.put('film-project',{id:'owned-project',customerId:customer,name:'قصة',story:'قصة عراقية',seconds:10,state:'completed',scenes:[{jobId:job.id,status:'done'}]});
  await assert.rejects(platform.dispatch({...actor,id:'bob'},'review.submit',{projectId:'owned-project',approved:true}),/NOT_FOUND/);
@@ -79,14 +80,14 @@ test('platform review is owned, explicit, one durable intent, separate budget an
  const p=await platform.dispatch(actor,'project.get',{id:'owned-project'});assert.equal(p.reviewState,'completed');assert.equal(p.state,'completed');assert.equal(p.visualReviews[0].sampleCount,6);assert.equal(p.visualReviews[0].invoiceUSD,null);
  await platform.dispatch(actor,'review.submit',input);assert.equal(reviews,1);assert.equal(store.all('film-text-reservation').length,1);assert.deepEqual(store.get('job',job.id),job);
 });
-test('restart marks pending review for follow only; budget rejection makes no request',async t=>{
+test('restart marks pending review for follow only; empty customer wallet makes no request',async t=>{
  const {store,cleanup}=await fixture(t);let calls=0;
  const engine={store,invoke:async()=>{calls++;throw Error('NO_NETWORK');}};
  const platform=createFilmPlatform({engine,origin:'https://fixture.test',secret:'synthetic-secret-at-least-32-characters',startWorker:false,textEnabled:true,textBudgetMicroUSD:1});cleanup.push(()=>platform.close());
  const actor={id:'alice',email:'alice@fixture.test'},customer=(await platform.dispatch(actor,'session')).user.id;
  store.put('job',{id:'j',tenantId:customer,projectId:'p',result:{videoVerified:true,sha256:'a'.repeat(64)}});
  store.put('film-project',{id:'p',customerId:customer,name:'قصة',scenes:[{jobId:'j'}]});
- await assert.rejects(platform.dispatch(actor,'review.submit',{projectId:'p',approved:true}),/TEXT_BUDGET_LIMIT/);assert.equal(calls,0);
+ await assert.rejects(platform.dispatch(actor,'review.submit',{projectId:'p',approved:true}),/AI_INSUFFICIENT_CREDIT/);assert.equal(calls,0);
  store.put('film-project',{...store.get('film-project','p'),reviewPending:'interrupted',reviewState:'running'});
  const restarted=createFilmPlatform({engine,origin:'https://fixture.test',secret:'synthetic-secret-at-least-32-characters',startWorker:false,textEnabled:true,textBudgetMicroUSD:1000000});cleanup.push(()=>restarted.close());
  await restarted.dispatch(actor,'review.submit',{projectId:'p',approved:true});assert.equal(store.get('film-project','p').reviewState,'needs_review');assert.equal(calls,0);

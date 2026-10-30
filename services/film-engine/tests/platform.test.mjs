@@ -20,7 +20,7 @@ class Provider{
  session(input,event){this.calls.push({action:'session',input});let resolve;const done=new Promise(r=>resolve=r);const stop=()=>resolve(this.uncertain?{cloud_stopped:false}:{cloud_stopped:true,running_containers:0,tasks:0});this.sessions.set(input.jobId,{stop});setImmediate(()=>event({kind:'ready',phase:'ready'}));return {done,stop,generate:async()=>{throw Error('GPU_GENERATION_FORBIDDEN_IN_LOCAL_TEST');}};}
 }
 const admin={id:'admin',name:'Admin',email:'admin@fixture.test',isAdmin:true},alice={id:'alice',name:'Alice',email:'alice@fixture.test'},bob={id:'bob',name:'Bob',email:'bob@fixture.test'};
-async function fixture(t,{enabled=true,paid=true,text=false,referenceCustomerByteLimit=67108864}={}){
+async function fixture(t,{enabled=true,paid=true,text=false,textCredit=true,referenceCustomerByteLimit=67108864}={}){
  const folder=await mkdtemp(path.join(tmpdir(),'film-platform-')),key=randomBytes(32).toString('base64'),store=new Store(folder,key);store.installRentalSchema();
  const provider=new Provider(),account={id:randomUUID(),mode:'local_profile',workspace:'private-workspace',volume:'private-volume',activated:true,discovery:{ready:true,checkedAt:Date.now()}};store.put('account',account);
  const engine=await createEngineAPI({folder,key,store,provider,allowPaid:paid,allowCustomerRentals:enabled,origin:'https://fixture.test'});
@@ -32,6 +32,7 @@ async function fixture(t,{enabled=true,paid=true,text=false,referenceCustomerByt
  store.put('film-slot',{...slot,published:true,locked:false});
  await invoke(admin,'admin.capacity.save',{accountId:account.id,maxConcurrent:2});
  const credit=(a,amount='10',requestId=randomUUID())=>invoke(admin,'admin.credit.add',{customerId:users[a.id],amountUSD:amount,requestId});
+ if(text&&textCredit)await credit(alice);
  const start=async(a,requestId=randomUUID())=>{const q=await invoke(a,'rental.quote',{serverId:slot.id});return invoke(a,'rental.start',{serverId:slot.id,priceMicroUSD:q.priceMicroUSD,revision:q.revision,approved:true,requestId});};
  t.after(async()=>{for(const c of provider.sessions.values())c.stop();await platform.close();await engine.close();await rm(folder,{recursive:true,force:true});});
  return {folder,store,provider,engine,platform,invoke,users,slot,account,credit,start,secret,now:()=>time,advance:n=>time+=n};
@@ -123,6 +124,18 @@ test('customer responses redact supplier labels even when actor is admin',async 
  const f=await fixture(t);f.store.put('film-slot',{...f.store.get('film-slot',f.slot.id),name:'Modal مودال'});const r=await bridge(f,{actor:admin,operation:'servers.list'});assert.equal(/modal|مودال/i.test(JSON.stringify(r.body)),false);
  f.engine.invoke=async()=>{throw Error('MODAL_TOKEN_SECRET_FAILURE');};const result=await bridge(f,{actor:admin,operation:'admin.account.inspect',input:{accountId:f.account.id}});assert.equal(result.body.error,'REQUEST_FAILED');
 });
+test('zero wallet blocks customer chat immediately with a refill error and no AI or GPU call',async t=>{
+ const f=await fixture(t,{text:true,textCredit:false}),p=await f.invoke(alice,'project.save',{name:'هلو',story:'هلو',seconds:10,orientation:null});let calls=0;
+ f.engine.invoke=async()=>{calls++;throw Error('NO_PAID_CALL');};await assert.rejects(f.invoke(alice,'chat.submit',{projectId:p.id,message:'هلو',approved:true}),/AI_INSUFFICIENT_CREDIT/);assert.equal(calls,0);assert.equal(f.store.all('film-ai-charge').length,0);assert.equal(f.store.get('film-project',p.id).textPending,undefined);
+});
+
+test('queued messages losing funding are not silently charged after a later topup',async t=>{
+ const f=await fixture(t,{text:true}),p=await f.invoke(alice,'project.save',{name:'queue',story:'test',seconds:10,orientation:null});let release;const hold=new Promise(r=>release=r),calls=[];
+ f.engine.invoke=async(route,b)=>{if(route==='llm/calls'){calls.push(b);return {status:'queued'};}if(calls.length===1)await hold;return {status:'completed',discussion:{reply:'هلا',intent:'discuss',proposed_duration_seconds:null,ready_to_write:false}};};
+ await f.invoke(alice,'chat.submit',{projectId:p.id,message:'الأولى',approved:true});await waitFor(()=>calls.length===1);await f.invoke(alice,'chat.submit',{projectId:p.id,message:'الثانية',approved:true});for(const lot of f.store.all('film-credit')){lot.remaining=0;f.store.put('film-credit',lot);}release();
+ await waitFor(()=>f.store.get('film-project',p.id).chatQueue?.length===0);assert.equal(calls.length,1);await f.credit(alice);await f.invoke(alice,'chat.submit',{projectId:p.id,message:'الثالثة',approved:true});await waitFor(()=>calls.length===2&&!f.store.get('film-project',p.id).textPending);assert.equal(calls[1].messages.at(-1).content,'الثالثة');assert.equal(f.provider.calls.length,0);
+});
+
 test('text submission claims atomically, remains visible pending and shutdown is bounded',async t=>{
  const f=await fixture(t,{text:true});const p=await f.invoke(alice,'project.save',{name:'story',story:'fiction',seconds:300,orientation:'portrait'});let calls=0;f.engine.invoke=async route=>{if(route==='llm/calls'){calls++;return {status:'queued'};}return {status:'running'};};
  const result=await Promise.allSettled([f.invoke(alice,'plan.submit',{projectId:p.id,approved:true}),f.invoke(alice,'plan.submit',{projectId:p.id,approved:true})]);assert.equal(result.filter(r=>r.status==='fulfilled').length,1);assert.equal((await f.invoke(alice,'plan.status',{projectId:p.id})).textPending,true);await waitFor(()=>calls===1);const start=Date.now();await f.platform.close();assert.ok(Date.now()-start<500);
@@ -434,12 +447,12 @@ test('single production approval durably claims one launch; repeated requests ca
  await f.platform.close();
 });
 
-test('launch checks the writer key and reserves review budget before any rental or supplier dispatch',async t=>{
+test('launch checks writer key and customer review funds before any rental or supplier dispatch',async t=>{
  const f=await fixture(t,{text:true}),p=await draft(f);await f.credit(alice);const saved=f.store.get('film-project',p.id);saved.state='planned';saved.scenes=[{status:'pending',attempted:false}];f.store.put('film-project',saved);
  const q=await f.invoke(alice,'rental.quote',{serverId:f.slot.id}),input={...q,projectId:p.id,approved:true,requestId:'preflight'};
  await assert.rejects(f.invoke(alice,'project.launch',input),/OPENAI_KEY_REQUIRED/);assert.equal(f.store.all('rental').length,0);assert.equal(f.provider.calls.length,0);
- f.store.put('config',{id:'openai-director',credentials:'synthetic-presence-only'});f.store.put('film-text-reservation',{id:'prior-budget',customerId:f.users.bob,reservedMicroUSD:2000000,calls:1,createdAt:f.now()});
- await assert.rejects(f.invoke(alice,'project.launch',input),/TEXT_BUDGET_LIMIT/);assert.equal(f.store.all('rental').length,0);assert.equal(f.provider.calls.length,0);assert.equal(f.store.get('film-project',p.id).launch,undefined);
+ f.store.put('config',{id:'openai-director',credentials:'synthetic-presence-only'});for(const lot of f.store.all('film-credit')){lot.remaining=0;f.store.put('film-credit',lot);}
+ await assert.rejects(f.invoke(alice,'project.launch',input),/AI_INSUFFICIENT_CREDIT/);assert.equal(f.store.all('rental').length,0);assert.equal(f.provider.calls.length,0);assert.equal(f.store.get('film-project',p.id).launch,undefined);
 });
 
 test('generated file library serves owned downloads with attachment headers, caps expiry and permanently removes approved files',async t=>{
@@ -516,7 +529,7 @@ test('conversation rename/pin/archive persists without generation or deleting me
 test('account orientation defaults are private, persistent and never dispatch resources; unset direction blocks a plan or launch',async t=>{
  const f=await fixture(t,{text:true});assert.deepEqual(await f.invoke(alice,'preferences.get'),{orientation:null});await f.invoke(alice,'preferences.save',{orientation:'landscape'});assert.deepEqual(await f.invoke(alice,'preferences.get'),{orientation:'landscape'});assert.deepEqual(await f.invoke(bob,'preferences.get'),{orientation:null});
  const a=await f.invoke(alice,'project.save',{name:'landscape',story:'test',seconds:20,orientation:null});assert.equal(a.orientation,'landscape');assert.equal(a.orientationConfirmed,true);
- const b=await f.invoke(bob,'project.save',{name:'unknown',story:'test',seconds:20,orientation:null});assert.equal(b.orientationConfirmed,false);
+ await f.credit(bob);const b=await f.invoke(bob,'project.save',{name:'unknown',story:'test',seconds:20,orientation:null});assert.equal(b.orientationConfirmed,false);
  await assert.rejects(f.invoke(bob,'plan.submit',{projectId:b.id,approved:true}),/ORIENTATION_REQUIRED/);await assert.rejects(f.invoke(bob,'project.launch',{projectId:b.id,approved:true}),/ORIENTATION_REQUIRED/);await assert.rejects(f.invoke(alice,'preferences.save',{orientation:'square'}),/INVALID_INPUT/);assert.equal(f.provider.calls.length,0);assert.equal(f.store.all('film-text-reservation').length,0);
  await f.invoke(alice,'preferences.save',{orientation:null});assert.equal((await f.invoke(alice,'preferences.get')).orientation,null);assert.equal((await f.invoke(alice,'project.get',{id:a.id})).orientation,'landscape');
 });

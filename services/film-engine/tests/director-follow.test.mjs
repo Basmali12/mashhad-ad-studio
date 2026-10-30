@@ -9,7 +9,7 @@ import {createFilmPlatform} from '../engine/film-platform.mjs';
 
 // Real store and orchestration; only generation and OpenAI boundaries are fakes.
 const good={summary:'لم تظهر كتابة بالعينات.',visibleText:'not_seen_in_samples',continuity:'no_obvious_issue_in_samples',causalOrder:'unknown',audioAssessment:'not_checked',findings:[],suggestedCorrections:[],nextVisualPrompt:'The same man in a blue shirt picks up the same small brown wallet. A smooth medium tracking shot.'};
-async function fixture(t,{review=good,budget=2000000,text=true,qualityHold=false}={}){
+async function fixture(t,{review=good,budget=2000000,text=true,qualityHold=false,funds=1000000}={}){
  const folder=await mkdtemp(path.join(tmpdir(),'director-follow-')),store=new Store(folder,randomBytes(32).toString('base64'));store.installRentalSchema();
  store.put('config',{id:'openai-director',credentials:store.seal({key:'synthetic-key-not-sent-anywhere'},'openai-director')});
  const events=[],quoted=[],actor={id:'alice',email:'alice@fixture.test'};let customer,seq=0;
@@ -25,6 +25,7 @@ async function fixture(t,{review=good,budget=2000000,text=true,qualityHold=false
  }};
  const platform=createFilmPlatform({engine,origin:'https://fixture.test',secret:'only-a-test-bridge-secret-at-least-32',enabled:true,textEnabled:text,textBudgetMicroUSD:budget,startWorker:false,merger:{merge:async()=>{throw Error('MERGE_UNAVAILABLE');}}});
  customer=(await platform.dispatch(actor,'session')).user.id;
+ store.put('film-credit',{id:'fixture-credit',customerId:customer,amount:funds,remaining:funds,createdAt:Date.now(),expiresAt:Date.now()+86400000});
  store.put('job',{id:'warm',status:'ready',cloudStopped:false});
  store.put('rental',{id:'r',customerId:customer,accountId:'a',engineSlotId:'s',engineJobId:'warm',state:'ready',settings:{}});
  const audioContract={language:'ar',dialect:'iraqi',mode:'dialogue',lines:[{speaker:'علي',text:'هاي المحفظة إلك؟'}]};
@@ -51,9 +52,9 @@ for(const [name,review] of [['visible text',{...good,visibleText:'detected'}],['
   for(let i=0;i<20&&!f.events.includes('jobs/warm/stop');i++)await new Promise(r=>setTimeout(r,5));assert.ok(f.events.includes('jobs/warm/stop'));
  });
 }
-test('no opt-in means no OpenAI charge or rewrite; disabled text and insufficient budget reject before GPU submission',async t=>{
+test('no opt-in means no OpenAI charge or rewrite; disabled text and insufficient customer credit reject before GPU submission',async t=>{
  const legacy=await fixture(t);await legacy.run(false);assert.equal((await legacy.settled()).state,'completed');assert.equal(legacy.events.includes('llm/reviews'),false);assert.equal(legacy.store.all('film-text-reservation').length,0);
- for(const options of [{budget:1},{text:false}]){const f=await fixture(t,options);await assert.rejects(f.run(true),/TEXT_BUDGET_LIMIT|TEXT_DISABLED/);assert.equal(f.events.length,0);assert.equal(f.store.get('film-project','p').state,'planned');}
+ for(const options of [{funds:0},{text:false}]){const f=await fixture(t,options);await assert.rejects(f.run(true),/AI_INSUFFICIENT_CREDIT|TEXT_DISABLED/);assert.equal(f.events.length,0);assert.equal(f.store.get('film-project','p').state,'planned');}
 });
 test('missing encrypted key rejects before any generation, and interrupted director intent never resubmits',async t=>{
  const f=await fixture(t);f.store.delete('config','openai-director');await assert.rejects(f.run(true),/OPENAI_KEY_REQUIRED/);assert.equal(f.events.length,0);

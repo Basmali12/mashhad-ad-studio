@@ -1,3 +1,4 @@
+import {createAIWallet} from './film-money.mjs';
 import {blocksScope} from './account-routing.mjs';
 import {Readable} from 'node:stream';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
@@ -50,7 +51,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
     if(store){for(const name of ['openrouter-video','openrouter-chat'])await store.delete('config',name);for(const record of await store.all('router-video-request'))if(record.credentials){delete record.credentials;await store.put('router-video-request',record);}}
     const audioQueue=store?new AudioCleanupQueue(store):null;await audioQueue?.initialize();
     if(store)await store.put('config',{id:'audio-cleanup',enabled:true,attenuationDb:6});
-    const textDirector=store?new OpenAIDirector(store,{fetcher:textFetch}):null;await textDirector?.initialize();
+    const textDirector=store?new OpenAIDirector(store,{fetcher:textFetch,billing:createAIWallet(store)}):null;await textDirector?.initialize();
     if(store){const selected=await store.get('config','selection');const active=(await store.all('job')).some(j=>['queued','running','ready','stopping','uncertain','recovery_required'].includes(j.status)&&!j.cloudStopped);if(selected&&!active){selected.settings=fixedEngineSettings(selected.settings||{});await store.put('config',selected);}}
     const allowedOrigins = new Set((process.env.ENGINE_ALLOWED_ORIGINS || origin).split(',').map(s => s.trim()));
     const internalScope=Symbol('trusted-rental-context');

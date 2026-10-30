@@ -18,7 +18,7 @@ it('administrator entry is separate, and the gateway transport does not use a se
 
 it('generation clock distinguishes elapsed time from requested duration and stops visual activity after completion',()=>{
  expect(elapsedLabel(59)).toBe('59 ثانية');expect(elapsedLabel(70)).toBe('1 دقيقة و10 ثانية');expect(elapsedLabel(130)).toBe('2 دقيقة و10 ثانية');
- const p={id:'p',name:'film',story:'test',messages:[],seconds:20,orientation:'portrait',reference:null,state:'completed',textPending:false,textUncertain:false,textCostPolicy:'administrator_funded_separate_from_gpu_wallet',planningCompletedScenes:2,merge:null,scenes:[],error:null,launch:{state:'completed',approvedAt:1000,finishedAt:71000}} as const;
+ const p={id:'p',name:'film',story:'test',messages:[],seconds:20,orientation:'portrait',reference:null,state:'completed',textPending:false,textUncertain:false,textCostPolicy:'customer_wallet_openai_usage_no_markup',planningCompletedScenes:2,merge:null,scenes:[],error:null,launch:{state:'completed',approvedAt:1000,finishedAt:71000}} as const;
  const html=renderToStaticMarkup(<FilmGeneration request={async()=>{throw Error('NO_CLOUD');}} project={p as unknown as FilmProject} rental={null} onBack={()=>{}} onStop={()=>{}} busy={false}/>);
  expect(html).toContain('1 دقيقة و10 ثانية');expect(html).toContain('20');expect(html).not.toContain('is-active');expect(html).toContain('ثواني الفيديو المؤكدة');
 });

@@ -1,10 +1,12 @@
+import {createAIWallet} from '../engine/film-money.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
 import {mkdtemp,readFile,rm} from 'node:fs/promises';import {tmpdir} from 'node:os';import path from 'node:path';import {randomBytes} from 'node:crypto';import {spawnSync} from 'node:child_process';import {createServer} from 'node:http';
 import {Store} from '../engine/store.mjs';import {createFilmImagePreview,PREVIEW_MODEL} from '../engine/film-image-preview.mjs';
-async function fixture(t,{fail=false,budget=1000000,withEdit=false}={}){
+async function fixture(t,{fail=false,budget=1000000,withEdit=false,balance=null}={}){
  const folder=await mkdtemp(path.join(tmpdir(),'film-image-preview-')),store=new Store(folder,randomBytes(32).toString('base64'));let now=Date.now(),calls=0;const p={id:'project-one',customerId:'owner-one',orientation:'portrait',state:'draft',messages:[]};store.put('film-project',p);store.put('config',{id:'openai-director',credentials:store.seal({key:'synthetic-local-only'},'openai-director')});
+ const billing=balance===null?null:createAIWallet(store,{now:()=>now});if(billing)store.put('film-credit',{id:'image-credit',customerId:p.customerId,amount:balance,remaining:balance,createdAt:now,expiresAt:now+86400000});
  const jpg=path.join(folder,'fixture.jpg'),generated=spawnSync(process.env.ENGINE_FFMPEG_BIN||'ffmpeg',['-v','error','-f','lavfi','-i','color=c=blue:s=16x16','-frames:v','1',jpg],{windowsHide:true});assert.equal(generated.status,0,'local CPU JPEG fixture requires ffmpeg');const bytes=await readFile(jpg);
- const service=createFilmImagePreview({store,origin:'https://fixture.test',secret:'synthetic-preview-signing-secret-for-tests',origins:['https://front.test'],now:()=>now,budgetMicroUSD:budget,fetcher:async(url,options)=>{calls++;assert.equal(url,'https://api.openai.com/v1/images/'+(withEdit?'edits':'generations'));if(withEdit){assert.ok(options.body instanceof FormData);assert.ok(options.body.get('image') instanceof Blob);}const b=withEdit?Object.fromEntries(options.body.entries()):JSON.parse(options.body);assert.equal(b.model,PREVIEW_MODEL);assert.equal(Number(b.n),1);assert.equal(b.quality,'low');assert.equal(b.output_format,'jpeg');assert.equal(b.size,'864x1536');assert.ok(!b.safety_identifier.includes(p.customerId));if(fail)throw Error('ambiguous connection');return Response.json({data:[{b64_json:bytes.toString('base64')}],usage:{input_tokens_details:{text_tokens:100,image_tokens:0},output_tokens:200}});}});
+ const service=createFilmImagePreview({store,origin:'https://fixture.test',secret:'synthetic-preview-signing-secret-for-tests',origins:['https://front.test'],now:()=>now,budgetMicroUSD:budget,billing,fetcher:async(url,options)=>{calls++;assert.equal(url,'https://api.openai.com/v1/images/'+(withEdit?'edits':'generations'));if(withEdit){assert.ok(options.body instanceof FormData);assert.ok(options.body.get('image') instanceof Blob);}const b=withEdit?Object.fromEntries(options.body.entries()):JSON.parse(options.body);assert.equal(b.model,PREVIEW_MODEL);assert.equal(Number(b.n),1);assert.equal(b.quality,'low');assert.equal(b.output_format,'jpeg');assert.equal(b.size,'864x1536');assert.ok(!b.safety_identifier.includes(p.customerId));if(fail)throw Error('ambiguous connection');return Response.json({data:[{b64_json:bytes.toString('base64')}],usage:{input_tokens_details:{text_tokens:100,image_tokens:0},output_tokens:200}});}});
  t.after(async()=>{await service.close();store.close();await rm(folder,{recursive:true,force:true});});await service.initialize();await service.offer(p,'A cinematic Iraqi courtyard with two fictional characters in warm light.');store.put('film-project',p);
  async function finish(){for(let i=0;i<100;i++){const r=store.get('film-image-preview',p.preview.id);if(r&&!['queued','running'].includes(r.status))return r;await new Promise(r=>setTimeout(r,5));}throw Error('fixture did not settle');}
  return {store,folder,p,service,bytes,finish,calls:()=>calls,advance:n=>now+=n};
@@ -24,4 +26,12 @@ test('ambiguous image response is not retried, and a changed orientation or exha
 
 test('an uploaded opening reference uses the official edit endpoint with image bytes and one output',async t=>{
  const f=await fixture(t,{withEdit:true});await f.service.execute(f.p,f.p.preview.id,true,'data:image/jpeg;base64,'+f.bytes.toString('base64'));assert.equal((await f.finish()).status,'completed');assert.equal(f.calls(),1);
+});
+
+test('customer image preview uses the shared wallet once and empty funds never reach OpenAI',async t=>{
+ const empty=await fixture(t,{balance:0});await assert.rejects(empty.service.execute(empty.p,empty.p.preview.id,true),/AI_INSUFFICIENT_CREDIT/);assert.equal(empty.calls(),0);
+ const f=await fixture(t,{balance:1000000,budget:0});await Promise.all([f.service.execute(f.p,f.p.preview.id,true),f.service.execute(f.p,f.p.preview.id,true)]);await f.finish();
+ // Image status is persisted before the idempotent settlement transaction.
+ for(let n=0;n<100&&f.store.all('film-ai-charge')[0]?.state!=='settled';n++)await new Promise(r=>setTimeout(r,5));
+ assert.equal(f.calls(),1);assert.equal(f.store.get('film-credit','image-credit').remaining,993500);assert.equal(f.store.all('film-ai-charge').length,1);assert.equal(f.store.all('film-ai-charge')[0].amountMicroUSD,6500);
 });

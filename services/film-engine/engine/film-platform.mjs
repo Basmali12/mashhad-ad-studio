@@ -1,4 +1,4 @@
-import {textBudgetExposure} from './film-money.mjs';
+import {createAIWallet} from './film-money.mjs';
 import fs from 'node:fs';
 import {initialOrientation,isOrientation,applyDiscussionOrientation} from './film-orientation.mjs';
 import {createFilmImagePreview} from './film-image-preview.mjs';
@@ -43,8 +43,9 @@ messages.WEIGHTS_NOT_READY='ملفات نسخة النموذج الحالية غ
 messages.REFERENCE_QUOTA='بلغت مساحة الصور المرجعية المتاحة لحسابك. راجع الإدارة؛ لم تُحذف صورك.';
 export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.now,mediaOrigins=[],startWorker=true,textEnabled=false,textBudgetMicroUSD=0,closeTimeoutMs=2000,merger=createFilmMerger(),referenceCustomerByteLimit=REFERENCE_CUSTOMER_LIMIT,imageFetcher=fetch}){
  const store=engine.store,pending=new Set(),working=new Set();let closed=false,lastMediaSweep=0;
+ const aiWallet=store?createAIWallet(store,{now}):null;
  const media=createFilmMediaLibrary({store,now});
- const imagePreview=createFilmImagePreview({store,secret,origin,origins:mediaOrigins,now,budgetMicroUSD:textBudgetMicroUSD,fetcher:imageFetcher});
+ const imagePreview=createFilmImagePreview({store,secret,origin,origins:mediaOrigins,now,budgetMicroUSD:textBudgetMicroUSD,fetcher:imageFetcher,billing:aiWallet});
  const references=createFilmReferences({store,secret,origin,origins:mediaOrigins,now,customerByteLimit:referenceCustomerByteLimit});
  if(!secret||secret.length<32)throw Error('BRIDGE_SECRET_REQUIRED');
  if(!origin||new URL(origin).protocol!=='https:')throw Error('HTTPS_ORIGIN_REQUIRED');
@@ -54,7 +55,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
  const scope=r=>({tenantId:r.customerId,rentalId:r.id,engineSlotId:r.engineSlotId,accountId:r.accountId});
  const owned=async(kind,key,customerId)=>{if(!SAFE.test(key||''))throw Error('NOT_FOUND');const r=await store.get(kind,key);if(!r||r.customerId!==customerId)throw Error('NOT_FOUND');return r;};
  const alert=async(reason,subject,details={})=>{const key=hash(reason+':'+subject);if(!await store.get('film-alert',key))await store.put('film-alert',{id:key,reason,subject,details,createdAt:now(),acknowledged:false});};
- const recovery=(async()=>{if(!store)return;await media.initialize();await imagePreview.initialize();for(const p of await store.all('film-project')){if(p.launch?.state==='starting'){p.launch.state='uncertain';p.error='LAUNCH_INTERRUPTED_FOLLOW_ONLY';await store.put('film-project',p);}if(p.reviewPending){if(p.directorFollow)p.directorFollow.failed=true;p.reviewPending=null;p.reviewState='needs_review';await store.put('film-project',p);}if(p.referenceUploading){delete p.referenceUploading;await store.put('film-project',p);}if(p.merge?.status==='running'){p.merge={status:'failed',error:'MERGE_INTERRUPTED_NO_AUTOMATIC_RETRY'};await store.put('film-project',p);}if(p.textPending){p.textPending=null;p.textUncertain=true;p.error='TEXT_INTERRUPTED_NO_AUTOMATIC_RETRY';await store.put('film-project',p);}}for(const r of await store.all('rental'))if(r.state==='reserved'&&!r.dispatchStarted){r.state='closed';r.stopReason='SERVER_RESTART_BEFORE_DISPATCH';r.closedAt=now();await store.put('rental',r);}})();
+ const recovery=(async()=>{if(!store)return;await media.initialize();await imagePreview.initialize();await aiWallet.recover({releaseUnsent:true});for(const p of await store.all('film-project')){if(p.launch?.state==='starting'){p.launch.state='uncertain';p.error='LAUNCH_INTERRUPTED_FOLLOW_ONLY';await store.put('film-project',p);}if(p.reviewPending){if(p.directorFollow)p.directorFollow.failed=true;p.reviewPending=null;p.reviewState='needs_review';await store.put('film-project',p);}if(p.referenceUploading){delete p.referenceUploading;await store.put('film-project',p);}if(p.merge?.status==='running'){p.merge={status:'failed',error:'MERGE_INTERRUPTED_NO_AUTOMATIC_RETRY'};await store.put('film-project',p);}if(p.textPending){p.textPending=null;p.textUncertain=true;p.error='TEXT_INTERRUPTED_NO_AUTOMATIC_RETRY';await store.put('film-project',p);}}for(const r of await store.all('rental'))if(r.state==='reserved'&&!r.dispatchStarted){r.state='closed';r.stopReason='SERVER_RESTART_BEFORE_DISPATCH';r.closedAt=now();await store.put('rental',r);}})();
  const tasks=task=>{pending.add(task);void task.finally(()=>pending.delete(task));};
  const runTask=callback=>tasks(Promise.resolve().then(callback).catch(()=>{}));
  async function customer(actor){
@@ -66,7 +67,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
  async function wallet(customerId){
   const lots=(await store.all('film-credit')).filter(l=>l.customerId===customerId),rental=(await store.all('rental')).find(r=>r.customerId===customerId&&r.state!=='closed');
   return {balanceMicroUSD:available(lots,now()),expiresAt:lots.some(l=>l.expiresAt>now()&&l.remaining>0)?Math.min(...lots.filter(l=>l.expiresAt>now()&&l.remaining>0).map(l=>l.expiresAt)):null,
-   reservedMicroUSD:0,activeRentalId:rental?.id??null,lots:lots.map(l=>({amountMicroUSD:l.amount,remainingMicroUSD:l.expiresAt>now()?l.remaining:0,expiresAt:l.expiresAt,expired:l.expiresAt<=now()}))};
+   reservedMicroUSD:await aiWallet.reserved(customerId),activeRentalId:rental?.id??null,lots:lots.map(l=>({amountMicroUSD:l.amount,remainingMicroUSD:l.expiresAt>now()?l.remaining:0,expiresAt:l.expiresAt,expired:l.expiresAt<=now()}))};
  }
  async function listServers(){
   const accounts=new Map((await store.all('account')).map(a=>[a.id,a]));
@@ -133,7 +134,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   if(job&&!expectedStop&&['failed','uncertain','stopped'].includes(job.status))await alert('ENGINE_STOPPED',r.id,{knownReason:/^[A-Z_]{3,80}$/.test(job.error||'')?job.error:'PROVIDER_STOP',accountId:r.accountId});
  }
  async function tick(){
-  await recovery;if(closed||!store)return;
+  await recovery;if(closed||!store)return;await aiWallet.recover();
   if(now()-lastMediaSweep>=60000){lastMediaSweep=now();try{await media.cleanup();await imagePreview.cleanup();}catch{await alert('MEDIA_CLEANUP_PENDING','media-sweep');}}
   for(const b of await store.all('film-account-billing'))if(b.expiresAt&&b.expiresAt<=now()+86400000)await alert('MANUAL_BILLING_EXPIRY',b.id,{source:'administrator',expiresAt:b.expiresAt});
   await Promise.all((await store.all('rental')).filter(r=>r.state!=='closed').map(async r=>{
@@ -142,12 +143,10 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
  }
  async function reserveDirectorFollow(latest,c){
   if(latest.directorFollow)return;
-     if(!textEnabled||!Number.isSafeInteger(textBudgetMicroUSD)||textBudgetMicroUSD<=0)throw Error('TEXT_DISABLED');
+     if(!textEnabled)throw Error('TEXT_DISABLED');
      if(!(await store.get('config','openai-director'))?.credentials)throw Error('OPENAI_KEY_REQUIRED');
+     await aiWallet.requireFunds(c.id);
      const calls=latest.scenes.filter(s=>!s.attempted).length,reserve=calls*250000;
-     const usage=(await store.all('film-text-reservation')).filter(x=>x.createdAt>now()-CREDIT_LIFETIME);
-     if(textBudgetExposure(usage,await store.all('text-call'))+reserve>textBudgetMicroUSD)throw Error('TEXT_BUDGET_LIMIT');
-     if(usage.filter(x=>x.customerId===c.id&&x.createdAt>now()-86400000).reduce((v,x)=>v+x.calls,0)+calls>60)throw Error('TEXT_LIMIT');
      const request=id();await store.put('film-text-reservation',{id:request,customerId:c.id,projectId:latest.id,calls,reservedMicroUSD:reserve,createdAt:now(),source:'administrator_director_follow_reservation_not_invoice'});
      latest.directorFollow={id:request,approvedAt:now(),calls:[],failed:false};latest.visualReviews=[];latest.reviewState='awaiting_next_scene';
  }
@@ -268,16 +267,16 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   catch(e){const latest=await store.get('film-project',p.id);if(latest.launch)latest.launch.finishedAt=now();latest.merge={status:e.message==='MERGE_UNAVAILABLE'?'unavailable':'failed',error:/^MERGE_[A-Z_]+$/.test(e.message)?e.message:'MERGE_FAILED',finishedAt:now()};await store.put('film-project',latest);}
  }
  async function projectDTO(p){
-  return {orientationConfirmed:p.orientationConfirmed!==false,pinned:!!p.pinned,archived:!!p.archived,preview:imagePreview.publicDTO(p.preview),id:p.id,name:clean(p.name),story:clean(p.story),messages:(p.messages||[]).map(m=>({role:m.role,content:clean(m.content),hasReference:!!(m.referenceId&&m.referenceId===p.reference?.id)})),textPending:!!p.textPending,textUncertain:!!p.textUncertain,planningCompletedScenes:p.planningCompletedScenes||0,textCostPolicy:'administrator_funded_separate_from_gpu_wallet',seconds:p.seconds,orientation:p.orientation,state:p.state,discussion:p.discussion||null,launch:p.launch?{state:p.launch.state,approvedAt:p.launch.approvedAt,finishedAt:p.launch.finishedAt||null}:null,reference:p.reference?{mime:p.reference.mime,size:p.reference.size,width:p.reference.width,height:p.reference.height,uploadedAt:p.reference.uploadedAt}:null,merge:p.merge?{status:p.merge.status,error:p.merge.error||null,duration:p.merge.duration||null,width:p.merge.width||null,height:p.merge.height||null,nativeAudio:p.merge.audio===true}:null,
+  return {orientationConfirmed:p.orientationConfirmed!==false,pinned:!!p.pinned,archived:!!p.archived,preview:imagePreview.publicDTO(p.preview),id:p.id,name:clean(p.name),story:clean(p.story),messages:(p.messages||[]).map(m=>({role:m.role,content:clean(m.content),hasReference:!!(m.referenceId&&m.referenceId===p.reference?.id)})),textPending:!!p.textPending,textUncertain:!!p.textUncertain,planningCompletedScenes:p.planningCompletedScenes||0,textCostPolicy:'customer_wallet_openai_usage_no_markup',seconds:p.seconds,orientation:p.orientation,state:p.state,discussion:p.discussion||null,launch:p.launch?{state:p.launch.state,approvedAt:p.launch.approvedAt,finishedAt:p.launch.finishedAt||null}:null,reference:p.reference?{mime:p.reference.mime,size:p.reference.size,width:p.reference.width,height:p.reference.height,uploadedAt:p.reference.uploadedAt}:null,merge:p.merge?{status:p.merge.status,error:p.merge.error||null,duration:p.merge.duration||null,width:p.merge.width||null,height:p.merge.height||null,nativeAudio:p.merge.audio===true}:null,
    directorFollow:!!p.directorFollow,reviewPending:!!p.reviewPending,reviewState:p.reviewState||'not_requested',visualReviews:p.visualReviews||[],
    scenes:await Promise.all((p.scenes||[]).map(async(s,index)=>{const candidate=s.jobId?await store.get('job',s.jobId):null,j=candidate?.tenantId===p.customerId&&candidate?.projectId===p.id?candidate:null;const telemetry=observedProgress(j?.events||[]);
-    return {index,title:'المشهد '+(index+1),visualPrompt:clean(s.prompt||''),status:s.status,dialogue:(s.audioContract?.lines||[]).map(l=>({speaker:clean(l.speaker),text:clean(l.text)})),...telemetry,durationSeconds:verifiedVideoSeconds(j),ready:await media.sceneAvailable(p,j),mediaExpired:!!j&&(!!j.mediaRemovedAt||await media.deadline(j)<=now())};})),error:p.error?'توقفت العملية وتحتاج مراجعة؛ لا إعادة تلقائية.':null};
+    return {index,title:'المشهد '+(index+1),visualPrompt:clean(s.prompt||''),status:s.status,dialogue:(s.audioContract?.lines||[]).map(l=>({speaker:clean(l.speaker),text:clean(l.text)})),...telemetry,durationSeconds:verifiedVideoSeconds(j),ready:await media.sceneAvailable(p,j),mediaExpired:!!j&&(!!j.mediaRemovedAt||await media.deadline(j)<=now())};})),error:p.error==='AI_INSUFFICIENT_CREDIT'?'عبّي رصيدك حتى نكمل الدردشة أو التحليل.':p.error?'توقفت العملية وتحتاج مراجعة؛ لا إعادة تلقائية.':null};
  }
  async function dispatch(actor,operation,input={}){
   await recovery;
   if(typeof operation!=='string'||!input||typeof input!=='object'||Array.isArray(input))throw Error('INVALID_INPUT');
   const c=await customer(actor);if(operation.startsWith('admin.')&&actor.isAdmin!==true)throw Error('FORBIDDEN');
-  if(operation==='session')return {user:{id:c.id,name:c.name},wallet:await wallet(c.id),servers:await listServers(),enabled,planningEnabled:textEnabled&&textBudgetMicroUSD>0,capabilities:{referenceUpload:mediaOrigins.length>0,ingredients:false,voiceCloning:false,lastFrameContinuity:true,nativeAudio:true,wholeFilmMerge:true}};
+  if(operation==='session')return {user:{id:c.id,name:c.name},wallet:await wallet(c.id),servers:await listServers(),enabled,planningEnabled:textEnabled,capabilities:{referenceUpload:mediaOrigins.length>0,ingredients:false,voiceCloning:false,lastFrameContinuity:true,nativeAudio:true,wholeFilmMerge:true}};
   if(operation==='preferences.get')return {orientation:(await store.get('film-preferences',c.id))?.orientation??null};
   if(operation==='preferences.save'){if(input.orientation!==null&&!isOrientation(input.orientation))throw Error('INVALID_INPUT');const pref={id:c.id,orientation:input.orientation};await store.put('film-preferences',pref);return {orientation:pref.orientation};}
   if(operation==='wallet')return wallet(c.id);
@@ -377,7 +376,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
     if(latest.reviewPending||latest.directorFollow?.failed)throw Error('DIRECTOR_REVIEW_REQUIRES_FOLLOW_ONLY');
     if(input.directorFollow===true)await reserveDirectorFollow(latest,c);
     latest.state='generating';latest.error=null;latest.rentalHistory=[...new Set([...(latest.rentalHistory||[]),...(latest.rentalId?[latest.rentalId]:[]),r.id])];latest.rentalId=r.id;await store.put('film-project',latest);});
-   runTask(async()=>{try{await generateProject(c,p,r);}catch{const latest=await owned('film-project',p.id,c.id);latest.error='GENERATION_REQUIRES_REVIEW';latest.state='needs_review';if(latest.launch){latest.launch.state='needs_review';latest.launch.finishedAt=now();}await store.put('film-project',latest);await alert('FILM_REQUIRES_REVIEW',p.id);await stopRental(await owned('rental',r.id,c.id),'FILM_FAULT');}});return {accepted:true};
+   runTask(async()=>{try{await generateProject(c,p,r);}catch(error){const latest=await owned('film-project',p.id,c.id);latest.error=error.message==='AI_INSUFFICIENT_CREDIT'?'AI_INSUFFICIENT_CREDIT':'GENERATION_REQUIRES_REVIEW';latest.state='needs_review';if(latest.launch){latest.launch.state='needs_review';latest.launch.finishedAt=now();}await store.put('film-project',latest);await alert('FILM_REQUIRES_REVIEW',p.id);await stopRental(await owned('rental',r.id,c.id),'FILM_FAULT');}});return {accepted:true};
   }
   if(operation==='project.merge'){const p=await owned('film-project',input.projectId,c.id);if(p.merge?.status==='deleted')throw Error('MEDIA_EXPIRED');if(!p.scenes?.length||p.scenes.some(s=>s.status!=='done'))throw Error('MERGE_SCENES_NOT_READY');if(p.merge?.status==='completed')return projectDTO(p);for(const scene of p.scenes)if(!await media.sceneAvailable(p,await store.get('job',scene.jobId)))throw Error('MEDIA_EXPIRED');await mergeProject(p);return projectDTO(await owned('film-project',p.id,c.id));}
   if(operation==='media.ticket'){
@@ -390,7 +389,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   if(operation==='admin.credit.add'){
    const amount=money(input.amountUSD),requestId=label(input.requestId,100);if(!await store.get('film-customer',input.customerId))throw Error('NOT_FOUND');
    return store.transaction(async()=>{const key=hash('credit:'+requestId);const prior=await store.get('film-credit',key);if(prior){if(prior.customerId!==input.customerId||prior.amount!==amount)throw Error('IDEMPOTENCY_CONFLICT');return {saved:true};}const lot={id:key,customerId:input.customerId,amount,remaining:amount,createdAt:now(),expiresAt:now()+CREDIT_LIFETIME};
-    await store.put('film-credit',lot);await store.put('film-ledger',{id:key,customerId:lot.customerId,type:'credit',microUSD:amount,expiresAt:lot.expiresAt,createdAt:now(),actor:c.id});await store.audit('film_credit_added',key);return {saved:true};});
+    await store.put('film-credit',lot);await store.put('film-ledger',{id:key,customerId:lot.customerId,type:'credit',microUSD:amount,expiresAt:lot.expiresAt,createdAt:now(),actor:c.id});await aiWallet.collectOutstanding(lot.customerId,true);await store.audit('film_credit_added',key);return {saved:true};});
   }
   if(operation==='admin.rentals.list')return Promise.all((await store.all('rental')).map(async r=>({...await rentalDTO(r),customerId:r.customerId,accountId:r.accountId,createdAt:r.createdAt,providerRecordedUSD:r.providerRecordedUSD??null,uncoveredMicroUSD:r.uncoveredMicroUSD||0,estimatedSupplierUSD:null,supplierCostSource:r.providerRecordedUSD==null?'unknown':'provider_recorded_not_invoice'})));
   if(operation==='admin.accounts.list'){
@@ -483,7 +482,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
  }
 
  async function reviewOperation(c,input){
-  if(!textEnabled||!Number.isSafeInteger(textBudgetMicroUSD)||textBudgetMicroUSD<=0)throw Error('TEXT_DISABLED');
+  if(!textEnabled)throw Error('TEXT_DISABLED');
   if(input.approved!==true)throw Error('APPROVAL_REQUIRED');
   let p=await owned('film-project',input.projectId,c.id),request;
   await store.transaction(async()=>{
@@ -496,16 +495,14 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
     if(job?.tenantId===c.id&&job.projectId===p.id&&job.result?.videoVerified)jobs.push({index,jobId:job.id,sha256:job.result.sha256});
    }
    if(!jobs.length)throw Error('REVIEW_VERIFIED_VIDEO_REQUIRED');
-   const usage=(await store.all('film-text-reservation')).filter(x=>x.createdAt>now()-CREDIT_LIFETIME);
+   await aiWallet.requireFunds(c.id);
    const reserve=jobs.length*250000;
-   if(textBudgetExposure(usage,await store.all('text-call'))+reserve>textBudgetMicroUSD)throw Error('TEXT_BUDGET_LIMIT');
-   if(usage.filter(x=>x.customerId===c.id&&x.createdAt>now()-86400000).reduce((v,x)=>v+x.calls,0)+jobs.length>30)throw Error('TEXT_LIMIT');
    request={id:id(),jobs};
    await store.put('film-text-reservation',{id:request.id,customerId:c.id,projectId:p.id,calls:jobs.length,reservedMicroUSD:reserve,createdAt:now(),source:'administrator_budget_reservation_not_invoice'});
    p.reviewPending=request.id;p.reviewState='running';p.visualReviews=[];
    p.reviewIntent=request;await store.put('film-project',p);
   });
-  if(!request)return {accepted:true,textCostPolicy:'administrator_funded_separate_from_gpu_wallet'};
+  if(!request)return {accepted:true,textCostPolicy:'customer_wallet_openai_usage_no_markup'};
   runTask(async()=>{
    try{
     for(const item of request.jobs){
@@ -519,14 +516,19 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
      await store.put('film-project',updated);
     }
     const updated=await owned('film-project',p.id,c.id);updated.reviewPending=null;updated.reviewState='completed';await store.put('film-project',updated);
-   }catch{const updated=await owned('film-project',p.id,c.id);updated.reviewPending=null;updated.reviewState='needs_review';await store.put('film-project',updated);}
+   }catch(error){const updated=await owned('film-project',p.id,c.id);updated.reviewPending=null;updated.reviewState='needs_review';if(error.message==='AI_INSUFFICIENT_CREDIT')updated.error='AI_INSUFFICIENT_CREDIT';await store.put('film-project',updated);}
   });
-  return {accepted:true,textCostPolicy:'administrator_funded_separate_from_gpu_wallet'};
+  return {accepted:true,textCostPolicy:'customer_wallet_openai_usage_no_markup'};
+ }
+ async function drainChatQueue(c,projectId){
+  const p=await owned('film-project',projectId,c.id),next=p.chatQueue?.[0];if(closed||p.textPending||!next?.approved)return;
+  try{await textOperation(c,'chat.submit',{projectId,message:next.message,approved:true,queuedMessageId:next.id});}
+  catch(error){if(error.message!=='AI_INSUFFICIENT_CREDIT')throw error;await store.transaction(async()=>{const latest=await owned('film-project',projectId,c.id);latest.chatQueue=[];latest.error='AI_INSUFFICIENT_CREDIT';await store.put('film-project',latest);});}
  }
  async function textOperation(c,operation,input){
   let p=await owned('film-project',input.projectId,c.id);
   if(operation==='text.status'||operation==='plan.status')return projectDTO(p);
-  if(!textEnabled||!Number.isSafeInteger(textBudgetMicroUSD)||textBudgetMicroUSD<=0)throw Error('TEXT_DISABLED');
+  if(!textEnabled)throw Error('TEXT_DISABLED');
   if(input.approved!==true)throw Error('APPROVAL_REQUIRED');
   const message=operation==='chat.submit'?prose(input.message,10000):null;
   const batches=operation==='plan.submit'?Math.ceil(p.seconds/60):1;
@@ -534,6 +536,7 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   const request=id();let queued=false,frozen=false;
   await store.transaction(async()=>{
    p=await owned('film-project',p.id,c.id);
+   await aiWallet.requireFunds(c.id);
    frozen=!!p.launch||p.scenes?.some(s=>s.attempted)||p.state==='generating';
    if(operation==='plan.submit'&&frozen)throw Error('SCENE_ALREADY_ATTEMPTED');
    if(operation==='chat.submit'&&input.queuedMessageId&&!(p.chatQueue||[]).some(m=>m.id===input.queuedMessageId)){queued=true;return;}
@@ -544,15 +547,13 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
    const pref=(await store.get('film-preferences',c.id))?.orientation;if(p.orientationConfirmed===false&&isOrientation(pref)){p.orientation=pref;p.orientationConfirmed=true;}
    if(operation==='plan.submit'&&p.orientationConfirmed===false)throw Error('ORIENTATION_REQUIRED');
    if(operation==='plan.submit'&&['queued','running','uncertain'].includes(p.preview?.status))throw Error('PREVIEW_PENDING');if(operation==='plan.submit'&&p.referenceUploading)throw Error('REFERENCE_LOCKED');if(p.textPending)throw Error('TEXT_ALREADY_PENDING');
-   const usage=(await store.all('film-text-reservation')).filter(x=>x.createdAt>now()-CREDIT_LIFETIME);
-   if(textBudgetExposure(usage,await store.all('text-call'))+reserve>textBudgetMicroUSD)throw Error('TEXT_BUDGET_LIMIT');
    await store.put('film-text-reservation',{id:request,customerId:c.id,projectId:p.id,calls:batches,reservedMicroUSD:reserve,createdAt:now(),source:'administrator_budget_reservation_not_invoice'});
    p.textPending=request;p.textUncertain=false;p.textCalls=(p.textCalls||0)+batches;p.textRequests=[];p.error=null;
    if(input.queuedMessageId)p.chatQueue=p.chatQueue.filter(m=>m.id!==input.queuedMessageId);
    if(message&&!frozen){p.scenes=[];p.state='draft';p.discussion=null;delete p.merge;}
    if(message&&!input.queuedMessageId)p.messages=[...(p.messages||[]),{role:'user',content:message,chatMessageId:request,...(p.reference&&!(p.messages||[]).some(m=>m.referenceId===p.reference.id)?{referenceId:p.reference.id}:{})}];await store.put('film-project',p);
   });
-  if(queued){if(!p.textPending&&p.chatQueue?.[0]?.approved){const next=p.chatQueue[0];runTask(()=>textOperation(c,'chat.submit',{projectId:p.id,message:next.message,approved:true,queuedMessageId:next.id}));}return {accepted:true,textCostPolicy:'administrator_funded_separate_from_gpu_wallet'};}
+  if(queued){if(!p.textPending&&p.chatQueue?.[0]?.approved)runTask(()=>drainChatQueue(c,p.id));return {accepted:true,textCostPolicy:'customer_wallet_openai_usage_no_markup'};}
   runTask(async()=>{
    try{
     const scenes=[];
@@ -589,9 +590,9 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
     }
     const updated=await owned('film-project',p.id,c.id);if(updated.textPending===request){updated.textPending=null;await store.put('film-project',updated);}
     if(operation==='chat.submit'&&!frozen&&!updated.chatQueue?.length&&updated.discussion?.readyToWrite)await textOperation(c,'plan.submit',{projectId:p.id,approved:true});
-   }catch{const updated=await owned('film-project',p.id,c.id);if(updated.textPending===request){updated.textPending=null;updated.error='TEXT_REQUIRES_REVIEW';await store.put('film-project',updated);}}
-   finally{const updated=await owned('film-project',p.id,c.id),next=updated.chatQueue?.[0];if(!closed&&!updated.textPending&&next?.approved)await textOperation(c,'chat.submit',{projectId:p.id,message:next.message,approved:true,queuedMessageId:next.id});}
-  });return {accepted:true,textCostPolicy:'administrator_funded_separate_from_gpu_wallet'};
+   }catch(error){const updated=await owned('film-project',p.id,c.id);if(updated.textPending===request){updated.textPending=null;updated.error=error.message==='AI_INSUFFICIENT_CREDIT'?'AI_INSUFFICIENT_CREDIT':'TEXT_REQUIRES_REVIEW';await store.put('film-project',updated);}}
+   finally{if(!closed)await drainChatQueue(c,p.id);}
+  });return {accepted:true,textCostPolicy:'customer_wallet_openai_usage_no_markup'};
  }
 
  async function handler(req,res){

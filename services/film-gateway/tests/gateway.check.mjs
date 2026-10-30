@@ -19,6 +19,10 @@ test('an explicit text budget rejection is reported as service capacity, never a
  const r=await f.post({operation:'chat.submit',input:{projectId:'p',message:'هلو',approved:true},requestId:'known-text-rejection'}),data=await r.json();
  assert.equal(data.error,'TEXT_BUDGET_LIMIT');assert.equal(data.followExisting,false);assert.match(data.message,/خدمة المحادثة/);assert.equal(data.message.includes('PRIVATE_DO_NOT_RETURN'),false);
 });
+
+test('empty customer AI wallet returns a refill prompt without forcing an old conversation',async t=>{
+ const f=await fixture(t,{bridgeResult:{error:'AI_INSUFFICIENT_CREDIT'}}),r=await f.post({operation:'chat.submit',input:{projectId:'p',message:'هلو',approved:true},requestId:'empty-wallet'}),data=await r.json();assert.equal(data.error,'AI_INSUFFICIENT_CREDIT');assert.equal(data.followExisting,false);assert.match(data.message,/عبّي رصيدك/);
+});
 async function fixture(t,{role='customer',profileFailure=false,bridgeFailure=false,legacyOwner,bridgeResult,publicMediaOrigin,adminOrigin}={}){
  const calls=[];
  const handler=createFilmGateway({env:{...env,...(adminOrigin?{MASHHAD_FILM_ADMIN_ORIGIN:adminOrigin}:{}),...(publicMediaOrigin?{FILM_PUBLIC_MEDIA_ORIGIN:publicMediaOrigin}:{}),...(legacyOwner?{MASHHAD_FILM_LEGACY_OWNER_ID:legacyOwner}:{})},fetchImpl:async(url,options)=>{
