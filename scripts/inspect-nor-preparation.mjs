@@ -33,6 +33,19 @@ r=state.get('dispatch:'+request['jobId'],{})
 result={'setup':r.get('setup'),'verifierRecorded':bool(r.get('verifier')),'cancelRequested':state.get('cancel:'+request['jobId'],False),'stages':{s:state.get('orchestrator:'+request['jobId']+':'+s) for s in ('before','copy','after')}}
 dc,workspace=client(request['credentials'])
 result['existingVerifier']=lookup_destination_verifier(dc,request['volume'])
+from modal._utils.async_utils import synchronize_api
+async def metadata(credentials):
+ from modal.client import _Client
+ from modal._environments import _get_environment_cached
+ from modal_proto import api_pb2
+ c=await _Client.from_credentials(credentials['tokenId'],credentials['tokenSecret'])
+ environment=await _get_environment_cached('main',c)
+ tasks=await c._stub.TaskList(api_pb2.TaskListRequest(environment_name='main'))
+ apps=await c._stub.AppList(api_pb2.AppListRequest(environment_name='main'))
+ return {'imageBuilderVersion':environment._settings.image_builder_version,'workspaceRunningTasks':len(tasks.tasks),
+         'transferApps':[{'name':a.name or a.description,'id':a.app_id,'state':a.state,'runningTasks':a.n_running_tasks} for a in apps.apps if 'iff-ltx25' in (a.name or a.description)]}
+result['sourceMetadata']=synchronize_api(metadata)(request['source'])
+result['destinationMetadata']=synchronize_api(metadata)(request['credentials'])
 try:
  from destination_verifier_app import create_verifier_app
  create_verifier_app(request['volume'])
