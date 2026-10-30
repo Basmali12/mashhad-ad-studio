@@ -102,7 +102,7 @@ function projectShape(value, shape, secrets, publicMediaOrigin) {
     if (typeof shape === 'object') {
         if (!record(value))
             return null;
-        return Object.fromEntries(Object.entries(shape).filter(([k]) => k in value).map(([k, s]) => [k, k === 'error' && value[k] ? 'العملية تحتاج مراجعة؛ تابع الحالة دون إعادة تلقائية.' : projectShape(value[k], s, secrets, publicMediaOrigin)]));
+        return Object.fromEntries(Object.entries(shape).filter(([k]) => k in value).map(([k, s]) => [k, k === 'error' && value[k] ? (value[k]==='عبّي رصيدك حتى نكمل الدردشة أو التحليل.'?'عبّي رصيدك حتى نكمل الدردشة أو التحليل.':'تعذر إكمال العملية. الناتج المنجز محفوظ؛ لم تبدأ إعادة توليد تلقائية.') : projectShape(value[k], s, secrets, publicMediaOrigin)]));
     }
     if(shape==='fileIndex')return value==='merged'||integer(value)?value:null;
     if (shape === 'value')

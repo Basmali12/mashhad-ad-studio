@@ -1,6 +1,6 @@
 {
-  "pagesCommit": "abd79df27459056e1ac2a019180491a7692518ff",
-  "expectedAdminRelease": "eac2e3044617",
+  "pagesCommit": "738a8a25e4bb57c9196e170b7a84f71a54f5d585",
+  "expectedAdminRelease": "aeb08c5fa02a",
   "files": [
     {
       "path": "index.html",
@@ -85,28 +85,28 @@
   ],
   "sources": {
     "services/film-engine/engine/api.mjs": {
-      "before": "ce8f6a26852321a345bafcc7c88185c56b816a84369714c1842201430ca34143",
+      "before": "997cdd6c09ee6e67fb408d16a4dc24dd01de6369be13ddfaeaad8dcdeb7418f9",
       "after": "997cdd6c09ee6e67fb408d16a4dc24dd01de6369be13ddfaeaad8dcdeb7418f9"
     },
     "services/film-engine/engine/film-money.mjs": {
-      "before": "cf1691fc21f255580353c3b53cd92e80670b79acd2bff025cf38ef971d05ee09",
+      "before": "1b5110efb0a8f4e88e14f6715fa30c954ddfb03e2661c7b8a74fecbe2d72704c",
       "after": "1b5110efb0a8f4e88e14f6715fa30c954ddfb03e2661c7b8a74fecbe2d72704c"
     },
     "services/film-engine/engine/film-platform.mjs": {
-      "before": "8a851b5be9dd5c5ac28c46e3dea84ab31c1914c1a3595cea1c0c9680baee69f3",
+      "before": "254ca5fc448234fc036d14c1aa22591c31d6730f26337daa3e72ebf2a47e6ba1",
       "after": "254ca5fc448234fc036d14c1aa22591c31d6730f26337daa3e72ebf2a47e6ba1"
     },
     "services/film-engine/engine/openai-director.mjs": {
-      "before": "fc42d37479561ca295122b723560c399633aa6e8019c0ce7d845a5c06e424bb2",
+      "before": "ba790dc87ae317b6c3afe55e2234cd910d901e9fb1759f78e610dc6f5a99fa11",
       "after": "ba790dc87ae317b6c3afe55e2234cd910d901e9fb1759f78e610dc6f5a99fa11"
     },
     "services/film-engine/engine/film-image-preview.mjs": {
-      "before": "cc729ff91ac6990268f0a460080e51932b959fc488bf384ae458f0324e8e2b88",
+      "before": "1c0ae92ac7aca25534a0a0fbc474ce3ed18b44f9013eba749f7e00550c7c64fe",
       "after": "1c0ae92ac7aca25534a0a0fbc474ce3ed18b44f9013eba749f7e00550c7c64fe"
     },
     "services/film-gateway/film-bridge.mjs": {
-      "before": "eef5a126eff526a4dae13e12e02e3aa525f359d722725f340ef29df1553946df",
-      "after": "1230908ca0bcafe630efccbc65d00ac31692568d3e8db14d2e48081d68835f69"
+      "before": "1230908ca0bcafe630efccbc65d00ac31692568d3e8db14d2e48081d68835f69",
+      "after": "1063e6dbcb2cdaceee98341807e093bf102bb68e2965647ab1ab1dd26264d27b"
     }
   }
 }
