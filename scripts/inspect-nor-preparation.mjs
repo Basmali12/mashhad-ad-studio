@@ -5,7 +5,7 @@ const base='/srv/iraq-ai-studio-staging/current/services/film-engine/engine';
 const pid=execFileSync('systemctl',['show','-p','MainPID','--value','iraq-ai-film-platform-staging'],{encoding:'utf8'}).trim();
 if(!/^[1-9][0-9]*$/.test(pid))throw Error('SERVICE_NOT_RUNNING');
 for(const entry of fs.readFileSync('/proc/'+pid+'/environ','utf8').split('\0')){
- const i=entry.indexOf('=');if(i>0&&/^(ENGINE_|LTX_|FILM_DATA_DIR=)/.test(entry))process.env[entry.slice(0,i)]=entry.slice(i+1);
+ const i=entry.indexOf('=');if(i>0&&/^(ENGINE_|LTX_|FILM_DATA_DIR=|HOME=|USER=|XDG_CONFIG_HOME=)/.test(entry))process.env[entry.slice(0,i)]=entry.slice(i+1);
 }
 for(const line of fs.readFileSync('/etc/iraq-ai-film-platform-staging/film.env','utf8').split('\n')){
  const i=line.indexOf('=');if(i>0&&!line.startsWith('#'))process.env[line.slice(0,i)]=line.slice(i+1);
@@ -28,6 +28,10 @@ from cloud_transfer_host import control
 from modal_bridge import client
 from destination_verifier_control import lookup_destination_verifier
 from transfer_contract import verifier_names
+import modal
+from modal._image import _get_image_builder_version,ImageBuilderVersion
+from modal.config import config
+from typing import get_args
 c,state=control(request)
 r=state.get('dispatch:'+request['jobId'],{})
 result={'setup':r.get('setup'),'verifierRecorded':bool(r.get('verifier')),'cancelRequested':state.get('cancel:'+request['jobId'],False),'stages':{s:state.get('orchestrator:'+request['jobId']+':'+s) for s in ('before','copy','after')}}
@@ -46,6 +50,12 @@ async def metadata(credentials):
          'transferApps':[{'name':a.name or a.description,'id':a.app_id,'state':a.state,'runningTasks':a.n_running_tasks} for a in apps.apps if 'iff-ltx25' in (a.name or a.description)]}
 result['sourceMetadata']=synchronize_api(metadata)(request['source'])
 result['destinationMetadata']=synchronize_api(metadata)(request['credentials'])
+result['sdkVersion']=modal.__version__
+result['supportedBuilders']=list(get_args(ImageBuilderVersion))
+configured=config.get('image_builder_version')
+result['configuredBuilder']=configured if configured is None or __import__('re').fullmatch(r'20[0-9]{2}\\.[0-9]{2}|PREVIEW',str(configured)) else 'unrecognized'
+try:result['effectiveBuilder']=_get_image_builder_version(result['destinationMetadata']['imageBuilderVersion'])
+except Exception as error:result['effectiveBuilderError']=type(error).__name__
 try:
  from destination_verifier_app import create_verifier_app
  create_verifier_app(request['volume'])
@@ -55,7 +65,8 @@ except Exception as e:
  result['factoryFrames']=[{'file':pathlib.Path(f.filename).name,'line':f.lineno} for f in traceback.extract_tb(e.__traceback__)[-5:]]
 print(json.dumps(result))
 `;
- const child=spawnSync(process.env.ENGINE_PYTHON,['-c',code],{input:JSON.stringify(input)+'\n',encoding:'utf8',timeout:90000,env:{...process.env},maxBuffer:200000,windowsHide:true});
+ const {providerEnvironment}=await import(base+'/provider.mjs');
+ const child=spawnSync(process.env.ENGINE_PYTHON,['-c',code],{input:JSON.stringify(input)+'\n',encoding:'utf8',timeout:90000,env:providerEnvironment(input),maxBuffer:200000,windowsHide:true});
  let result;try{result=JSON.parse(child.stdout.trim());}catch{throw Error('READONLY_DIAGNOSTIC_FAILED_NO_RAW_OUTPUT');}
  console.log(JSON.stringify({jobId:job.id,status:job.status,cloudStopped:job.cloudStopped,elapsedSeconds:job.elapsedSeconds,estimatedUSD:job.estimatedUSD,diagnostic:result}));
 }finally{await store.close();}
