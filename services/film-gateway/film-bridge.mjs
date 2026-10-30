@@ -142,7 +142,7 @@ for (const key of ('confirmed pending jobs rentals standaloneActiveCount').split
     adminKeys.add(key);
 for (const key of ('retired retiredAt unlinked unlinkedAt remoteResourcesDeleted providerTokenRevoked').split(' '))
     adminKeys.add(key);
-for(const key of ['error','error_type','app_id','running_containers','tasks','testingOnly','trialPublishedAt'])adminKeys.add(key);
+for(const key of ['prepareJobId','transferred','required','file','unit','verifiedFiles','estimatedUSD','eta','sequence','receivedAt','error','error_type','app_id','running_containers','tasks','testingOnly','trialPublishedAt'])adminKeys.add(key);
 function adminDTO(value, secrets, depth = 0) {
     if (record(value) && typeof value.reason === 'string' && typeof value.subject === 'string' && 'acknowledged' in value) {
         const d = record(value.details) ? value.details : {};

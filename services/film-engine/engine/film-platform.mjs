@@ -530,22 +530,30 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
   const message=operation==='chat.submit'?prose(input.message,10000):null;
   const batches=operation==='plan.submit'?Math.ceil(p.seconds/60):1;
   const reserve=batches*250000; // Terra reservation, not an invoice cap; independent of GPU credits.
-  const request=id();
+  const request=id();let queued=false,frozen=false;
   await store.transaction(async()=>{
    p=await owned('film-project',p.id,c.id);
-   if(p.scenes?.some(s=>s.attempted))throw Error('SCENE_ALREADY_ATTEMPTED');
+   frozen=!!p.launch||p.scenes?.some(s=>s.attempted)||p.state==='generating';
+   if(operation==='plan.submit'&&frozen)throw Error('SCENE_ALREADY_ATTEMPTED');
+   if(operation==='chat.submit'&&input.queuedMessageId&&!(p.chatQueue||[]).some(m=>m.id===input.queuedMessageId)){queued=true;return;}
+   if(operation==='chat.submit'&&(p.textPending||(!input.queuedMessageId&&p.chatQueue?.length))){
+    if(!input.queuedMessageId){p.chatQueue=[...(p.chatQueue||[]),{id:request,message,approved:true,createdAt:now()}];p.messages=[...(p.messages||[]),{role:'user',content:message,chatMessageId:request}];await store.put('film-project',p);}
+    queued=true;return;
+   }
    const pref=(await store.get('film-preferences',c.id))?.orientation;if(p.orientationConfirmed===false&&isOrientation(pref)){p.orientation=pref;p.orientationConfirmed=true;}
    if(operation==='plan.submit'&&p.orientationConfirmed===false)throw Error('ORIENTATION_REQUIRED');
-   if(['queued','running','uncertain'].includes(p.preview?.status))throw Error('PREVIEW_PENDING');if(p.launch)throw Error('SCENE_ALREADY_ATTEMPTED');if(p.referenceUploading)throw Error('REFERENCE_LOCKED');if(p.textPending)throw Error('TEXT_ALREADY_PENDING');
+   if(operation==='plan.submit'&&['queued','running','uncertain'].includes(p.preview?.status))throw Error('PREVIEW_PENDING');if(operation==='plan.submit'&&p.referenceUploading)throw Error('REFERENCE_LOCKED');if(p.textPending)throw Error('TEXT_ALREADY_PENDING');
    if((p.textCalls||0)+batches>30)throw Error('TEXT_LIMIT');
    const usage=(await store.all('film-text-reservation')).filter(x=>x.createdAt>now()-CREDIT_LIFETIME);
    if(usage.reduce((v,x)=>v+x.reservedMicroUSD,0)+reserve>textBudgetMicroUSD)throw Error('TEXT_BUDGET_LIMIT');
    if(usage.filter(x=>x.customerId===c.id&&x.createdAt>now()-86400000).reduce((v,x)=>v+x.calls,0)+batches>30)throw Error('TEXT_LIMIT');
    await store.put('film-text-reservation',{id:request,customerId:c.id,projectId:p.id,calls:batches,reservedMicroUSD:reserve,createdAt:now(),source:'administrator_budget_reservation_not_invoice'});
    p.textPending=request;p.textUncertain=false;p.textCalls=(p.textCalls||0)+batches;p.textRequests=[];p.error=null;
-   if(message){p.scenes=[];p.state='draft';p.discussion=null;delete p.merge;}
-   if(message)p.messages=[...(p.messages||[]),{role:'user',content:message,...(p.reference&&!(p.messages||[]).some(m=>m.referenceId===p.reference.id)?{referenceId:p.reference.id}:{})}];await store.put('film-project',p);
+   if(input.queuedMessageId)p.chatQueue=p.chatQueue.filter(m=>m.id!==input.queuedMessageId);
+   if(message&&!frozen){p.scenes=[];p.state='draft';p.discussion=null;delete p.merge;}
+   if(message&&!input.queuedMessageId)p.messages=[...(p.messages||[]),{role:'user',content:message,chatMessageId:request,...(p.reference&&!(p.messages||[]).some(m=>m.referenceId===p.reference.id)?{referenceId:p.reference.id}:{})}];await store.put('film-project',p);
   });
+  if(queued){if(!p.textPending&&p.chatQueue?.[0]?.approved){const next=p.chatQueue[0];runTask(()=>textOperation(c,'chat.submit',{projectId:p.id,message:next.message,approved:true,queuedMessageId:next.id}));}return {accepted:true,textCostPolicy:'administrator_funded_separate_from_gpu_wallet'};}
   runTask(async()=>{
    try{
     const scenes=[];
@@ -554,9 +562,10 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
      const latest=await owned('film-project',p.id,c.id),callId=request+'-'+batch,count=Math.min(6,p.seconds/10-batch*6);
      const instruction=operation==='plan.submit'?
       'Return JSON {scenes:[{prompt,audioContract:{language:"ar",dialect:"iraqi",mode:"dialogue",lines:[{speaker,text}]}}]}. Write exactly '+count+' chronological 10-second scenes numbered '+(batch*6+1)+' through '+(batch*6+count)+' of '+(p.seconds/10)+'. English visual action only in prompt, no dialogue or quotes. Iraqi Arabic dialogue must be complete Arabic-script sentences, 1-3 short lines, <=26 words total per scene. Named speakers with stable descriptions. Preserve explicitly requested formal Arabic. Native synchronized audio, no subtitles/lettering. Follow story and preceding scenes.':
-      'Discuss this film in Iraqi Arabic. Propose duration within 10–300 seconds in multiples of 10; explain the supported duration if the request differs. Set ready_to_write only after the user asks you to draft the agreed story. No video tools are invoked.';
+      (frozen?'The existing film is already submitted or completed. Discuss the new message without altering its production plan. Do not claim to run or restart video tools. ':'')+'Discuss this film in Iraqi Arabic. Propose duration within 10–300 seconds in multiples of 10; explain the supported duration if the request differs. Set ready_to_write only after the user asks you to draft the agreed story. No video tools are invoked.';
      latest.textRequests.push(callId);await store.put('film-project',latest); // durable before paid submission; never retry ambiguous call.
-     await engine.invoke('llm/calls',{requestId:callId,projectId:p.id,mode:operation==='plan.submit'?'details':'discuss',approvedTextCost:true,instruction,maxTokens:6000,messages:[{role:'user',content:latest.story},...(latest.messages||[]).slice(-20).map(m=>({role:m.role,content:m.content})),...(scenes.length?[{role:'assistant',content:JSON.stringify({precedingScenes:scenes.slice(-6)})}]:[])]});
+     const waiting=new Set((latest.chatQueue||[]).map(m=>m.id)),history=(latest.messages||[]).filter(m=>!waiting.has(m.chatMessageId)),active=history.find(m=>m.chatMessageId===(input.queuedMessageId||request)),context=active?[...history.filter(m=>m!==active),active]:history;
+     await engine.invoke('llm/calls',{requestId:callId,projectId:p.id,mode:operation==='plan.submit'?'details':'discuss',approvedTextCost:true,instruction,maxTokens:6000,messages:[{role:'user',content:latest.story},...context.slice(-20).map(m=>({role:m.role,content:m.content})),...(scenes.length?[{role:'assistant',content:JSON.stringify({precedingScenes:scenes.slice(-6)})}]:[])]});
      let response;for(let poll=0;poll<130;poll++){if(closed)throw Error('SERVER_SHUTTING_DOWN');response=await engine.invoke('llm/calls/'+callId,undefined,undefined,'GET');if(['completed','failed','uncertain'].includes(response.status))break;await pause();}
      if(response?.status!=='completed')throw Error('TEXT_REQUIRES_REVIEW');
      const updated=await owned('film-project',p.id,c.id);
@@ -567,19 +576,22 @@ export function createFilmPlatform({engine,origin,secret,enabled=false,now=Date.
       if(batch===batches-1){updated.scenes=scenes;updated.state='planned';}
      }else {
       const d=response.discussion,seconds=d?.proposed_duration_seconds;
-      if(d)applyDiscussionOrientation(updated,d,message||'');
       updated.messages.push({role:'assistant',content:clean(d?.reply||response.text)});
+      if(!frozen){
+      if(d)applyDiscussionOrientation(updated,d,message||'');
       if(d?.intent==='image_preview'&&updated.orientationConfirmed!==false){await imagePreview.offer(updated,d.portrait_prompt);d.ready_to_write=false;}else if(updated.preview?.status==='offered')updated.preview=null;
       if(Number.isInteger(seconds)&&seconds>=10&&seconds<=300&&seconds%10===0){
        if(updated.seconds!==seconds){updated.seconds=seconds;updated.scenes=[];updated.state='draft';delete updated.merge;}
        updated.discussion={readyToWrite:d.ready_to_write===true,seconds,style:clean(d.style||'')};
       }else updated.discussion={readyToWrite:false,seconds:null,style:clean(d?.style||'')};
+      }
      }
      await store.put('film-project',updated);
     }
-    const updated=await owned('film-project',p.id,c.id);updated.textPending=null;await store.put('film-project',updated);
-    if(operation==='chat.submit'&&updated.discussion?.readyToWrite)await textOperation(c,'plan.submit',{projectId:p.id,approved:true});
-   }catch{const updated=await owned('film-project',p.id,c.id);updated.textPending=null;updated.error='TEXT_REQUIRES_REVIEW';await store.put('film-project',updated);}
+    const updated=await owned('film-project',p.id,c.id);if(updated.textPending===request){updated.textPending=null;await store.put('film-project',updated);}
+    if(operation==='chat.submit'&&!frozen&&!updated.chatQueue?.length&&updated.discussion?.readyToWrite)await textOperation(c,'plan.submit',{projectId:p.id,approved:true});
+   }catch{const updated=await owned('film-project',p.id,c.id);if(updated.textPending===request){updated.textPending=null;updated.error='TEXT_REQUIRES_REVIEW';await store.put('film-project',updated);}}
+   finally{const updated=await owned('film-project',p.id,c.id),next=updated.chatQueue?.[0];if(!closed&&!updated.textPending&&next?.approved)await textOperation(c,'chat.submit',{projectId:p.id,message:next.message,approved:true,queuedMessageId:next.id});}
   });return {accepted:true,textCostPolicy:'administrator_funded_separate_from_gpu_wallet'};
  }
 

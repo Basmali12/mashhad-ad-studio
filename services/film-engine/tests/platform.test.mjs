@@ -127,6 +127,25 @@ test('text submission claims atomically, remains visible pending and shutdown is
  const f=await fixture(t,{text:true});const p=await f.invoke(alice,'project.save',{name:'story',story:'fiction',seconds:300,orientation:'portrait'});let calls=0;f.engine.invoke=async route=>{if(route==='llm/calls'){calls++;return {status:'queued'};}return {status:'running'};};
  const result=await Promise.allSettled([f.invoke(alice,'plan.submit',{projectId:p.id,approved:true}),f.invoke(alice,'plan.submit',{projectId:p.id,approved:true})]);assert.equal(result.filter(r=>r.status==='fulfilled').length,1);assert.equal((await f.invoke(alice,'plan.status',{projectId:p.id})).textPending,true);await waitFor(()=>calls===1);const start=Date.now();await f.platform.close();assert.ok(Date.now()-start<500);
 });
+
+test('every new chat message is durably accepted while the previous response runs, then processed once in order',async t=>{
+ const f=await fixture(t,{text:true}),p=await f.invoke(alice,'project.save',{name:'chat',story:'fiction',seconds:10,orientation:'portrait'});
+ let release;const first=new Promise(r=>release=r),calls=[];let active;
+ f.engine.invoke=async(route,b)=>{if(route==='llm/calls'){active=b;calls.push(b);return {status:'queued'};}if(calls.length===1)await first;return {status:'completed',discussion:{reply:'جواب محفوظ',proposed_duration_seconds:10,ready_to_write:false},text:'unused'};};
+ await f.invoke(alice,'chat.submit',{projectId:p.id,message:'الرسالة الأولى',approved:true});await waitFor(()=>calls.length===1);
+ for(const message of ['الرسالة الثانية','الرسالة الثالثة'])assert.equal((await f.invoke(alice,'chat.submit',{projectId:p.id,message,approved:true})).accepted,true);
+ assert.equal(calls.length,1);assert.equal(f.store.get('film-project',p.id).chatQueue.length,2);assert.equal((await f.invoke(alice,'project.get',{id:p.id})).messages.filter(m=>m.role==='user').length,3);
+ release();await waitFor(()=>calls.length===3&&!f.store.get('film-project',p.id).textPending);
+ assert.deepEqual(calls.map(c=>c.messages.at(-1).content),['الرسالة الأولى','الرسالة الثانية','الرسالة الثالثة']);assert.equal(new Set(calls.map(c=>c.requestId)).size,3);assert.equal(f.provider.calls.length,0);assert.equal(active.mode,'discuss');
+});
+
+test('chat stays available on an already submitted film without changing successful scenes or launching tools',async t=>{
+ const f=await fixture(t,{text:true}),p=await f.invoke(alice,'project.save',{name:'done',story:'fiction',seconds:10,orientation:'portrait'}),stored=f.store.get('film-project',p.id);
+ stored.state='completed';stored.launch={state:'completed'};stored.scenes=[{attempted:true,status:'done',prompt:'preserved',artifact:'preserved.mp4'}];f.store.put('film-project',stored);
+ let calls=0;f.engine.invoke=async(route,b)=>{if(route==='llm/calls'){calls++;assert.equal(b.mode,'discuss');return {status:'queued'};}return {status:'completed',discussion:{reply:'أستقبل رسالتك هنا.',proposed_duration_seconds:300,ready_to_write:true},text:'unused'};};
+ assert.equal((await f.invoke(alice,'chat.submit',{projectId:p.id,message:'أريد أحچي هنا',approved:true})).accepted,true);
+ await waitFor(()=>!f.store.get('film-project',p.id).textPending);const result=f.store.get('film-project',p.id);assert.equal(result.state,'completed');assert.equal(result.seconds,10);assert.deepEqual(result.scenes,stored.scenes);assert.deepEqual(result.launch,stored.launch);assert.equal(calls,1);assert.equal(f.provider.calls.length,0);
+});
 test('restart follow only adopts committed owned scene jobs and never calls paid execution',async t=>{
  const f=await fixture(t);const p=await f.invoke(alice,'project.save',{name:'story',story:'fiction',seconds:10,orientation:'portrait'});const project=f.store.get('film-project',p.id);project.state='generating';project.scenes=[{attempted:true,quoteId:'committed-quote',status:'submitted'}];f.store.put('film-project',project);f.store.put('job',{id:randomUUID(),quoteId:'committed-quote',tenantId:f.users.alice,projectId:p.id,status:'completed',cloudStopped:true,result:{videoVerified:true}});
  const followed=await f.invoke(alice,'project.follow',{id:p.id});assert.equal(followed.scenes[0].status,'done');assert.equal(followed.state,'completed');assert.equal(f.provider.calls.length,0);assert.equal('jobId' in followed.scenes[0],false);
