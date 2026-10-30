@@ -159,6 +159,10 @@ function adminDTO(value, secrets, depth = 0) {
     return typeof value === 'boolean' || typeof value === 'number' || value === null ? value : null;
 }
 const safeErrors = {
+    ACCOUNT_ALREADY_LINKED:'الحساب مربوط مسبقاً. ابحث عنه في قائمة الحسابات؛ لم يُنشأ حساب مكرر.',
+    INVALID_TOKEN_FORMAT:'تنسيق المفاتيح غير صحيح. أدخل Token ID وToken Secret فقط في حقليهما، دون أمر الطرفية.',
+    MODAL_OPERATION_FAILED_CHECK_PERMISSIONS:'تعذر التحقق من حساب Modal. راجع صلاحية التوكن واتصال الخدمة؛ لا يعني ذلك بالضرورة أن المفتاح خاطئ.',
+    PROVIDER_TIMEOUT_STATE_UNKNOWN:'انتهى انتظار التحقق. حدّث قائمة الحسابات قبل إعادة إدخال المفاتيح؛ النتيجة غير مؤكدة.',
     ORIENTATION_REQUIRED:'حدد عمودي أو أفقي في الدردشة قبل بدء الفيلم.',
     PROJECT_BUSY:'المحادثة قيد التنفيذ؛ أوقف المهمة وتأكد من توقفها قبل حذفها.',
     PREVIEW_PENDING:'معاينة الصورة قيد التنفيذ أو تحتاج متابعة؛ لا تشغيل إضافي.',PREVIEW_LIMIT:'وصل هذا الفيلم إلى حد معاينات الصور.',PREVIEW_NOT_AVAILABLE:'عرض معاينة الصورة غير متاح؛ حدّث المحادثة.',

@@ -283,6 +283,14 @@ test('account stop includes CPU cloud preparation and follow uses persisted grou
  f.provider.uncertain=false;const follow=await f.invoke(admin,'admin.operation.status',{id:stopped.id});assert.equal(follow.confirmed,true);assert.equal(follow.pending,0);assert.equal(follow.jobs[0].cloudStopped,true);assert.ok(f.provider.calls.every(c=>['cloud_transfer_stop','cloud_transfer_status'].includes(c.action)));assert.equal(f.provider.sessions.size,0);
 });
 
+test('admin can recover the latest own preparation receipt without exposing credentials or dispatching work',async t=>{
+ const f=await fixture(t),put=(id,createdAt,extra={})=>f.store.put('job',{id,accountId:f.account.id,action:'prepare',status:'failed',cloudStopped:true,createdAt,...extra});
+ put('older',1);put('latest',3);put('customer',4,{tenantId:f.users.alice});put('other-account',5,{accountId:'different-account'});
+ const account=(await f.invoke(admin,'admin.accounts.list')).find(a=>a.id===f.account.id);
+ assert.equal(account.prepareJobId,'latest');assert.equal(Object.hasOwn(account,'credentials'),false);assert.equal(f.provider.calls.length,0);
+ await assert.rejects(f.invoke(alice,'admin.accounts.list'),/FORBIDDEN/);
+});
+
 test('private media supports actual byte ranges and rejects expired or unauthorized requests',async t=>{
  const f=await fixture(t),p=await draft(f),jid=randomUUID(),project=f.store.get('film-project',p.id),bytes=Buffer.from('0123456789');project.rentalId='range-fixture';project.scenes=[{jobId:jid,status:'done'}];f.store.put('film-project',project);f.store.put('job',{id:jid,projectId:p.id,rentalId:project.rentalId,tenantId:f.users.alice,status:'completed',cloudStopped:true,result:{videoVerified:true}});const folder=path.join(f.folder,'artifacts',jid);await mkdir(folder,{recursive:true});await writeFile(path.join(folder,'video.mp4'),bytes);
  const ticket=await f.invoke(alice,'media.ticket',{projectId:p.id,index:0}),{createServer}=await import('node:http'),server=createServer((req,res)=>f.platform.handler(req,res));await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>server.close(r)));const pathAndQuery=new URL(ticket.url).pathname+new URL(ticket.url).search,url='http://127.0.0.1:'+server.address().port+pathAndQuery,headers={'x-forwarded-proto':'https',origin:'https://front.test'};

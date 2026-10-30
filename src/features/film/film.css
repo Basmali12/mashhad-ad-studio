@@ -21,3 +21,5 @@
 .film-chat-workspace .film-composer-dock textarea{flex:none}
 .film-chat-logo{display:grid;place-items:center;width:136px;height:136px;position:relative;margin:0 auto 8px;border-radius:50%;background:radial-gradient(circle,#e4b8541c,transparent 70%)}.film-chat-logo::before{content:'';position:absolute;inset:5px;border-radius:50%;border:1px solid #dbb76624;box-shadow:0 0 30px #d9a73b0d}.film-chat-logo img{display:block;width:112px;height:112px;object-fit:contain;filter:drop-shadow(0 8px 16px #0007)}.film-chat-empty h1{margin-top:4px}
 .film-chat-stream.is-empty{display:flex;flex-direction:column;justify-content:center;align-items:center}.film-chat-stream.is-empty .film-chat-empty{width:100%;min-height:0;padding-block:16px}
+
+.film-setup-status{border:1px solid #3d7a76;border-radius:14px;padding:14px;margin:14px 0;background:linear-gradient(135deg,#142b38,#0b1724)}.film-setup-status progress{width:100%;accent-color:#61d8c4;height:8px}.film-setup-status ol{font-size:13px;padding-inline-start:22px}.film-account-setup bdi{overflow-wrap:anywhere}

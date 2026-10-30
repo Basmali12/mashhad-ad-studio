@@ -1,0 +1,85 @@
+{
+  "pagesCommit": "9477588ddb0b650bf89b82dda5427daa949a95ee",
+  "files": [
+    {
+      "path": "index.html",
+      "bytes": 906,
+      "sha256": "eab4688247db2ff47c73f218d0cadd65df0abad081918d4d3e96995d073137f4"
+    },
+    {
+      "path": "admin.webmanifest",
+      "bytes": 628,
+      "sha256": "465d138c27600abd613b3416cf4304d10aaab35ecf68cd52674788dee19bf32c"
+    },
+    {
+      "path": "sw.js",
+      "bytes": 233,
+      "sha256": "482ecb61c11a2275561f55118dee6603d3595b78b9bbe3189f62a7b2b40cc2f7"
+    },
+    {
+      "path": "version.json",
+      "bytes": 53,
+      "sha256": "0ab1096cc4907a97b91860d19d616da3e825fa5231b9b0cd9dfbcd3d0eaf912b"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-180.png",
+      "bytes": 43994,
+      "sha256": "1a2ed09489d66fc63f5a4dea78aa1afd4dc1aee100af3e5c9c9c4fbd4bce58a8"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-192.png",
+      "bytes": 49434,
+      "sha256": "0ccfdb1a979f05a4793b6ef67cb9eecf4a92849eab4d8c5e3cf9c1ba0260e5cb"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-512.png",
+      "bytes": 311309,
+      "sha256": "e7038fdb3a2636c1bff14f4757615b92c5d838f39346ae71d08d90d45aabc623"
+    },
+    {
+      "path": "assets/admin-CCOUiGDf.js",
+      "bytes": 53432,
+      "sha256": "eef8d9514d758baf41effa4b3701ebc7f2687676fa7e7528f360875cd1751e3c"
+    },
+    {
+      "path": "assets/admin-D2NT8FFR.css",
+      "bytes": 62966,
+      "sha256": "ffbb33206652ad2067219e44dc4d1904736dff8a2d0a651643e4626d4e6d16d1"
+    },
+    {
+      "path": "assets/auth-arabic-DVh29meS.js",
+      "bytes": 75282,
+      "sha256": "46feb7e9a2f22cc56fa67c812afc8bc57402b38ad898c6083ab9f4f06688c9d6"
+    },
+    {
+      "path": "assets/auth-CTprXwLg.js",
+      "bytes": 308647,
+      "sha256": "a3fffef42b786f18ff5c81b1b82b5212a31126fab32be35f591e67a2e2d0ee2d"
+    },
+    {
+      "path": "assets/convex-BTZqt167.js",
+      "bytes": 86320,
+      "sha256": "ce383598de9d351ab6e1ff43ecf93e5c4255d9034e7df0e62b44543048ae7538"
+    },
+    {
+      "path": "assets/FilmAdminEntry-CPyV-OPL.css",
+      "bytes": 20804,
+      "sha256": "e34f6ae4f72ebd6d2517d91ed9ab551e700149eff530253ffa3bdd2d96e1d099"
+    },
+    {
+      "path": "assets/FilmAdminEntry-DXajIo2N.js",
+      "bytes": 31248,
+      "sha256": "1e98943d62b19d279abbb5571baf6b60e528d9ca4eb1ef95056841dd2299fe13"
+    }
+  ],
+  "sources": {
+    "services/film-engine/engine/film-platform.mjs": {
+      "before": "461901f4a7b37d4f3442a3e91e329d1cb13245c46835282ae715ae4f556b49cc",
+      "after": "59dac7148a56a1e246427a2b925c784579b6f0b4365566da1154df8f0305e4d5"
+    },
+    "services/film-gateway/film-bridge.mjs": {
+      "before": "e7460a2fc4d3330901e1a740fe47ec1510ede35b197918201263be98e41af857",
+      "after": "71476172386b9cf40eb29894fd71d359ce3d1fbc53ae5410d484627c6cc3ec73"
+    }
+  }
+}
