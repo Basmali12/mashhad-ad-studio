@@ -8,6 +8,11 @@ import {createFilmPlatform} from './engine/film-platform.mjs';
 import {openStore} from './engine/open-store.mjs';
 
 // Dedicated deployment only. Never inherit the historical engine's data default.
+export function transferWorkerApp(env){
+ const name=env.ENGINE_CLOUD_TRANSFER_APP?.trim()||'iff-ltx25-cloud-copy-v1';
+ if(!/^[a-zA-Z0-9_-]{1,64}$/.test(name))throw Error('INVALID_TRANSFER_WORKER_APP');
+ return name;
+}
 export async function createFilmService({env=process.env,engine:providedEngine}={}){
  const folder=env.FILM_DATA_DIR,origin=env.FILM_PUBLIC_ORIGIN,secret=env.FILM_BRIDGE_SECRET;
  if(!folder||!path.isAbsolute(folder)||env.FILM_DEDICATED_DATA_CONFIRMED!=='YES')throw Error('DEDICATED_FILM_DATA_REQUIRED');
@@ -30,7 +35,7 @@ export async function createFilmService({env=process.env,engine:providedEngine}=
    if(!marker)await store.put('film-deployment',{id:'identity',deploymentId:env.FILM_DEPLOYMENT_ID});
   }catch(e){await store?.close();throw e;}
  }
- const engine=providedEngine||await createEngineAPI({folder,key:env.ENGINE_MASTER_KEY,store,origin,allowPaid:env.ENGINE_ALLOW_PAID_ACTIONS==='YES',allowCustomerRentals:enabled});
+ const engine=providedEngine||await createEngineAPI({folder,key:env.ENGINE_MASTER_KEY,store,origin,cloudTransferApp:transferWorkerApp(env),allowPaid:env.ENGINE_ALLOW_PAID_ACTIONS==='YES',allowCustomerRentals:enabled});
  const platform=createFilmPlatform({engine,origin,secret,enabled,referenceCustomerByteLimit,mediaOrigins:(env.FILM_MEDIA_ORIGINS||'').split(',').filter(Boolean),textEnabled:env.FILM_TEXT_ENABLED==='YES',textBudgetMicroUSD:Number(env.FILM_TEXT_ADMIN_BUDGET_MICRO_USD||0)});
  const handler=async(req,res)=>{
   try{if(await platform.handler(req,res))return;

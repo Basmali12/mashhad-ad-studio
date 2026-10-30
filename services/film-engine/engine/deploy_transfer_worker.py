@@ -1,16 +1,25 @@
 """A separate explicitly approved deployment; never invoked by setup/import/tests."""
 import argparse
 import os
+import json
+import sys
 
 
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--approve-worker-deploy',action='store_true')
+    parser.add_argument('--credentials-stdin',action='store_true')
     args=parser.parse_args()
     if not args.approve_worker_deploy:raise SystemExit('Deployment can incur image/resource costs. Separate approval required.')
     import modal
     from transfer_contract import APP_NAME,DICT_NAME,FUNCTION_NAME,FINGERPRINT,SOURCE_WORKSPACE
-    c=modal.Client.from_env();workspace=modal.Workspace.from_context(client=c);workspace.hydrate()
+    if args.credentials_stdin:
+        from modal_bridge import client
+        c,name=client(json.loads(sys.stdin.readline()))
+        if name!=SOURCE_WORKSPACE:raise SystemExit('TRUSTED_PRIMARY_WORKSPACE_REQUIRED')
+    else:
+        c=modal.Client.from_env()
+    workspace=modal.Workspace.from_context(client=c);workspace.hydrate()
     if workspace.name!=SOURCE_WORKSPACE:raise SystemExit('Use the trusted primary workspace. No profile was changed.')
     try:
         prior=modal.Dict.from_name(DICT_NAME,client=c,create_if_missing=False,environment_name='main')

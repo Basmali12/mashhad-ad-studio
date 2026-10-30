@@ -1,11 +1,11 @@
 {
-  "pagesCommit": "17b249a9102a6443953cc23037eac6a8a3c85cb5",
-  "expectedAdminRelease": "852480988370",
+  "pagesCommit": "d30660c557b00adab4e525dcc38e3ad022c3270e",
+  "expectedAdminRelease": "abe982b72bc3",
   "files": [
     {
       "path": "index.html",
       "bytes": 906,
-      "sha256": "501f3f2bcfb8de98198ba1ae54ed5b1a10c8b2f64182d63c8b23c9c8fc6d367a"
+      "sha256": "86b7347d498ad10833f5839271fe046400d7006138240828a81a2f82febc90de"
     },
     {
       "path": "admin.webmanifest",
@@ -20,7 +20,7 @@
     {
       "path": "version.json",
       "bytes": 53,
-      "sha256": "9542dead67654a0f46f92d68bc24cc0ad2c07c4f181d95c4517277fe3862a7d6"
+      "sha256": "1f00ca96f056f8d594e6429081762d97e47a9d666b398f216e267bced14a89b6"
     },
     {
       "path": "mashhad-admin-icon-v1-180.png",
@@ -43,9 +43,9 @@
       "sha256": "81b9000366b4f6c433f85d29dac4d9fdddb90ade6964dbac2f7312842eea713f"
     },
     {
-      "path": "assets/admin-DKzI4P3m.js",
+      "path": "assets/admin-QaLUS6mh.js",
       "bytes": 56334,
-      "sha256": "b1db0370d57260b006cdfdc5e8b7d5efba4702103cd850d67f3de67779a2ce02"
+      "sha256": "3a49dd500195bc1934fda72653051101741455f8aa501665006780b0b537fb59"
     },
     {
       "path": "assets/auth-arabic-DVh29meS.js",
@@ -63,20 +63,24 @@
       "sha256": "ce383598de9d351ab6e1ff43ecf93e5c4255d9034e7df0e62b44543048ae7538"
     },
     {
-      "path": "assets/FilmAdminEntry-CPyV-OPL.css",
-      "bytes": 20804,
-      "sha256": "e34f6ae4f72ebd6d2517d91ed9ab551e700149eff530253ffa3bdd2d96e1d099"
+      "path": "assets/FilmAdminEntry-Bmmhxyg1.css",
+      "bytes": 20974,
+      "sha256": "4bac66f892e3a76d81023dd84351d6e36d1897a40735fc3bdbe4e4fa6e1b9961"
     },
     {
-      "path": "assets/FilmAdminEntry-y-K5TFOr.js",
-      "bytes": 33374,
-      "sha256": "d653bd674474faeaa0ba19328b5ae1c1a9c13be950bb456917ebefae8c290aac"
+      "path": "assets/FilmAdminEntry-UIcc76_Z.js",
+      "bytes": 34132,
+      "sha256": "9a2c45dd014a5845fd5d722fea548fc3d9368b5f1a968057409753e711fa4154"
     }
   ],
   "sources": {
-    "services/film-gateway/film-bridge.mjs": {
-      "before": "71476172386b9cf40eb29894fd71d359ce3d1fbc53ae5410d484627c6cc3ec73",
-      "after": "2acc2d81ccc6346f96a2ebf37b7fff397604a083a9d3f81ed58ae8abef9d9cec"
+    "services/film-engine/service.mjs": {
+      "before": "246536e47e3a676bdecc86c32814d0ea49ded6ee356c9223d266bcb546981b4a",
+      "after": "b3ac3d6062ab334384c08c655bca34499e444d638948e128714ce9de341c5f4e"
+    },
+    "services/film-engine/engine/deploy_transfer_worker.py": {
+      "before": "6d2b2ed8ee957a7901a142094d1b6f53e339becbbb6badac9e2208fad815d5f4",
+      "after": "9126076f52ca5ff32017d6bdbb41b3924f5cd0f6c54796744e6bf544de2f1cc2"
     }
   }
 }

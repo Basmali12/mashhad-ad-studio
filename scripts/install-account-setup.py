@@ -34,8 +34,10 @@ def main():
  units=(['iraq-ai-film-platform-staging'] if any(n.startswith('services/film-engine/') for n in targets) else [])+(['mashhad-film-gateway'] if any(n.startswith('services/film-gateway/') for n in targets) else [])
  try:
   for n,p in targets.items():
-   candidate=p.with_name(p.stem+'.setup-candidate.mjs');candidate.write_bytes(payload[n]);candidate.chmod(0o644)
-   run(['/opt/node-v24.14.1-linux-x64/bin/node','--check',str(candidate)]);os.replace(candidate,p)
+   candidate=p.with_name(p.stem+'.setup-candidate'+p.suffix);candidate.write_bytes(payload[n]);candidate.chmod(0o644)
+   if p.suffix=='.mjs':run(['/opt/node-v24.14.1-linux-x64/bin/node','--check',str(candidate)])
+   elif p.suffix=='.py':compile(payload[n],str(candidate),'exec')
+   os.replace(candidate,p)
   for unit in units:run(['systemctl','restart',unit])
   for attempt in range(40):
    try:
