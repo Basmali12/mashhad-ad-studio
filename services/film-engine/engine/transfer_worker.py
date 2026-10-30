@@ -11,7 +11,7 @@ from transfer_contract import *
 app=modal.App(APP_NAME)
 source=modal.Volume.from_name(SOURCE_VOLUME,create_if_missing=False).with_mount_options(read_only=True)
 state=modal.Dict.from_name(DICT_NAME,create_if_missing=True)
-image=add_profile_files(modal.Image.debian_slim(python_version='3.12').pip_install('modal==1.6.2').env({'IFF_DEFINE_TRANSFER_WORKER':'YES'})
+image=(add_profile_files(modal.Image.debian_slim(python_version='3.12').pip_install('modal==1.6.2').env({'IFF_DEFINE_TRANSFER_WORKER':'YES'}))
        .add_local_file(ROOT/'cloud_transfer_core.py','/root/cloud_transfer_core.py')
        .add_local_file(ROOT/'transfer_verified_copy.py','/root/transfer_verified_copy.py')
        .add_local_file(ROOT/'transfer_contract.py','/root/transfer_contract.py'))

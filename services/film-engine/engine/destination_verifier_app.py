@@ -68,7 +68,7 @@ def create_verifier_app(volume_name, create_volume=True):
     app_name,state_name=verifier_names(volume_name)
     app=modal.App(app_name)
     volume=modal.Volume.from_name(volume_name,create_if_missing=create_volume)
-    image=add_profile_files(modal.Image.debian_slim(python_version='3.12').pip_install('modal==1.6.2')
+    image=(add_profile_files(modal.Image.debian_slim(python_version='3.12').pip_install('modal==1.6.2'))
         .add_local_file(ROOT/'destination_integrity.py','/root/destination_integrity.py')
         .add_local_file(ROOT/'destination_verifier_app.py','/root/destination_verifier_app.py')
         .add_local_file(ROOT/'transfer_contract.py','/root/transfer_contract.py'))
