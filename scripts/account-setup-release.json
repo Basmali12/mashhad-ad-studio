@@ -1,6 +1,6 @@
 {
   "pagesCommit": "d30660c557b00adab4e525dcc38e3ad022c3270e",
-  "expectedAdminRelease": "abe982b72bc3",
+  "expectedAdminRelease": "4fe734943c09",
   "files": [
     {
       "path": "index.html",
@@ -74,13 +74,9 @@
     }
   ],
   "sources": {
-    "services/film-engine/service.mjs": {
-      "before": "246536e47e3a676bdecc86c32814d0ea49ded6ee356c9223d266bcb546981b4a",
-      "after": "b3ac3d6062ab334384c08c655bca34499e444d638948e128714ce9de341c5f4e"
-    },
     "services/film-engine/engine/deploy_transfer_worker.py": {
-      "before": "6d2b2ed8ee957a7901a142094d1b6f53e339becbbb6badac9e2208fad815d5f4",
-      "after": "9126076f52ca5ff32017d6bdbb41b3924f5cd0f6c54796744e6bf544de2f1cc2"
+      "before": "9126076f52ca5ff32017d6bdbb41b3924f5cd0f6c54796744e6bf544de2f1cc2",
+      "after": "380e1ea4f09fab328a7a1eff03f9829d28b0407a3e6a28080c8443911bcb78ba"
     }
   }
 }

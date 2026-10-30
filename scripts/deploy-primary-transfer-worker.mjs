@@ -48,7 +48,7 @@ except BaseException as e:
    const child=spawn(provider.python,[root+'/deploy_transfer_worker.py','--approve-worker-deploy','--credentials-stdin'],{cwd:root,env:providerEnvironment({credentials}),stdio:['pipe','pipe','pipe']});
    let settled=false;const finish=code=>{if(settled)return;settled=true;clearTimeout(timer);resolve(code);};
    const timer=setTimeout(()=>{child.kill();finish(-2);},600000);
-   child.stdout.on('data',()=>{});child.stderr.on('data',()=>{});
+   let output='';child.stdout.on('data',b=>{output+=b;let newline;while((newline=output.indexOf('\n'))>=0){const line=output.slice(0,newline);output=output.slice(newline+1);try{const d=JSON.parse(line);if(d.type==='worker_deploy_diagnostic'&&['arguments','identity','registry','definition','deployment','record'].includes(d.stage)&&/^[A-Za-z_]{1,80}$/.test(d.errorClass))console.log(JSON.stringify({stage:d.stage,errorClass:d.errorClass}));}catch{/* Ignore raw SDK text. */}}if(output.length>20000)output='';});child.stderr.on('data',()=>{});
    child.stdin.on('error',()=>{});child.stdin.end(JSON.stringify(credentials)+'\n');child.once('error',()=>finish(-1));child.once('close',finish);
   });
   if(outcome!==0)throw Error('WORKER_DEPLOYMENT_NOT_CONFIRMED_NO_RETRY');
