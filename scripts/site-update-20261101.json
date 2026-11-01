@@ -1,6 +1,6 @@
 {
   "schema": "mashhad-site-update-v1",
-  "sourceCommit": "d5de7006198d82b406a103697f2ec8969e3f8183",
+  "sourceCommit": "1571dad9c02e1c17869fd02b3ac8be4a4ccb5a40",
   "pagesCommit": "dedfaf0369f82bb61f6957095c16eb0b9592ef8d",
   "customerVersion": "2026.11.01.1-mashhad-1793557883126",
   "adminVersion": "2026.11.01.1-mashhad-1793557938364",
@@ -717,8 +717,8 @@
     },
     {
       "path": "services/film-engine/engine/slot-model-bindings.mjs",
-      "bytes": 6506,
-      "sha256": "a7177bd3b444017c5fd2e673f8068377a3f8a0e98866e0e156fa5f9ca66697d5"
+      "bytes": 7874,
+      "sha256": "7f9dfb69ecffbd7fc853a26a0841b335427bb9401c97e1a335e165d813e5dc18"
     },
     {
       "path": "services/film-engine/engine/sound-effects.mjs",
