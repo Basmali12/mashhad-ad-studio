@@ -106,7 +106,7 @@ def sql(env, query):
 
 def data_digest(env):
     names = ','.join("'" + k + "'" for k in PROTECTED_KINDS)
-    value = sql(env, "select kind,count(*),md5(string_agg(data::text,'' order by id)) "
+    value = sql(env, "select kind,count(*),md5(string_agg((case when kind='film-customer' then data-'updatedAt' else data end)::text,'' order by id)) "
                 "from iff_records where kind in (" + names + ') group by kind order by kind')
     return sha(value.encode())
 
