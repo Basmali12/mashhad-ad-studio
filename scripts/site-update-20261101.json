@@ -1,0 +1,1738 @@
+{
+  "schema": "mashhad-site-update-v1",
+  "sourceCommit": "75ef6914c10fdd094a8caed0b13e60f2766e721e",
+  "pagesCommit": "dedfaf0369f82bb61f6957095c16eb0b9592ef8d",
+  "customerVersion": "2026.11.01.1-mashhad-1793557883126",
+  "adminVersion": "2026.11.01.1-mashhad-1793557938364",
+  "backendFiles": [
+    {
+      "path": "services/film-engine/engine/account-routing.mjs",
+      "bytes": 466,
+      "sha256": "77973887e61a4a6c96e3aeee65fd7d1771d2b41254589ea682d06c002d284649"
+    },
+    {
+      "path": "services/film-engine/engine/admin-commissioning.mjs",
+      "bytes": 6905,
+      "sha256": "e839990cba7be5eba13355cdf8d46bd936ec1561bf236a40b6644b1849018898"
+    },
+    {
+      "path": "services/film-engine/engine/admin-inference-authorization.mjs",
+      "bytes": 11970,
+      "sha256": "f31ef729c7dfccd135b69bdbf0911466c45e3a82a32c3b70c2cff15375652594"
+    },
+    {
+      "path": "services/film-engine/engine/admin-model-test-runner.mjs",
+      "bytes": 37781,
+      "sha256": "1ee4e4de92f1cc964be557ceb99d10b6a4b34502f3274475cc2eacc43e55c17a"
+    },
+    {
+      "path": "services/film-engine/engine/api.mjs",
+      "bytes": 91587,
+      "sha256": "c80c1e3c2172220e7754b769d1ae155c70dbaf2e42a24a39a916fce6de0246dc"
+    },
+    {
+      "path": "services/film-engine/engine/arabic-dialogue.cjs",
+      "bytes": 4513,
+      "sha256": "ac7829562995a23a3e94da6f53ebbd1914b5634bad10e982bec423223de7f5bc"
+    },
+    {
+      "path": "services/film-engine/engine/artifact-storage.mjs",
+      "bytes": 1058,
+      "sha256": "d98cdecb124f4c47bd5be8bf15d5acb3787bd682ed0cd498520f2bb9363fba07"
+    },
+    {
+      "path": "services/film-engine/engine/audio-cleanup.mjs",
+      "bytes": 7842,
+      "sha256": "a23e59711364e19b0944ba27c9441c118c816edd08de3ad7ed520383abc72d28"
+    },
+    {
+      "path": "services/film-engine/engine/cinematic-media.mjs",
+      "bytes": 9157,
+      "sha256": "1206e9f9059f25c501805f7ea1244513de1510ad5bb19f2fd8095cf9f08456a5"
+    },
+    {
+      "path": "services/film-engine/engine/cinematic-sync.mjs",
+      "bytes": 8754,
+      "sha256": "02c135dc986ca7da7c61524222c5d34e4a272b33c545931a7e5e72f58c3e5685"
+    },
+    {
+      "path": "services/film-engine/engine/cinematic-timeline-sync.mjs",
+      "bytes": 13190,
+      "sha256": "97db29987712a27f6a2498e106936465383c2cc35fdbbae11e932dcd8340f090"
+    },
+    {
+      "path": "services/film-engine/engine/cinematography.mjs",
+      "bytes": 1648,
+      "sha256": "85a8839204656f54e06388e41dedac3e3bf5e5fd64f8082ae8f4545ad3766eb9"
+    },
+    {
+      "path": "services/film-engine/engine/cloud-transfer.mjs",
+      "bytes": 4342,
+      "sha256": "4979b2380c30d7f3978c14c58ca30bb11af1195a989f041639c4b13809c07986"
+    },
+    {
+      "path": "services/film-engine/engine/cloud_transfer_core.py",
+      "bytes": 4535,
+      "sha256": "4640a4849048b4d7c9ee76c8f170994536b0f3da467b8b7421d6a79f1cf8b32b"
+    },
+    {
+      "path": "services/film-engine/engine/cloud_transfer_host.py",
+      "bytes": 11915,
+      "sha256": "24823428a24ba641ca4efe4b5ba4640f84fe6f65b023e7c642f64017c565626a"
+    },
+    {
+      "path": "services/film-engine/engine/config.mjs",
+      "bytes": 3826,
+      "sha256": "e5f18dafd33110ff027f7e20d789a79f966d57784a0d894df787e8af2c28b830"
+    },
+    {
+      "path": "services/film-engine/engine/contracts.ts",
+      "bytes": 1025,
+      "sha256": "621b932b5947ab065d48c4d383bddce053aa8cf9952a7bacb622dc9915145984"
+    },
+    {
+      "path": "services/film-engine/engine/creative-library.mjs",
+      "bytes": 4109,
+      "sha256": "8a24e32a27842746405af27b9b02bdfcf19e2095f80894a9904f6fa6909c6439"
+    },
+    {
+      "path": "services/film-engine/engine/deploy_transfer_worker.py",
+      "bytes": 2465,
+      "sha256": "a2cd962fc4117c4f382df0367c39177a3b8751e470a4b8694846a587ef890514"
+    },
+    {
+      "path": "services/film-engine/engine/destination_integrity.py",
+      "bytes": 2774,
+      "sha256": "462806d85066a050bdc64293bb56ebe1aeea87b788c5ed5ea86f45174fe041df"
+    },
+    {
+      "path": "services/film-engine/engine/destination_verifier_app.py",
+      "bytes": 4328,
+      "sha256": "63eae77d285adb7d7502ab386a33e64f26c2eaa3deec17bed6ab198962216b8b"
+    },
+    {
+      "path": "services/film-engine/engine/destination_verifier_control.py",
+      "bytes": 5227,
+      "sha256": "13fe2a3bba05744066fcfcc17f915da7d70b60e6a1bd7b388aefb319e36633b9"
+    },
+    {
+      "path": "services/film-engine/engine/director-research.mjs",
+      "bytes": 10133,
+      "sha256": "a43928bdc4aa13cbc56031a857da7b074d76ccae32fde72b52f3e1d8c5edd25d"
+    },
+    {
+      "path": "services/film-engine/engine/director-story.mjs",
+      "bytes": 28764,
+      "sha256": "2d0296ffd8380ec0918b2fd00cee222a30e70470a1b37d79bda977af16cee708"
+    },
+    {
+      "path": "services/film-engine/engine/engine-commissioning.mjs",
+      "bytes": 18074,
+      "sha256": "cf25978d5e47e2f7e65c8c1790b97f9ab7da20e83c7507ecf1f8c859329785b1"
+    },
+    {
+      "path": "services/film-engine/engine/engine-policy.mjs",
+      "bytes": 2435,
+      "sha256": "e3ddd133e36c352ba66e92b35ad81a4ae97cf617187ad85fa004eb5af8e6fa6b"
+    },
+    {
+      "path": "services/film-engine/engine/engine-registry.mjs",
+      "bytes": 21347,
+      "sha256": "6b84c659c13f7c73033820172c26cae09d4f8f3fc9dfd59e6b31b50045fea03a"
+    },
+    {
+      "path": "services/film-engine/engine/film-bridge-security.mjs",
+      "bytes": 1192,
+      "sha256": "e3faea2798812f9d2f3f661b0325642b452a2f9a72450f7da2f14ac1374ae848"
+    },
+    {
+      "path": "services/film-engine/engine/film-contracts.ts",
+      "bytes": 8404,
+      "sha256": "650dc1d24e056d855f420a63a6973a6987faccd4984eb27e3364e8009a6770c1"
+    },
+    {
+      "path": "services/film-engine/engine/film-image-preview.mjs",
+      "bytes": 10283,
+      "sha256": "1c0ae92ac7aca25534a0a0fbc474ce3ed18b44f9013eba749f7e00550c7c64fe"
+    },
+    {
+      "path": "services/film-engine/engine/film-media-library.mjs",
+      "bytes": 10155,
+      "sha256": "8a91ec7b57c34761bd6017a51595ba8468cbfafbe2bc30467df5832c7f9e1241"
+    },
+    {
+      "path": "services/film-engine/engine/film-merge.mjs",
+      "bytes": 4830,
+      "sha256": "b3aac46ff0d885002336b4072f16cc12c38e99793a9621424e5114391e3cab98"
+    },
+    {
+      "path": "services/film-engine/engine/film-money.mjs",
+      "bytes": 8204,
+      "sha256": "f074057a8cc5c59b77ba877369747f38d1b7b6da4ec60f1c91a44d74f17b4a3e"
+    },
+    {
+      "path": "services/film-engine/engine/film-orientation.mjs",
+      "bytes": 1383,
+      "sha256": "0fc59057bf425565fe194174a3a3955bc8c460c0bfad9c03459a627699cfe7df"
+    },
+    {
+      "path": "services/film-engine/engine/film-platform.mjs",
+      "bytes": 91611,
+      "sha256": "09f7a21c5212cc61582361eb6fc98ef3c6a7fd225f0f77b76e7d30ee4707ecea"
+    },
+    {
+      "path": "services/film-engine/engine/film-progress.mjs",
+      "bytes": 1170,
+      "sha256": "88447b2037d7dc9e9d655785ddf411ef5bb567a1ff0f41c53409c2a2401adc18"
+    },
+    {
+      "path": "services/film-engine/engine/film-reference.mjs",
+      "bytes": 13655,
+      "sha256": "4a07cf8868462189e68c5492c637a0d80a937e1f5bc8a52a45af52d89d426bb2"
+    },
+    {
+      "path": "services/film-engine/engine/film-review.mjs",
+      "bytes": 5951,
+      "sha256": "7ce3d701e06df60509b0aecde4e6fbb8b7620f82870cd030e7b25ba7f2b77e80"
+    },
+    {
+      "path": "services/film-engine/engine/final-film-composer.mjs",
+      "bytes": 3549,
+      "sha256": "1c52920f2b7f0694f943f00214e057ceac22f0504d7896bf8d1757c16165f933"
+    },
+    {
+      "path": "services/film-engine/engine/final-film-quality.mjs",
+      "bytes": 14309,
+      "sha256": "eab636c37b07963bc243b1ae94c78f4ae84556c92d5a81a91a876e15920ee25f"
+    },
+    {
+      "path": "services/film-engine/engine/final-film-thumbnail.mjs",
+      "bytes": 2047,
+      "sha256": "d5c27976761cdb373579e1ce24aa225c485c5adcf4999d930a76158d104dc46c"
+    },
+    {
+      "path": "services/film-engine/engine/flux-image-assets.mjs",
+      "bytes": 20746,
+      "sha256": "1dbfd840d73eabc01047131b86959266b4c6ad10f497f38b57dc16e6f4ec9bf7"
+    },
+    {
+      "path": "services/film-engine/engine/flux-integration.mjs",
+      "bytes": 13458,
+      "sha256": "e4c3a0fcf8dac790270f7d033ac013ce8447ee80f793122b3f1b33183661d7ab"
+    },
+    {
+      "path": "services/film-engine/engine/flux-modal-transport.mjs",
+      "bytes": 41136,
+      "sha256": "3af34e6fe90c3c44942cb0fba26ba4d5de0df6d998a279db91911e88384cfbaa"
+    },
+    {
+      "path": "services/film-engine/engine/flux-prompt.mjs",
+      "bytes": 4295,
+      "sha256": "7367b739b82bcf2e580bf93432fdaa7e323cef6ec39956efff5a55d00a272cc1"
+    },
+    {
+      "path": "services/film-engine/engine/flux-trial-policy.mjs",
+      "bytes": 2526,
+      "sha256": "89dcdbf306f80c9c929eb51a365b2155b0dda25a573cdac107e6ad41acfd56ac"
+    },
+    {
+      "path": "services/film-engine/engine/flux/__init__.py",
+      "bytes": 85,
+      "sha256": "ea60a58a80ec046e2e0b4998da57476d33d9a942958612688d5419cb639305bb"
+    },
+    {
+      "path": "services/film-engine/engine/flux/deploy.py",
+      "bytes": 5859,
+      "sha256": "5a19e57a0e38c58222a5602fcb04d81a76059996a9015d69d562d4d909ee12a9"
+    },
+    {
+      "path": "services/film-engine/engine/flux/image.py",
+      "bytes": 1115,
+      "sha256": "c53dc1925dcf3d9bdc00b942e9da1548decf5cc73aac5282b289454cdc5b6c90"
+    },
+    {
+      "path": "services/film-engine/engine/flux/modal_app.py",
+      "bytes": 9433,
+      "sha256": "15b4a35cf8b94f6514b487df330a965fec17ea6006b2e8dc817c9da4b5b3ee2d"
+    },
+    {
+      "path": "services/film-engine/engine/flux/model-manifest.json",
+      "bytes": 4495,
+      "sha256": "d54418367631c49682f5b2d43ddb80bd96eca975444a617f8169717b063431c3"
+    },
+    {
+      "path": "services/film-engine/engine/flux/prepare.py",
+      "bytes": 4597,
+      "sha256": "9257af5a4338b5eb99b72005deca2485d74a8ea8c9786f73b4f2d17d8d325b10"
+    },
+    {
+      "path": "services/film-engine/engine/flux/requirements-cpu.lock",
+      "bytes": 104,
+      "sha256": "a7ae38e33d900da57742f0a379583de5aa451d5eb43c7106c946a4a66e29c44b"
+    },
+    {
+      "path": "services/film-engine/engine/flux/requirements-gpu.lock",
+      "bytes": 321,
+      "sha256": "704f4d5a78ac794127906065459c66de967af89069282a9a6049097aef57d259"
+    },
+    {
+      "path": "services/film-engine/engine/flux/runtime.py",
+      "bytes": 10316,
+      "sha256": "51e68d1c3c5613aaa991744e7b83d38bf675d98ab0b73c627d1ba99936c19909"
+    },
+    {
+      "path": "services/film-engine/engine/flux/storage.py",
+      "bytes": 974,
+      "sha256": "69c12fc93f635b33b11de0cd20125d559dc12adc1208de0f6ef05d90fcf7e8b1"
+    },
+    {
+      "path": "services/film-engine/engine/flux/trial_safety.py",
+      "bytes": 19514,
+      "sha256": "d58e61ed30de2f0774d2599e72b278f383f67e3502a0d72d04c86d2c7a803f5b"
+    },
+    {
+      "path": "services/film-engine/engine/flux_modal_bridge.py",
+      "bytes": 40581,
+      "sha256": "62717ddac6fcc8f12b7056a86c9739bf8ac77e0a0741a749bf1535bd1d9046d1"
+    },
+    {
+      "path": "services/film-engine/engine/generation-rules.mjs",
+      "bytes": 5956,
+      "sha256": "b1fb9477ef1a68d4d09b44611ded45c2f083b9cb895a760410ac135c72977eb6"
+    },
+    {
+      "path": "services/film-engine/engine/host_account_transfer.py",
+      "bytes": 11259,
+      "sha256": "84aee7eb5c02df16308c2d2c5449c61a2c5fee1c92e655be289a6066f541469e"
+    },
+    {
+      "path": "services/film-engine/engine/hunyuan-integration.mjs",
+      "bytes": 2896,
+      "sha256": "44cb0eeb2566e48aef376321d12eaeadf7e42da29cf844e151c9cfdeac6a67ce"
+    },
+    {
+      "path": "services/film-engine/engine/hunyuan-modal-transport.mjs",
+      "bytes": 274,
+      "sha256": "3fa1c3a94d8306b10b20ce9c856d303606811805363e9a91c606b7a5a933c25f"
+    },
+    {
+      "path": "services/film-engine/engine/hunyuan-prompt.mjs",
+      "bytes": 3756,
+      "sha256": "1820c667f95fd090736908569a3376a8647035f7bef5ff01366ea982709164cd"
+    },
+    {
+      "path": "services/film-engine/engine/hunyuan/__init__.py",
+      "bytes": 86,
+      "sha256": "443d964f6be84d38fa55c0375b214cb9a33e9f3f1e1aa7302f6c058211504b69"
+    },
+    {
+      "path": "services/film-engine/engine/hunyuan/deploy.py",
+      "bytes": 6008,
+      "sha256": "90e31d065a1ae0e0cf5e49ef2bbe137c9037e83c58897ad342dda35d63862acd"
+    },
+    {
+      "path": "services/film-engine/engine/hunyuan/image.py",
+      "bytes": 1156,
+      "sha256": "757b818222a2ede95295d38b3d0b64653dedb21a96ac9d68da3ac0812d0e1ebe"
+    },
+    {
+      "path": "services/film-engine/engine/hunyuan/modal_app.py",
+      "bytes": 9574,
+      "sha256": "ccf99d9e03f671993265edb32632d2e1531210bab00d7b06b87388a71df91df6"
+    },
+    {
+      "path": "services/film-engine/engine/hunyuan/model-manifest.json",
+      "bytes": 41420,
+      "sha256": "dbb1a300b25a19996ba072a02ad1bd80646695d6f20157a7fdcebdf93b4ddbd3"
+    },
+    {
+      "path": "services/film-engine/engine/hunyuan/prepare.py",
+      "bytes": 5218,
+      "sha256": "bbff1a0112905dca9a9f8b1a1f178ad9719a917665d76388e325a13c2b917d17"
+    },
+    {
+      "path": "services/film-engine/engine/hunyuan/requirements-cpu.lock",
+      "bytes": 104,
+      "sha256": "a7ae38e33d900da57742f0a379583de5aa451d5eb43c7106c946a4a66e29c44b"
+    },
+    {
+      "path": "services/film-engine/engine/hunyuan/requirements-gpu.lock",
+      "bytes": 381,
+      "sha256": "89ed7e9b008b25f3b1d595891f48fdc28e819297865253a64ce484f3a0f171a2"
+    },
+    {
+      "path": "services/film-engine/engine/hunyuan/runtime.py",
+      "bytes": 16702,
+      "sha256": "0fe460227dce82ee47b272fd6391f7dff678fa82d10157ca080f44f55281ba7e"
+    },
+    {
+      "path": "services/film-engine/engine/hunyuan/storage.py",
+      "bytes": 974,
+      "sha256": "69c12fc93f635b33b11de0cd20125d559dc12adc1208de0f6ef05d90fcf7e8b1"
+    },
+    {
+      "path": "services/film-engine/engine/image-quality.mjs",
+      "bytes": 9828,
+      "sha256": "1422f3f6f10d8aba5fd16ffd501f98c26c7baf71f85e4f8d5e5f07aaf0a93248"
+    },
+    {
+      "path": "services/film-engine/engine/keyring.mjs",
+      "bytes": 1561,
+      "sha256": "3a513db4008d4bfd383e70cac223e7ea51fbefd3673b13211dfe83166430a8e0"
+    },
+    {
+      "path": "services/film-engine/engine/latentsync-integration.mjs",
+      "bytes": 13155,
+      "sha256": "9842b0c3bf0c8ff2f55e3cc5dd56dea880ab4d13d11adfceafa485c802ce95ce"
+    },
+    {
+      "path": "services/film-engine/engine/latentsync-modal-transport.mjs",
+      "bytes": 7137,
+      "sha256": "50baaaac2768d3e2f61045682bce4470efea09a986a668f14654712aa14156f4"
+    },
+    {
+      "path": "services/film-engine/engine/latentsync/__init__.py",
+      "bytes": 76,
+      "sha256": "60a1fcf01a89ed432d8a7ccf47ba06f4e311c58d0e407b96cdf78e56f0199bc6"
+    },
+    {
+      "path": "services/film-engine/engine/latentsync/alignment.py",
+      "bytes": 5770,
+      "sha256": "c5f30028a71fbeb0cf9a51aeeb4f50424d1ddd08887459a7e85d60bb53a6b5b8"
+    },
+    {
+      "path": "services/film-engine/engine/latentsync/backend.py",
+      "bytes": 8500,
+      "sha256": "6b49cba0d15cd4091583319fe7b4ae92a92b0257fe0a83052737202e6ea7664f"
+    },
+    {
+      "path": "services/film-engine/engine/latentsync/deploy.py",
+      "bytes": 5801,
+      "sha256": "7a95356977bc683ef08381500ee3d3d56b847de80d7956d03b163d8a8a061324"
+    },
+    {
+      "path": "services/film-engine/engine/latentsync/image.py",
+      "bytes": 1272,
+      "sha256": "45e673950754da61d98f47ea1177f0f2e9a5789fdf0d05e79ba99689a84102eb"
+    },
+    {
+      "path": "services/film-engine/engine/latentsync/manifest.json",
+      "bytes": 4805,
+      "sha256": "03374fcf226e386b00b9e093f742a0be3be29883bc4e6d377dd32ed39e3a1d49"
+    },
+    {
+      "path": "services/film-engine/engine/latentsync/modal_app.py",
+      "bytes": 9024,
+      "sha256": "48b0e29ba6e70bcf802dbd1b3aaec2240abae190c538681caf7895cac1f67e3a"
+    },
+    {
+      "path": "services/film-engine/engine/latentsync/prepare.py",
+      "bytes": 6870,
+      "sha256": "60c17736093d630265fecfd4ae6e326efbe036f2fff750bafcec54cc532282ea"
+    },
+    {
+      "path": "services/film-engine/engine/latentsync/requirements-cpu.lock",
+      "bytes": 37,
+      "sha256": "452f5b6372ccc6af20bded3b102ad3bc2eddeee213774403c2b0786ecdf8c376"
+    },
+    {
+      "path": "services/film-engine/engine/latentsync/requirements-gpu.lock",
+      "bytes": 624,
+      "sha256": "e22df71452121414cc04487836907d53997da507136b99e309cb619d516398f2"
+    },
+    {
+      "path": "services/film-engine/engine/latentsync/runtime.py",
+      "bytes": 11601,
+      "sha256": "548239f1d76b94f00aaac8e8522fd4428d6565eaeafb173effa6942d52929705"
+    },
+    {
+      "path": "services/film-engine/engine/media-digest.mjs",
+      "bytes": 239,
+      "sha256": "c82e9d9536344420a3bd30d1318bc17d546bdbc7bcb4019e7cd46ce910fd0273"
+    },
+    {
+      "path": "services/film-engine/engine/migrations/001.sql",
+      "bytes": 1284,
+      "sha256": "deff896f97a8ad3c86229d66c194542583f43eefde3af4e45e97ecb09b8d5b33"
+    },
+    {
+      "path": "services/film-engine/engine/migrations/002-film-rentals.sql",
+      "bytes": 1226,
+      "sha256": "901dcbb1acd6f7814b21982745ca19e9b4aba8b2589464656823e7c9aaeb71f4"
+    },
+    {
+      "path": "services/film-engine/engine/modal_bridge.py",
+      "bytes": 9891,
+      "sha256": "ddc851441a2c293acf6c48965f6436df7aabb0a422d7a51e0e1d41dd7e4f82e2"
+    },
+    {
+      "path": "services/film-engine/engine/model-license-evidence.json",
+      "bytes": 148775,
+      "sha256": "af40d54b07e5c75fa9dbc9eec39f00472faeac8c5fc294240f975984e0649c3f"
+    },
+    {
+      "path": "services/film-engine/engine/model-licenses.mjs",
+      "bytes": 4409,
+      "sha256": "bbe7cf618431a0cf142b8c39b58f0aec6f90fb62eb3a79b302a9eda3dddfe217"
+    },
+    {
+      "path": "services/film-engine/engine/model-profile.json",
+      "bytes": 204,
+      "sha256": "c89a9ee23e1744315e6768211eee60a48b62b9dac93e500a5b2800b060687f9a"
+    },
+    {
+      "path": "services/film-engine/engine/model_profile.py",
+      "bytes": 1669,
+      "sha256": "490dda0880d7ebad82134ccdf113123f876aad3ba0d07bdacb1e3afd13145250"
+    },
+    {
+      "path": "services/film-engine/engine/narration-mastering.mjs",
+      "bytes": 2928,
+      "sha256": "7ef75136cc0ffbd5756100da6e3b3fee53e76c80f7fba804ea265651c11ab1bf"
+    },
+    {
+      "path": "services/film-engine/engine/narration-profiles.mjs",
+      "bytes": 4128,
+      "sha256": "c8152874964e7b2ad75caa6c5fc33c846be0e378139d706c2ddbc69ae3ff18ac"
+    },
+    {
+      "path": "services/film-engine/engine/narration-styles.mjs",
+      "bytes": 2318,
+      "sha256": "e7b3a8e6b96fc8d5af087524e0f83c4327b068189fe4f5825818231e841fa370"
+    },
+    {
+      "path": "services/film-engine/engine/narration-tail.mjs",
+      "bytes": 3637,
+      "sha256": "2820045080dd3f232f286c8442a808d540559bbe8c12b20011fd97ece22878e5"
+    },
+    {
+      "path": "services/film-engine/engine/open-store.mjs",
+      "bytes": 731,
+      "sha256": "4c6f988db4e1640789345cc7502384e8bd5c1a823bc888da57cad9ca53d676e4"
+    },
+    {
+      "path": "services/film-engine/engine/openai-director.mjs",
+      "bytes": 39237,
+      "sha256": "61aebe9c9fe19736f3be24deab318343d5771ec96e72b62ea91cd1c1726fcb8c"
+    },
+    {
+      "path": "services/film-engine/engine/postgres.mjs",
+      "bytes": 3739,
+      "sha256": "b2116229b62216210e7e5dabd9fc983f78a098d798074141a6bbfc6dd3db6f54"
+    },
+    {
+      "path": "services/film-engine/engine/preparation-recovery.mjs",
+      "bytes": 1328,
+      "sha256": "cb30b4fcfeda813fd643aa71b37a73c6a1d9434f07ae1c74158009608ae16f18"
+    },
+    {
+      "path": "services/film-engine/engine/preview-access.mjs",
+      "bytes": 970,
+      "sha256": "f936b5646434ac22b26491b78f9bb76146e622b90251ec1d1e90a950801964cd"
+    },
+    {
+      "path": "services/film-engine/engine/private-model-trial-policy.mjs",
+      "bytes": 5001,
+      "sha256": "fc8dcc5eeb7fb6b3b8ae858e15aa408f6c5c9a742664885fd527ef3547131dd2"
+    },
+    {
+      "path": "services/film-engine/engine/production-artifacts.mjs",
+      "bytes": 18564,
+      "sha256": "c5d21833b11cae1c041b4656427c470406c4ed4f94f338fe8ce8f67bcaecc8a7"
+    },
+    {
+      "path": "services/film-engine/engine/production-assembly.mjs",
+      "bytes": 14818,
+      "sha256": "968d35a34e7fe30ed4866adb5ac90d3b288c48d8e877dae9dcfbfa7aa6efc96c"
+    },
+    {
+      "path": "services/film-engine/engine/production-billing.mjs",
+      "bytes": 7392,
+      "sha256": "6fd049598e0538a96861e3ac923bbb37561b67248b53804858ad78d1de521e76"
+    },
+    {
+      "path": "services/film-engine/engine/production-costs.mjs",
+      "bytes": 4053,
+      "sha256": "a812d89e8ab48a5497eba3643cdb45f9e3cde1dcd6a559226ea9c0cc94fa41a2"
+    },
+    {
+      "path": "services/film-engine/engine/production-customer-dto.mjs",
+      "bytes": 2987,
+      "sha256": "e42b89f7f8985f6e49054cf75e22fbf1381e8d335aa15456f3a4ede9f9f567cd"
+    },
+    {
+      "path": "services/film-engine/engine/production-director.mjs",
+      "bytes": 37750,
+      "sha256": "5ebf682fa9d0d2b03d5a79108591cceb1caf2641f367e19ebd2d15f62daf3bc5"
+    },
+    {
+      "path": "services/film-engine/engine/production-engine.mjs",
+      "bytes": 36189,
+      "sha256": "a435d5ec48d83f3e6438485837f15f6e99e13af13c4a3c6380cd9a86904cc085"
+    },
+    {
+      "path": "services/film-engine/engine/production-media-retention.mjs",
+      "bytes": 10610,
+      "sha256": "afca799bfc92c1e8370d014559a8f33842e97b91c7f51ce63c305143ae43be56"
+    },
+    {
+      "path": "services/film-engine/engine/production-mix.mjs",
+      "bytes": 2590,
+      "sha256": "7f073d6045525e83d1847d518a458c8531e628162cfe2b1b625847b179137edf"
+    },
+    {
+      "path": "services/film-engine/engine/production-models.mjs",
+      "bytes": 13474,
+      "sha256": "7de41d0d71ccf6cde3953de06f249552d5d777b08fa50eac9f7bb7dc3c401234"
+    },
+    {
+      "path": "services/film-engine/engine/production-plan.mjs",
+      "bytes": 29852,
+      "sha256": "b654cbaaf136651ae76d51b507f8198b5b70ef939359c4bc0d21349baf603af6"
+    },
+    {
+      "path": "services/film-engine/engine/production-renderer.mjs",
+      "bytes": 8914,
+      "sha256": "97c3d41420e21fdaac639dda568443324f5475e771408a189485ebf963207f49"
+    },
+    {
+      "path": "services/film-engine/engine/production-sources.mjs",
+      "bytes": 3706,
+      "sha256": "8262b3ab5012bd86c3fe567f47ddf829b264e025912c5958d6cf661dbbce7e27"
+    },
+    {
+      "path": "services/film-engine/engine/prompt-planner.mjs",
+      "bytes": 7721,
+      "sha256": "92b1270cf763e5a895d782ad66769c9113b1bf0076cfff5330e807bf33e8853c"
+    },
+    {
+      "path": "services/film-engine/engine/provider.mjs",
+      "bytes": 3145,
+      "sha256": "f51879ca5915ba7c8840d11359c728b02378a5021539c28430c291afd024dfe3"
+    },
+    {
+      "path": "services/film-engine/engine/provision-primary.mjs",
+      "bytes": 2465,
+      "sha256": "d16ff74fc544e21291751b8d083eda10d1fe06ce2672b0f992fa7ba1b24bd129"
+    },
+    {
+      "path": "services/film-engine/engine/qwen-integration.mjs",
+      "bytes": 5537,
+      "sha256": "1ed5b355900cf612a322fbf9c1601560de5ea9d598943a38d488904a12575ecf"
+    },
+    {
+      "path": "services/film-engine/engine/qwen-modal-transport.mjs",
+      "bytes": 289,
+      "sha256": "1f46fcfb0fc92ce623eb848dd0534223d9d4a59b6df8a9ce4e1ca8ec17b473ca"
+    },
+    {
+      "path": "services/film-engine/engine/qwen-prompt.mjs",
+      "bytes": 5055,
+      "sha256": "e6ee300183e3a1c701ba81b880d33072c586c1650bfd1e8e38b9feaf18dc4566"
+    },
+    {
+      "path": "services/film-engine/engine/qwen/__init__.py",
+      "bytes": 85,
+      "sha256": "2ee0e0da6c91b1be1109c072c5139bae755ceeb730f40a831cb6b459d62da087"
+    },
+    {
+      "path": "services/film-engine/engine/qwen/deploy.py",
+      "bytes": 5857,
+      "sha256": "9042a5d0ea768fc5c13225dcc0379ec2b8791b265494ada779253306c9daed91"
+    },
+    {
+      "path": "services/film-engine/engine/qwen/image.py",
+      "bytes": 1115,
+      "sha256": "8b79875d2d731ca8d5cca9de89e7eb5bf78ba681a2d5a2727914e9e127c4edd6"
+    },
+    {
+      "path": "services/film-engine/engine/qwen/modal_app.py",
+      "bytes": 9466,
+      "sha256": "7027062cb902ac8200d6c2c183158cf612ee81e60ef1892dd7b6ed492769aa99"
+    },
+    {
+      "path": "services/film-engine/engine/qwen/model-manifest.json",
+      "bytes": 8421,
+      "sha256": "c6078b6b18cdc3f93f203af80d6e12e68c54fb60a64122427fe16e64b826bdfb"
+    },
+    {
+      "path": "services/film-engine/engine/qwen/prepare.py",
+      "bytes": 4597,
+      "sha256": "dc25fb75af2f4668d75874103ccdd82ca776ef182de900a176d9ca4872a1fb2f"
+    },
+    {
+      "path": "services/film-engine/engine/qwen/requirements-cpu.lock",
+      "bytes": 104,
+      "sha256": "a7ae38e33d900da57742f0a379583de5aa451d5eb43c7106c946a4a66e29c44b"
+    },
+    {
+      "path": "services/film-engine/engine/qwen/requirements-gpu.lock",
+      "bytes": 347,
+      "sha256": "59f62ed6d875c69dc547b73700a46d2272c62d4fdd61da2a4df4facdf521b8d1"
+    },
+    {
+      "path": "services/film-engine/engine/qwen/runtime.py",
+      "bytes": 10043,
+      "sha256": "c88806c9aef60bee4ba8e3cbf21eb87144601d161ced789307e45fe45f2b04b1"
+    },
+    {
+      "path": "services/film-engine/engine/qwen/storage.py",
+      "bytes": 974,
+      "sha256": "69c12fc93f635b33b11de0cd20125d559dc12adc1208de0f6ef05d90fcf7e8b1"
+    },
+    {
+      "path": "services/film-engine/engine/registry-rental-bridge.mjs",
+      "bytes": 3395,
+      "sha256": "63eb0e5a77b60c420b37df9e438fb758983af9c4c8a0935368d9dcfae0924443"
+    },
+    {
+      "path": "services/film-engine/engine/requirements-local.lock",
+      "bytes": 13,
+      "sha256": "ab32ef62d158e2b7eae0ee29a8010e05a7c68c9a79702549a92838a962f18be0"
+    },
+    {
+      "path": "services/film-engine/engine/requirements-transfer.lock",
+      "bytes": 172,
+      "sha256": "0a8ecb6e2c98f535c70356510705e0cd8025cd5657d0fdeb3a75b9977a415d3b"
+    },
+    {
+      "path": "services/film-engine/engine/scene-editor.mjs",
+      "bytes": 4751,
+      "sha256": "892fd466e8589571a0ce8e7370e2bb15cc3e90db125731637630e9e074267cf0"
+    },
+    {
+      "path": "services/film-engine/engine/scene-pacing.mjs",
+      "bytes": 3125,
+      "sha256": "c5705b71fcf885e8dbc58e1ca7eed5e52b0e54dae82383a99865658cc54ce1c1"
+    },
+    {
+      "path": "services/film-engine/engine/session-channel.mjs",
+      "bytes": 1412,
+      "sha256": "df010a0a6e93bd0404a8ebd76bef7551389225b2db3afc91e57ec3b8b73f5eb0"
+    },
+    {
+      "path": "services/film-engine/engine/setup.mjs",
+      "bytes": 1591,
+      "sha256": "0d2e815ecccf751dc6f96d679065de4037872ac6f4451a38c9426214bb48b186"
+    },
+    {
+      "path": "services/film-engine/engine/sound-effects.mjs",
+      "bytes": 14016,
+      "sha256": "88e49aa308da73bc8af3b5fc572d0566461585a2860afbacdd487da2c7e8ced7"
+    },
+    {
+      "path": "services/film-engine/engine/speech-audio-assets.mjs",
+      "bytes": 11236,
+      "sha256": "21bf94c2823394b1ae3ec7686925066cae1fabf7cd2eca8663b7ba3a72bf2bce"
+    },
+    {
+      "path": "services/film-engine/engine/speech-audio-merge.mjs",
+      "bytes": 4187,
+      "sha256": "ad3f99a38d5eb7aef8f3194837079756385721b0bcdc4dd812fe6b2da628511f"
+    },
+    {
+      "path": "services/film-engine/engine/speech-integration.mjs",
+      "bytes": 11874,
+      "sha256": "8e9693e2a0e1b1739f929ad0063da7378312e8bbaca1e80086c7599547bb8286"
+    },
+    {
+      "path": "services/film-engine/engine/speech-modal-transport.mjs",
+      "bytes": 326,
+      "sha256": "00a3ec84af97381e586a57654465b25554d223ddc8e6bb8bf0cc1f311f851cf5"
+    },
+    {
+      "path": "services/film-engine/engine/speech-policy.mjs",
+      "bytes": 3599,
+      "sha256": "56a627d6b6807c3b55625581c1c56cf3ab10e26fdc64c7d0ab07c474a81dcac1"
+    },
+    {
+      "path": "services/film-engine/engine/speech-text.mjs",
+      "bytes": 1697,
+      "sha256": "3c8a7e88f77b6685e1ab465397c6f11e24a1b75ee681a65744e22babadacb8d8"
+    },
+    {
+      "path": "services/film-engine/engine/speech/__init__.py",
+      "bytes": 80,
+      "sha256": "db1ba72e26b9a14de08dc0e1dc5a519df26e35f0839eeedeb8a093a8729d1580"
+    },
+    {
+      "path": "services/film-engine/engine/speech/access.py",
+      "bytes": 2625,
+      "sha256": "7f226546f2347645bac6c7d301a0c59e1b765d3868f047dd0ce783d3ebeb8d83"
+    },
+    {
+      "path": "services/film-engine/engine/speech/backends.py",
+      "bytes": 7169,
+      "sha256": "bb4617b095387f7105686ca728657bf5b349aeef56e36d9886b1819632297fdb"
+    },
+    {
+      "path": "services/film-engine/engine/speech/deploy.py",
+      "bytes": 6717,
+      "sha256": "aa6cbdf34efc41fce2229b06aec4771a8494c256294183b0807c89482325364d"
+    },
+    {
+      "path": "services/film-engine/engine/speech/image.py",
+      "bytes": 1150,
+      "sha256": "6ad0707000e428141dc37c93bf7cb6f2476e9d282c16da12818a4cbf00a15367"
+    },
+    {
+      "path": "services/film-engine/engine/speech/manifests/audar-tts-v1-flash.json",
+      "bytes": 7864,
+      "sha256": "fafd73ee3efa98005f6dab4234d99d0f379887626fcb3439c08b9d75f0bec204"
+    },
+    {
+      "path": "services/film-engine/engine/speech/manifests/habibi-egy.json",
+      "bytes": 2820,
+      "sha256": "171a22ce88ee6871048034ecbe9210af4c7491ed718084dee38581e118942f83"
+    },
+    {
+      "path": "services/film-engine/engine/speech/manifests/habibi-irq.json",
+      "bytes": 2820,
+      "sha256": "14691493fb674db71604e56d41a37047e2bcf71e653f65c2eb992007e9b9df85"
+    },
+    {
+      "path": "services/film-engine/engine/speech/manifests/habibi-msa.json",
+      "bytes": 2820,
+      "sha256": "a2d0354313f1a8c74314cf235aa71d402a9f66ac969eb0e88b7c76418ccd25f7"
+    },
+    {
+      "path": "services/film-engine/engine/speech/modal_app.py",
+      "bytes": 9977,
+      "sha256": "44078997a6d2bf58e0c16e9587270e42c27566a2cea4ed244488b4fcfeaac155"
+    },
+    {
+      "path": "services/film-engine/engine/speech/prepare.py",
+      "bytes": 6207,
+      "sha256": "9a0c7ecdfa04eab36941e3a8e273535dc50fe9e07a0b96522e3161456705e738"
+    },
+    {
+      "path": "services/film-engine/engine/speech/requirements-cpu.lock",
+      "bytes": 37,
+      "sha256": "83f1894b8a5430cf0fd6ba2544dbafbaa63bb1ed9c788b2748ace7a0ed70e547"
+    },
+    {
+      "path": "services/film-engine/engine/speech/requirements-gpu.lock",
+      "bytes": 418,
+      "sha256": "70b80f77dfb5f8ecf377e7023abe46af6239a177dd05fa9aa891158a7e200d22"
+    },
+    {
+      "path": "services/film-engine/engine/speech/runtime.py",
+      "bytes": 12116,
+      "sha256": "e33905ab290850bcca0624d88aca0e4824492bf4459d35a7ffcfbbca939ce60b"
+    },
+    {
+      "path": "services/film-engine/engine/speech/storage.py",
+      "bytes": 974,
+      "sha256": "69c12fc93f635b33b11de0cd20125d559dc12adc1208de0f6ef05d90fcf7e8b1"
+    },
+    {
+      "path": "services/film-engine/engine/store.mjs",
+      "bytes": 5286,
+      "sha256": "0e2bc670dbf41b1c69e743e73e3cc02a52f52a1f218a92c4ede2f51ada217160"
+    },
+    {
+      "path": "services/film-engine/engine/sync-assets.mjs",
+      "bytes": 13900,
+      "sha256": "5828d169fc5d3acca58f0635c12b5e8715f2532e4feea0f43310a6322dd85941"
+    },
+    {
+      "path": "services/film-engine/engine/text-quality.mjs",
+      "bytes": 4376,
+      "sha256": "273cc0b1525017fd787a942ecca12342913379c38b4e583d1278c53ba2f1c242"
+    },
+    {
+      "path": "services/film-engine/engine/text-requirements.lock",
+      "bytes": 385,
+      "sha256": "47cbf7ec5163659a2371bc70cbd1fcbdc8c6df7f373ea29cd5a1b978ab7d963f"
+    },
+    {
+      "path": "services/film-engine/engine/three-arab-film-track.mjs",
+      "bytes": 5153,
+      "sha256": "e0cdd7de04c9bd598c4a390a175e1229b00b6b843f181f316620c168a28b1d8b"
+    },
+    {
+      "path": "services/film-engine/engine/three-arab-integration.mjs",
+      "bytes": 3774,
+      "sha256": "3aeb76a4e38dc75958a5277845e11446b7ed020b7af9ea4c29e9c8c67839d96c"
+    },
+    {
+      "path": "services/film-engine/engine/three_arab/__init__.py",
+      "bytes": 80,
+      "sha256": "3454c266d1b45aea007790d3ba976aa1eeddd02bb34c7ada7e29196a9a458205"
+    },
+    {
+      "path": "services/film-engine/engine/three_arab/build_lock.py",
+      "bytes": 729,
+      "sha256": "1949e2aca04bd2c518ed71e2298470626632e26218916b944af5cff45b0a267d"
+    },
+    {
+      "path": "services/film-engine/engine/three_arab/environment.json",
+      "bytes": 2348,
+      "sha256": "4117929c94265ce1868cfdabea9fedc3bb8f3efed094565fe854f6ca6aba0bc7"
+    },
+    {
+      "path": "services/film-engine/engine/three_arab/manifest.json",
+      "bytes": 7480,
+      "sha256": "020accd02f38391c4aa6f812989c450808651203667b366050b92dc52e7250eb"
+    },
+    {
+      "path": "services/film-engine/engine/three_arab/modal_trial.py",
+      "bytes": 7129,
+      "sha256": "1d4c07c7f9c669c229656fc176fcabbee329a94f576644d9d9bed5099f13bfb9"
+    },
+    {
+      "path": "services/film-engine/engine/three_arab/native.py",
+      "bytes": 4132,
+      "sha256": "e33f4a95025ee1611ee9e498dd4bb3c95d7460970a0bb18198f6e4b317a16cf6"
+    },
+    {
+      "path": "services/film-engine/engine/three_arab/runtime.py",
+      "bytes": 4954,
+      "sha256": "dfeabf089dc60287c297231998a0f515d067a9145c713c9e5f0adba20237cbcb"
+    },
+    {
+      "path": "services/film-engine/engine/three_arab/watermark.py",
+      "bytes": 4990,
+      "sha256": "c4a60bfde8b0b31f45277d62f2e5c0ba0fa155f02da2451251828c4a22c2a904"
+    },
+    {
+      "path": "services/film-engine/engine/three_arab/worker.py",
+      "bytes": 2293,
+      "sha256": "a7274718617add6b1a9ab30565740607deffaecd62688cba1bce5c790efe245d"
+    },
+    {
+      "path": "services/film-engine/engine/transfer-profile.mjs",
+      "bytes": 2675,
+      "sha256": "c9c9333a640b86f7a12f152d9c3977be70e0f0501f9b46930928a19e0427bf13"
+    },
+    {
+      "path": "services/film-engine/engine/transfer_contract.py",
+      "bytes": 3699,
+      "sha256": "40667f7b9b291e8abf18000c375a12ae87b66c8bd8eb31312dc54b6925f91680"
+    },
+    {
+      "path": "services/film-engine/engine/transfer_identity.py",
+      "bytes": 781,
+      "sha256": "95e0518326dd01b731d1aa532530d11c9f53cc4562987262fa1d793dd6f9b7bd"
+    },
+    {
+      "path": "services/film-engine/engine/transfer_orchestrator.py",
+      "bytes": 6188,
+      "sha256": "2a1e39b063fe0b071839be5184f40187cf1883090b0594b91268252c21450ad4"
+    },
+    {
+      "path": "services/film-engine/engine/transfer_setup.py",
+      "bytes": 1496,
+      "sha256": "e6e8cc4af248113256cbdff327f49957e820b92f8effa0dd424c9d36533cf89f"
+    },
+    {
+      "path": "services/film-engine/engine/transfer_verified_copy.py",
+      "bytes": 5821,
+      "sha256": "760c4636a57b9a4477e7ea23b9f70ef16b599a9bc4a37629a1a924891aa3d9b8"
+    },
+    {
+      "path": "services/film-engine/engine/transfer_worker.py",
+      "bytes": 6215,
+      "sha256": "3937c0b507581c65246dbef2fee383a399dbbd6e4bcc1e1f48655eeb7d53b0cf"
+    },
+    {
+      "path": "services/film-engine/engine/video-comparison-hooks.mjs",
+      "bytes": 1232,
+      "sha256": "b99c1db366f23daea0de80456a53400e238dc034338cf089ab9ce3badd9b6540"
+    },
+    {
+      "path": "services/film-engine/engine/video-comparison.mjs",
+      "bytes": 4856,
+      "sha256": "3ade49fa7bcf08c49d0e3e1471fa16e5fe037da9fd5b36505733da052895a016"
+    },
+    {
+      "path": "services/film-engine/engine/video-routing.mjs",
+      "bytes": 2135,
+      "sha256": "f06690c04ed9b4073a96be7284c747f5b743c436ecad04339a9102ed2fce2c3d"
+    },
+    {
+      "path": "services/film-engine/engine/video_text.py",
+      "bytes": 12993,
+      "sha256": "8aab2353ab8179dc6933e6301d27c94620d4e36a548babbcf8e4fa5187234b0d"
+    },
+    {
+      "path": "services/film-engine/engine/visual-world.mjs",
+      "bytes": 6880,
+      "sha256": "2ae802bf4c550b31413e74b0400a3c435e475ab91f1b2c52efc2501db1c8cc31"
+    },
+    {
+      "path": "services/film-engine/engine/voice-profiles.mjs",
+      "bytes": 11314,
+      "sha256": "ec00a71e0a5734ebd7a3713fcfb2180471bef9aa9269a107ca5e4367d29cd801"
+    },
+    {
+      "path": "services/film-engine/engine/wan-accelerated-integration.mjs",
+      "bytes": 4719,
+      "sha256": "9ecd1102f75791930b1f6e9b2625e7cd305215012d090a3c1f28d0f406788f0e"
+    },
+    {
+      "path": "services/film-engine/engine/wan-execution-profiles.mjs",
+      "bytes": 5776,
+      "sha256": "e1d4dd4c7e3216bfa594529eccb4915eeb9bbf94b2e4b94fa1675e1e5f662354"
+    },
+    {
+      "path": "services/film-engine/engine/wan-integration.mjs",
+      "bytes": 8270,
+      "sha256": "5af72b7eb68f84f5ffa17ed09eaa0d7ac387b81549e6c065577915f832b7374f"
+    },
+    {
+      "path": "services/film-engine/engine/wan-modal-transport.mjs",
+      "bytes": 270,
+      "sha256": "cd726dc4e1ca4711b3e7c1f28fcdc87b8ecb211b99ba6e11b60a38b7014aa92c"
+    },
+    {
+      "path": "services/film-engine/engine/wan-prompt.mjs",
+      "bytes": 3803,
+      "sha256": "abc458bc9bdfbb5b422c0f2c6b88898458067dcfd1ee23f970640263ab9fbaa7"
+    },
+    {
+      "path": "services/film-engine/engine/wan-shot-plan.mjs",
+      "bytes": 3176,
+      "sha256": "7d728fc5319975b3abf9c6d424d2fa21e0450175243c384ea3695674328f5ea9"
+    },
+    {
+      "path": "services/film-engine/engine/wan-video-assets.mjs",
+      "bytes": 14969,
+      "sha256": "e91a3296b684dcb0dba5cac3749f7d2a950005ffdfaff135999232e0fb64adf6"
+    },
+    {
+      "path": "services/film-engine/engine/wan/__init__.py",
+      "bytes": 86,
+      "sha256": "aeae8138c4a30e16fe603d9d0cdff252d08745fb719c133721a2470cda4a92c6"
+    },
+    {
+      "path": "services/film-engine/engine/wan/accelerated-manifest.json",
+      "bytes": 14990,
+      "sha256": "4ef5675b8463fff2621522e14700c05207c01c4496ba51297aaa61e7148f3043"
+    },
+    {
+      "path": "services/film-engine/engine/wan/deploy.py",
+      "bytes": 5843,
+      "sha256": "56d52a68551b973951c5613b40ca534da0b3b9fa9ef165eb0ebac250b9dcebe8"
+    },
+    {
+      "path": "services/film-engine/engine/wan/image.py",
+      "bytes": 1148,
+      "sha256": "196cb65e9169a150c21f4762b6a5aab297ac6985735f310da8863415e5345cd4"
+    },
+    {
+      "path": "services/film-engine/engine/wan/lightwan_modal.py",
+      "bytes": 10379,
+      "sha256": "d61e7cb80a1c74d76af46c70cd585cdbbc4bcafce988e17c019b1c6eee56e9cf"
+    },
+    {
+      "path": "services/film-engine/engine/wan/lightwan_prepare.py",
+      "bytes": 3054,
+      "sha256": "149f4a27a80c433f25560ce0b562c01741f22d019adac3eb0de502a624a14e56"
+    },
+    {
+      "path": "services/film-engine/engine/wan/lightwan_runtime.py",
+      "bytes": 12149,
+      "sha256": "7abca40b13e30440d13f4ffe4ddfe424d2a26ea59b7d404489e8a510dbba038c"
+    },
+    {
+      "path": "services/film-engine/engine/wan/modal_app.py",
+      "bytes": 9445,
+      "sha256": "784f208f1d4bc4cea9539318ce3677e97424ca583dd7172e1e2b745483b36538"
+    },
+    {
+      "path": "services/film-engine/engine/wan/model-manifest.json",
+      "bytes": 11324,
+      "sha256": "17eeac0b2251137f41955642fedf09d7d335aeb0112c20c8d7c2e1927a06824e"
+    },
+    {
+      "path": "services/film-engine/engine/wan/prepare.py",
+      "bytes": 4588,
+      "sha256": "0a949f869531a9fe4a243bb2b42c1aaf3e6d697f51aa7e33a944f730f3e1c1b1"
+    },
+    {
+      "path": "services/film-engine/engine/wan/requirements-cpu.lock",
+      "bytes": 104,
+      "sha256": "a7ae38e33d900da57742f0a379583de5aa451d5eb43c7106c946a4a66e29c44b"
+    },
+    {
+      "path": "services/film-engine/engine/wan/requirements-gpu.lock",
+      "bytes": 381,
+      "sha256": "89ed7e9b008b25f3b1d595891f48fdc28e819297865253a64ce484f3a0f171a2"
+    },
+    {
+      "path": "services/film-engine/engine/wan/runtime.py",
+      "bytes": 13777,
+      "sha256": "de4672baa47190b6de7b3f86d47d895d9f03d784d18979b61f0ad637ad10da32"
+    },
+    {
+      "path": "services/film-engine/engine/wan/storage.py",
+      "bytes": 974,
+      "sha256": "69c12fc93f635b33b11de0cd20125d559dc12adc1208de0f6ef05d90fcf7e8b1"
+    },
+    {
+      "path": "services/film-engine/engine/weight_batch.py",
+      "bytes": 7570,
+      "sha256": "4beb808a0576fcfffa310424a98bf7d058bcfe01d748513014186cb64e40bba7"
+    },
+    {
+      "path": "services/film-engine/service.mjs",
+      "bytes": 5608,
+      "sha256": "ffca3ec89bc8d2c59e7aceec7dc2a6669d5948dd648ef467eceb8edd5103fd35"
+    },
+    {
+      "path": "services/film-gateway/errors.mjs",
+      "bytes": 415,
+      "sha256": "cf69799dc9045c05cc684410921502372002faec9439dcab5d00946843f8a979"
+    },
+    {
+      "path": "services/film-gateway/film-bridge.mjs",
+      "bytes": 83307,
+      "sha256": "a77d907aedfe25b4464846fa6ef0102d2536d80614551922a9d375915db3fc7c"
+    },
+    {
+      "path": "services/film-gateway/gateway.mjs",
+      "bytes": 6421,
+      "sha256": "7f2e30f65a3e5a84da45a3b443a0680d69195656dd690dd97c6f4ed2c02d3b83"
+    },
+    {
+      "path": "services/film-gateway/network.mjs",
+      "bytes": 1213,
+      "sha256": "5f0c301eed8c7b7c60fc728671f7c345eac7b122a15c6ffbca7b4c117f285c1e"
+    },
+    {
+      "path": "services/film-gateway/server.mjs",
+      "bytes": 537,
+      "sha256": "4547405540d3de6510c152c708b3a9b98e2a0581afa9b8967d7df7844a4960fa"
+    },
+    {
+      "path": "services/film-gateway/tests/gateway.check.mjs",
+      "bytes": 103824,
+      "sha256": "b869f4f5bb8ddb4a5a341f0d7f9834074f1b9a6379c4128e434f4127ba70f847"
+    },
+    {
+      "path": "shared/account-avatar.test.ts",
+      "bytes": 537,
+      "sha256": "d05ec8dfc29dbc70d10a9aa42511dc30cee00d962bc501f652e0fca5ad28a952"
+    },
+    {
+      "path": "shared/account-avatar.ts",
+      "bytes": 457,
+      "sha256": "558984da5a0a3e2309a08ffa6990fd6aa4ca1b4edddd1478b62717d8bd0f2eaf"
+    },
+    {
+      "path": "shared/admin-overview.test.ts",
+      "bytes": 1842,
+      "sha256": "cda1ede3012cb2d9598421a81e17d92afc752e2dd05f2c62280a09acc8bc8a7a"
+    },
+    {
+      "path": "shared/admin-overview.ts",
+      "bytes": 1923,
+      "sha256": "a31435af917940664c0a0be899c5171c8ec4244f34313a6099ac5b1c36098972"
+    },
+    {
+      "path": "shared/analysis-request.test.ts",
+      "bytes": 1433,
+      "sha256": "a967ce1057c38747fdc07afc1c56869554430665758c9837c77c189c8d4ec5db"
+    },
+    {
+      "path": "shared/analysis-request.ts",
+      "bytes": 743,
+      "sha256": "0024dddd256d7fcbc99bedfa427ad695bc24243db235a2be72200b0a63764914"
+    },
+    {
+      "path": "shared/asset-grant.test.ts",
+      "bytes": 730,
+      "sha256": "87c180a5dd0434713996afe518733a118ba19d1c1677d975ef10c3bf9fb5b4b6"
+    },
+    {
+      "path": "shared/asset-grant.ts",
+      "bytes": 625,
+      "sha256": "b74d527647ee67d73cc2f1f39b1cfa6ab750e7b257c2e9051371b2f832138150"
+    },
+    {
+      "path": "shared/buffer-observation.test.ts",
+      "bytes": 1115,
+      "sha256": "cd594f99403c84a64a5f2cb1d8a0737a74603800a5f60f9285aea72fdaa7237c"
+    },
+    {
+      "path": "shared/buffer-observation.ts",
+      "bytes": 927,
+      "sha256": "400aa64366265f1ed0c42cf006e6f3e5018ec29d7cb9878cb73e4dab27a3789c"
+    },
+    {
+      "path": "shared/buffer-personal-quota.test.ts",
+      "bytes": 718,
+      "sha256": "559ace90171526dbb77f025597717c9502374cb0fa754ff20ab506f019d841ef"
+    },
+    {
+      "path": "shared/buffer-personal-quota.ts",
+      "bytes": 814,
+      "sha256": "e8c030db2e48e5d84eb8392f008b5f6c6642ce570bc3fd719a81cd0c5fc833eb"
+    },
+    {
+      "path": "shared/buffer.ts",
+      "bytes": 3021,
+      "sha256": "a1b7c09697bbc83106a5dbff881e474633f4d414c2b4497da101dc96cc92f1a4"
+    },
+    {
+      "path": "shared/chat-video.test.ts",
+      "bytes": 1105,
+      "sha256": "7d13fa04cf6ec57c844842e2c8cd8d843a8acd2e01286b28533d229f3591e14b"
+    },
+    {
+      "path": "shared/chat-video.ts",
+      "bytes": 1432,
+      "sha256": "5d1dda6eee0ceadf142d24790aff4c356555ca64dd229bab8cea89b77b49c569"
+    },
+    {
+      "path": "shared/cinematic-contracts.ts",
+      "bytes": 2810,
+      "sha256": "8dda4db1afdde2abe659b35eb62dad7328990b864a216845abedb11fa79e6187"
+    },
+    {
+      "path": "shared/concurrency.test.ts",
+      "bytes": 681,
+      "sha256": "cdbad9ef8e8939c83d6345ef22004d433669dcd671e2ef74ac0a9b2ced861fa0"
+    },
+    {
+      "path": "shared/concurrency.ts",
+      "bytes": 614,
+      "sha256": "573582cd07a3307961634e8674e0a6d4338a25252af9bdf7fa6e3786d1e11581"
+    },
+    {
+      "path": "shared/director-contracts.ts",
+      "bytes": 5060,
+      "sha256": "a4a6d1dbf552dbb142604eb923acaf56a2670ecc62102240eef8d99b4bd36ba6"
+    },
+    {
+      "path": "shared/editing.ts",
+      "bytes": 2721,
+      "sha256": "1a367e9451810eaaedd7e695327c8d28cb3db1a48eec19a9260d3b46d4df352a"
+    },
+    {
+      "path": "shared/engine-catalog.ts",
+      "bytes": 6457,
+      "sha256": "d086349d85dac78fc2caee8413364e76af9e45132db95d49d5719c869284130d"
+    },
+    {
+      "path": "shared/film-chat.ts",
+      "bytes": 5015,
+      "sha256": "aff7b2a6208835db8916ee2adeee484ceeae82c1ee2b32c0b537471a67c351bf"
+    },
+    {
+      "path": "shared/film-continuity.test.ts",
+      "bytes": 1407,
+      "sha256": "fd51e48ea3741c95cde13b45dc788fd9d6fb28079d5e18a31115066681227ab4"
+    },
+    {
+      "path": "shared/film-contracts.ts",
+      "bytes": 9079,
+      "sha256": "45c0b5b16ad283c47de000ff6fab079d567440d2ce251353706c96177a5fc643"
+    },
+    {
+      "path": "shared/film-experience.test.ts",
+      "bytes": 2786,
+      "sha256": "7826795c9467f0c126e2aedefc1ae6ff02e7353bf2c5588032544ff3e5d390c8"
+    },
+    {
+      "path": "shared/film-experience.ts",
+      "bytes": 547,
+      "sha256": "ad287bcf4795db07cb95f4ba5c7a2540c2f4c924021b760dd74547b4282d11d2"
+    },
+    {
+      "path": "shared/film-language.test.ts",
+      "bytes": 2530,
+      "sha256": "da44a8fcaa7565ba0e5bae845c243ce0edd23e384d204422921ce14e26fcb93b"
+    },
+    {
+      "path": "shared/film-plan.ts",
+      "bytes": 7109,
+      "sha256": "e3e393f38fa06f6de50aa9f54d835090df2c7aeab7ae6d0813a4418cc39f26a9"
+    },
+    {
+      "path": "shared/film-production.ts",
+      "bytes": 7972,
+      "sha256": "09452d8904ed475b812bf961c2920a3da99eea708b2d1124e97eba5de0a71543"
+    },
+    {
+      "path": "shared/film-request-policy.ts",
+      "bytes": 621,
+      "sha256": "506b696c31b3516b0edcd0f960e4832a1dd0e083977f8c68eaeecee607a0df19"
+    },
+    {
+      "path": "shared/film-safety.test.ts",
+      "bytes": 1843,
+      "sha256": "c92bff97747c5aed5e72be8c4f62f438b4795cc57e041ca1b2ede1ebbfe4e8d1"
+    },
+    {
+      "path": "shared/film-safety.ts",
+      "bytes": 4419,
+      "sha256": "c67aaf274a92dd17581c592ccbfd24e478c21f1d9e092ab87df6e0fd1a25df90"
+    },
+    {
+      "path": "shared/final-film-contracts.ts",
+      "bytes": 3059,
+      "sha256": "6be34d37a12bfde97e4d9442df23021171509ce1e2425e195f359394ed0667cc"
+    },
+    {
+      "path": "shared/flow-balance.test.ts",
+      "bytes": 500,
+      "sha256": "9eae260aa8909ff38c53906ab658cf78c3ad4926f9f4c97cccad09675ab45695"
+    },
+    {
+      "path": "shared/flow-balance.ts",
+      "bytes": 510,
+      "sha256": "a720f562a2d42b71b14fdd501ac026645bdfdd846154dd12647fa7ebb67db116"
+    },
+    {
+      "path": "shared/flow-human.test.ts",
+      "bytes": 676,
+      "sha256": "7170b7540b6798c7f0908c994e439c800c62a39fa67d8a4d3d4ae970b906a330"
+    },
+    {
+      "path": "shared/flow-human.ts",
+      "bytes": 515,
+      "sha256": "ab61e7064d25f991392aa48fea49ed635fa72dd40fb23feeaa667b83bac40e99"
+    },
+    {
+      "path": "shared/flow-options.test.ts",
+      "bytes": 1130,
+      "sha256": "1d4443fccc15ebe8e95c3a1f9877c8d13ba871e6a639ce124c4c656eae6186fc"
+    },
+    {
+      "path": "shared/flow-options.ts",
+      "bytes": 928,
+      "sha256": "1c410cc815561a364b902e9e9fc2ee5720b111fb4efa3b6b1e0dafb479932aee"
+    },
+    {
+      "path": "shared/free-image-model.test.ts",
+      "bytes": 604,
+      "sha256": "11907bc85218ad88ba0d3c9b1e176f62f020756cce76aa73d01d1d92d57ed945"
+    },
+    {
+      "path": "shared/free-image-model.ts",
+      "bytes": 330,
+      "sha256": "ec18a947771c6db631e17342ae581ce61caf9cc151feeb0515308499b140f06e"
+    },
+    {
+      "path": "shared/generation-language.test.ts",
+      "bytes": 1742,
+      "sha256": "facea00d420f35bfcfd92bdfda2ce59ce8e0c221b7ee6e941b8827c0f551441c"
+    },
+    {
+      "path": "shared/generation-language.ts",
+      "bytes": 3430,
+      "sha256": "dba528d8631c32ea5057c569fb0db981f3dfd4d5e5c267e9e1ea603b2464d66a"
+    },
+    {
+      "path": "shared/image-capabilities.test.ts",
+      "bytes": 902,
+      "sha256": "6b0f2daca438a339f6d365cd2dd66ebbd7e9f00bb8e1007ed53775ba0f2d681b"
+    },
+    {
+      "path": "shared/image-capabilities.ts",
+      "bytes": 611,
+      "sha256": "8d48e9080866e905030a260af5a2c6845af925f43194986e580410d6fb935b75"
+    },
+    {
+      "path": "shared/image-edit-prompt.test.ts",
+      "bytes": 573,
+      "sha256": "87127754a77f0a2b2cd4dee6de51f5526b95a16ff07858f5dd9b1064a3473a10"
+    },
+    {
+      "path": "shared/image-edit-prompt.ts",
+      "bytes": 1431,
+      "sha256": "e9f39f692cf6c33deef632d576e0bcb89d2ff1f02f0927dbcc3c37bbe2b50c4f"
+    },
+    {
+      "path": "shared/images.ts",
+      "bytes": 963,
+      "sha256": "ae9d36f148a2b46b1cb9a330b071c3663389ca546081a042f6fe081581097043"
+    },
+    {
+      "path": "shared/infrastructure.ts",
+      "bytes": 2677,
+      "sha256": "332a4a16fc30e6b804a46c0da2d4cd485e85908198fedeca20b205942d7f60be"
+    },
+    {
+      "path": "shared/iraqi-chat-style.test.ts",
+      "bytes": 951,
+      "sha256": "bb2c57ba9ef48473db16bc5b84fcb1f5c5967d165d7cd76041b660aafe6f09ee"
+    },
+    {
+      "path": "shared/iraqi-chat-style.ts",
+      "bytes": 1424,
+      "sha256": "7aeb157910f8010217b0a9e12315e2f8bdb0777550643493dcb77ef9ce5240fc"
+    },
+    {
+      "path": "shared/iraqi-dialect.test.ts",
+      "bytes": 2937,
+      "sha256": "fd1b89b870b3d1b3f19c5eca7eea2d8445f6877ab0de80a3176315e03d172708"
+    },
+    {
+      "path": "shared/iraqi-dialect.ts",
+      "bytes": 5614,
+      "sha256": "6f15400707e8cfe12f2d59b97e6cccccbd060443054cc04794cc14ea0bb8c0a2"
+    },
+    {
+      "path": "shared/library-publishing.test.ts",
+      "bytes": 1865,
+      "sha256": "80ae1256886b7b486738aed0ae205d373fb1e165f7762c98e844b63dac5077bd"
+    },
+    {
+      "path": "shared/library-publishing.ts",
+      "bytes": 2008,
+      "sha256": "44f3f385f8df3ba46ffb7f16c75621fa87838f3b8e39f27a9557fd94a72ea320"
+    },
+    {
+      "path": "shared/media-signature.ts",
+      "bytes": 396,
+      "sha256": "1d3da4914b55c3e8f429e8494666fea0388dfbe518d4a7bd7383c73bae11d7f9"
+    },
+    {
+      "path": "shared/meta.test.ts",
+      "bytes": 1446,
+      "sha256": "86a5e8aaf4a431d2d1c209cbed152ec2aff4774fb275ff2e03c6dc454ac73771"
+    },
+    {
+      "path": "shared/meta.ts",
+      "bytes": 2296,
+      "sha256": "ca56e53e00b81456342241533ed7edf156b4e24d1a72a2a585d1d766752e84c8"
+    },
+    {
+      "path": "shared/pipeline.ts",
+      "bytes": 2979,
+      "sha256": "eb6190293823999f07b07ae46e83bba8cbacd9eeaafae67f674aae6373720231"
+    },
+    {
+      "path": "shared/place-photos.test.ts",
+      "bytes": 1453,
+      "sha256": "6508c6026133828db1c0cdaae7d806f81772b32789c797600428f8367c567bf2"
+    },
+    {
+      "path": "shared/place-photos.ts",
+      "bytes": 1694,
+      "sha256": "49097ff85780d3fa4ddee0eb7ddf35def544c2298c1e7bf12ad0b423424b9308"
+    },
+    {
+      "path": "shared/production-contracts.ts",
+      "bytes": 6104,
+      "sha256": "625616e78edfa2fda6e256c467f028e7d17aee37ed71437528ff0a4860b01519"
+    },
+    {
+      "path": "shared/public-ui-warmup.test.ts",
+      "bytes": 2887,
+      "sha256": "15f8b1e7d523e20c71cc2a48677447792303b30d241f106d13b8ee18cabc8196"
+    },
+    {
+      "path": "shared/public-ui-warmup.ts",
+      "bytes": 2315,
+      "sha256": "dd174d519d7416589c38bd9197dcf7e3abdd620c2ba9d0180d48c06524e9fb55"
+    },
+    {
+      "path": "shared/reels-idle.test.ts",
+      "bytes": 312,
+      "sha256": "c4f42a45358dd412e63fc16b332e6872f43c29c3f75ef1067e12b45862af0b8b"
+    },
+    {
+      "path": "shared/reels-idle.ts",
+      "bytes": 216,
+      "sha256": "8d9e4f72d02b208202b59e041da7543c6ae76cebd274af19ca1888febdef9694"
+    },
+    {
+      "path": "shared/reels-insights.ts",
+      "bytes": 1362,
+      "sha256": "092d16f103a10a273f64533f050a952ed67f9f0ab07f10ebc8248a0a35891481"
+    },
+    {
+      "path": "shared/reels-media-grant.test.ts",
+      "bytes": 636,
+      "sha256": "932845e78ebc03e70a68be69bec5cd87dff54b12a330c2baaf249c1856bcae95"
+    },
+    {
+      "path": "shared/reels-media-grant.ts",
+      "bytes": 1463,
+      "sha256": "6f621eba51a4c77de405b88e09b7ca7d3f3ee1243e769f1fbcd6a16fb53aa8e0"
+    },
+    {
+      "path": "shared/reels-plans.test.ts",
+      "bytes": 636,
+      "sha256": "ba291415ef6855e8bf0035affad3e06f8e1b5b282121490478cdcd0b65f280cd"
+    },
+    {
+      "path": "shared/reels-plans.ts",
+      "bytes": 908,
+      "sha256": "03b3cd342a932530d727f86d609a96d5589f9f508d6d1b38cbecce62b1e5ccbc"
+    },
+    {
+      "path": "shared/reels-single-test.ts",
+      "bytes": 1196,
+      "sha256": "c2f9b6758f9452674312253e8c04bab9ea69dbda53245f09ac3be5dcd25823f3"
+    },
+    {
+      "path": "shared/reels-video.test.ts",
+      "bytes": 374,
+      "sha256": "1ae005c5a0befa12c75cece78114c9cec39c9039fcede1355c8608e83ed9f479"
+    },
+    {
+      "path": "shared/reels-video.ts",
+      "bytes": 467,
+      "sha256": "f4fe01d0d2e5507f40ac1c0fcd59aaf8c5f96940daeb6a504cb3c7d194a8995a"
+    },
+    {
+      "path": "shared/series-chat.ts",
+      "bytes": 33516,
+      "sha256": "944b855f3378e06974066f31329492ce8dfd20f1daf02f7676ea8f3a74f10daa"
+    },
+    {
+      "path": "shared/series-director-instructions.ts",
+      "bytes": 2391,
+      "sha256": "5ebd0a5470ae3886d957b7bda443f09e50530f4323a9bf80cc6fb6bb27b75b56"
+    },
+    {
+      "path": "shared/site-banner.test.ts",
+      "bytes": 684,
+      "sha256": "85b2738ea58cb9b1b24f63f51b6440c81c416dd0be5ebc7a459d273dacc93a91"
+    },
+    {
+      "path": "shared/site-banner.ts",
+      "bytes": 524,
+      "sha256": "e2f159c86ca8d48722e5e8095a2f3ae7346277e5b7ef7b555728844e01b3325d"
+    },
+    {
+      "path": "shared/story-audio-production.test.ts",
+      "bytes": 2069,
+      "sha256": "8e545c79b45fce1ea7a25ef85a809eff7371b37f99e1cad36c4c5ed2758cb1cd"
+    },
+    {
+      "path": "shared/story-episode.test.ts",
+      "bytes": 1026,
+      "sha256": "1be3c7fc8474a4a9481a65ed3a2513551c3ab9b11fa4ec60f8a36538c0478da2"
+    },
+    {
+      "path": "shared/story-episode.ts",
+      "bytes": 838,
+      "sha256": "5244a6ee20ad3a2c33694333c18e795748a3220917a4ae6e6eaa8a1a135de1fa"
+    },
+    {
+      "path": "shared/story-search.test.ts",
+      "bytes": 1649,
+      "sha256": "5d114fc73cd1cb65e6774738b359f19e37a7733591aac94c1f63319088a3945e"
+    },
+    {
+      "path": "shared/story-search.ts",
+      "bytes": 2387,
+      "sha256": "2f69de44417e018c4a2286ac35f7bf408673102d6b112db5b9d1845ba4013b0a"
+    },
+    {
+      "path": "shared/story-understanding.test.ts",
+      "bytes": 1518,
+      "sha256": "3a2fbd987733fb93a625123144b4b9542b3d0793b47cc9d0eaa118334c40c44c"
+    },
+    {
+      "path": "shared/story-understanding.ts",
+      "bytes": 2215,
+      "sha256": "51fac0b1407931c8eb76c00d29f694ad609c63bf0be1907417255c3530893ba1"
+    },
+    {
+      "path": "shared/story-visual.ts",
+      "bytes": 7671,
+      "sha256": "b93a7d8317d63ef2364526ce2f9fb8de03a3125963116cd3ea9b3ea6e6fac86f"
+    },
+    {
+      "path": "shared/studio-connections.ts",
+      "bytes": 432,
+      "sha256": "70edd688336f2138ea852cb183b5e66df7e02688cd3e4ee5ef1ff025f7d0d55b"
+    },
+    {
+      "path": "shared/studio.test.ts",
+      "bytes": 1111,
+      "sha256": "b6c961718c1f6472718f80b12dd3b3734d6f08ab0a2406d44abae0bae3211622"
+    },
+    {
+      "path": "shared/studio.ts",
+      "bytes": 1648,
+      "sha256": "d7a103e7172041540faf05b1ec389099e7beea8f7a41491e52890b8c072c2af9"
+    },
+    {
+      "path": "shared/topup.ts",
+      "bytes": 366,
+      "sha256": "cc622f10e0c870acac811c3ca0b42ff864a3dfd9c668b6c737f51c90e4659d70"
+    },
+    {
+      "path": "shared/trends.test.ts",
+      "bytes": 1086,
+      "sha256": "7f15557950ce9aa2f7785440127550e764723456f3e08fd174c557e9a7c12e54"
+    },
+    {
+      "path": "shared/trends.ts",
+      "bytes": 3014,
+      "sha256": "feb88a0eaa5f822c7315b6ac5a8d7e3e366cd12e9f06c6af7d2c02d8c4b197c9"
+    },
+    {
+      "path": "shared/validation.ts",
+      "bytes": 3269,
+      "sha256": "94e68d99d63ddc749e4566dcdc40b4aa6dad608991e08b14e278a421e93c79de"
+    },
+    {
+      "path": "shared/video-analysis.test.ts",
+      "bytes": 3114,
+      "sha256": "65e7701934f5927910000fdef412793d042786a93d52293d9504bab984a48079"
+    },
+    {
+      "path": "shared/video-analysis.ts",
+      "bytes": 7790,
+      "sha256": "01edcd9f9a9d9bf3d6fd01d75d72752955865c2bed877dfc50936ab03ee985d5"
+    },
+    {
+      "path": "shared/worker-balance.test.ts",
+      "bytes": 435,
+      "sha256": "d6cef2f171f629fc55f16b2dde3f4ea60a46f8cb1ed6ba8aefdc5e971bf833e9"
+    },
+    {
+      "path": "shared/worker-balance.ts",
+      "bytes": 223,
+      "sha256": "adb3d04fc746583fb170a6841db0b7d7fc5497e7ff9276abaa97abd5373c84c9"
+    }
+  ],
+  "adminFiles": [
+    {
+      "path": "admin.html",
+      "bytes": 907,
+      "sha256": "e4c16de1f4e713a7a54616a752273662e321ff34491f5c4b354f8ede46751092"
+    },
+    {
+      "path": "admin.webmanifest",
+      "bytes": 654,
+      "sha256": "4086bad94587e047fb8854dffebb4ab84c9fef6321d06b7720bcacc9f8e2e131"
+    },
+    {
+      "path": "app-192.png",
+      "bytes": 5288,
+      "sha256": "de2f0ea17f8807cf6a7a0288590cf16d670dfe13175bfebe3ecc62a852cb2690"
+    },
+    {
+      "path": "app-512.png",
+      "bytes": 18104,
+      "sha256": "6bebca2a671c16210763a4bc295df9b905da5b79ae9105a73a64cc2f70fc36e1"
+    },
+    {
+      "path": "CNAME",
+      "bytes": 18,
+      "sha256": "1bf22700a3947cd90b79acc67718aa1916668b093ed3e7e1f9894aecb640a890"
+    },
+    {
+      "path": "data-deletion.html",
+      "bytes": 1811,
+      "sha256": "09affd4e5dc4e008415808719d2dc630023ef514efe78abfd430714d191ee6bd"
+    },
+    {
+      "path": "manifest.webmanifest",
+      "bytes": 680,
+      "sha256": "87726b6b36c7d641fd6f016d68ec9e45cbb2a3d2fd40dae716c464bdec3162f8"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-180.png",
+      "bytes": 43994,
+      "sha256": "1a2ed09489d66fc63f5a4dea78aa1afd4dc1aee100af3e5c9c9c4fbd4bce58a8"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-192.png",
+      "bytes": 49434,
+      "sha256": "0ccfdb1a979f05a4793b6ef67cb9eecf4a92849eab4d8c5e3cf9c1ba0260e5cb"
+    },
+    {
+      "path": "mashhad-admin-icon-v1-512.png",
+      "bytes": 311309,
+      "sha256": "e7038fdb3a2636c1bff14f4757615b92c5d838f39346ae71d08d90d45aabc623"
+    },
+    {
+      "path": "mashhad-icon-192.png",
+      "bytes": 70501,
+      "sha256": "46173d652f18b31b7842d9c64c00df451a12ed94c7c3c1c1ceb0e1c76f0000ec"
+    },
+    {
+      "path": "mashhad-icon-512.png",
+      "bytes": 439462,
+      "sha256": "15cddc0b6c136ffeb6110d8e21c775627bd7e40da9266f53d2afa67a492a2851"
+    },
+    {
+      "path": "mashhad-logo-128.webp",
+      "bytes": 10388,
+      "sha256": "f16568e6362a4bc46d8d48b4ba09d78ce7cc8c4c29e2ac2b4cd2fe2b07d515f4"
+    },
+    {
+      "path": "mashhad-logo-192.webp",
+      "bytes": 16712,
+      "sha256": "95cd64e71c19552de7cc61f6c5af7f075b7d7f3fc1928315324f73e25ee770c0"
+    },
+    {
+      "path": "mashhad-logo.png",
+      "bytes": 1541135,
+      "sha256": "2b40e8341fcb6e432057abbcca3d1ddb97345374efc31310b463b556fd152c6c"
+    },
+    {
+      "path": "privacy.html",
+      "bytes": 3118,
+      "sha256": "f33dc6b23c2b2a43b6a311051a2e2ac5deec32ad114740c2eff56c0623220fe4"
+    },
+    {
+      "path": "sw.js",
+      "bytes": 237,
+      "sha256": "6daf25f74fe5ba95707c97544ad68ab4557c3ce9fea2d8ddcb6e2e0dc29ced02"
+    },
+    {
+      "path": "ui-warmup.json",
+      "bytes": 60,
+      "sha256": "358da1abec10ba0d8e35ee1f50d6fe806d18f32d9f74ca0dc12dda5cad2bcce1"
+    },
+    {
+      "path": "version.json",
+      "bytes": 48,
+      "sha256": "811db8c9b0f10a5b9faa1f3e0f8e42a5116af0b36bd3ec856a1fe7b201952871"
+    },
+    {
+      "path": "assets/admin-BNtKC3Mn.js",
+      "bytes": 56334,
+      "sha256": "868b84bfc8ac225da31e0c48a1ab056d289a8f210cab5cd6121f3d18db9aa5cd"
+    },
+    {
+      "path": "assets/admin-D5ITKqNh.css",
+      "bytes": 66144,
+      "sha256": "81b9000366b4f6c433f85d29dac4d9fdddb90ade6964dbac2f7312842eea713f"
+    },
+    {
+      "path": "assets/auth-arabic-DVh29meS.js",
+      "bytes": 75282,
+      "sha256": "46feb7e9a2f22cc56fa67c812afc8bc57402b38ad898c6083ab9f4f06688c9d6"
+    },
+    {
+      "path": "assets/auth-CTprXwLg.js",
+      "bytes": 308647,
+      "sha256": "a3fffef42b786f18ff5c81b1b82b5212a31126fab32be35f591e67a2e2d0ee2d"
+    },
+    {
+      "path": "assets/convex-BTZqt167.js",
+      "bytes": 86320,
+      "sha256": "ce383598de9d351ab6e1ff43ecf93e5c4255d9034e7df0e62b44543048ae7538"
+    },
+    {
+      "path": "assets/FilmAdminEntry-DKgF95IL.js",
+      "bytes": 58100,
+      "sha256": "e4933333555526f1638c94d256c342505b635a5b3d4f8971e836ed60147e4404"
+    },
+    {
+      "path": "assets/FilmAdminEntry-Dqrn-X4g.css",
+      "bytes": 24814,
+      "sha256": "c373fd9fdc78b51423026729900cc2465f675fed2074a0da61b1b3875c517e44"
+    },
+    {
+      "path": "index.html",
+      "bytes": 907,
+      "sha256": "e4c16de1f4e713a7a54616a752273662e321ff34491f5c4b354f8ede46751092"
+    }
+  ],
+  "gpuAllowed": false,
+  "newBackups": false
+}
