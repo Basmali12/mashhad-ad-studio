@@ -1,0 +1,46 @@
+{
+  "recordedAt": "2026-11-01T20:05:57.088309+00:00",
+  "backendSourceCommit": "75ef6914c10fdd094a8caed0b13e60f2766e721e",
+  "deploymentHelperCommit": "85102c4e9712b07a0eb30dade03d578acb53eeff",
+  "pagesCommit": "dedfaf0369f82bb61f6957095c16eb0b9592ef8d",
+  "pagesBuild": "built",
+  "customerURL": "https://iraqaistudio.com/",
+  "adminURL": "https://scan.iraqaistudio.com/reels-admin/",
+  "customerAsset": "assets/index-hDFtWz3P.js",
+  "adminAsset": "assets/admin-BNtKC3Mn.js",
+  "adminVersion": "2026.11.01.1-mashhad-1793557938364",
+  "serverReceipt": "/root/codex-site-update-20261101-result.json",
+  "serverVerified": {
+    "signedBackendContract": true,
+    "protectedDataUnchanged": true,
+    "configurationUnchanged": true,
+    "gpuStarted": false,
+    "newBackups": 0,
+    "dnsChanged": false
+  },
+  "browserVerified": [
+    "authenticated customer shell",
+    "generation chat opens without paid request",
+    "authenticated separate admin",
+    "accounts visible",
+    "engine registry tab responds"
+  ],
+  "deploymentGuardTests": {
+    "passed": 4,
+    "failed": 0
+  },
+  "payloadHashesVerified": {
+    "backendFiles": 318,
+    "adminFiles": 27
+  },
+  "resolvedDeploymentIssues": [
+    "static manifest now hashes committed LF bytes instead of working-tree CRLF bytes",
+    "signed probe rejects invalid operation before any customer mutation"
+  ],
+  "limitations": [
+    "paid model execution remains disabled",
+    "native accelerated shared transport and general customer 3arab synthesis are not certified production-ready",
+    "local non-browser requests to customer domain returned HTTP 403; browser loaded verified new hashed assets"
+  ],
+  "noGPUOrPaidAPICalls": true
+}
