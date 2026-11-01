@@ -69,9 +69,23 @@ export async function linkExistingWeightLocations({store,workspace,sources,appro
   for(const kind of ['rental','engine-runtime','engine-preparation','engine-test','job'])for(const row of await store.all(kind))if(row.accountId===account.id&&(kind==='rental'?row.state!=='closed':row.cloudStopped!==true))throw Error('ACCOUNT_IN_USE');
   let updated=0;
   for(const source of sources)for(const e of (await store.all('engine-definition')).filter(e=>e.accountId===account.id&&e.modelId===source.modelId)){
-   if(e.volume===source.volume&&e.weightPath===source.weightPath)continue;
+   if(e.volume===source.volume&&e.weightPath===source.weightPath&&e.weightPath===`models/${e.modelId}/${e.id}`)continue;
+   const oldId=e.id,newId=source.weightPath.split('/').at(-1);
+   if(oldId!==newId){
+    if(await store.get('engine-definition',newId))throw Error('ENGINE_BINDING_MISMATCH');
+    const links=(await store.all('slot-model-link')).filter(l=>l.engineId===oldId&&l.accountId===account.id);
+    if(!links.length||e.publication||(await store.all('production-project')).some(p=>Object.values(p.modelBindings??{}).includes(oldId)))throw Error('ENGINE_BINDING_IN_USE');
+    e.id=newId;
+    for(const link of links)await store.put('slot-model-link',{...link,engineId:newId});
+    for(const slot of (await store.all('film-slot')).filter(s=>s.accountId===account.id)){
+     const bindings=Object.fromEntries(Object.entries(slot.modelBindings??{}).map(([k,v])=>[k,v===oldId?newId:v]));
+     await store.put('film-slot',{...slot,modelBindings:bindings,...(slot.genericEngineId===oldId?{genericEngineId:newId,locked:true}:{})});
+    }
+    const config=await store.get('production-settings','models');if(config)await store.put('production-settings',{...config,bindings:Object.fromEntries(Object.entries(config.bindings??{}).map(([k,v])=>[k,v===oldId?newId:v]))});
+   }
    e.volume=source.volume;e.weightPath=source.weightPath;e.revision++;delete e.publication;
-   await store.put('engine-definition',e);await store.delete('engine-inspection',e.id);
+   await store.put('engine-definition',e);await store.delete('engine-inspection',oldId);await store.delete('engine-inspection',e.id);
+   if(oldId!==newId)await store.delete('engine-definition',oldId); // Only unused configurations created by this migration.
    if(e.rentalSlotId){const slot=await store.get('film-slot',e.rentalSlotId);if(slot?.genericEngineId!==e.id||slot.accountId!==account.id)throw Error('ENGINE_BINDING_MISMATCH');await store.put('film-slot',{...slot,locked:true});}
    await store.audit('existing_weight_location_linked_unverified',e.id);updated++;
   }
