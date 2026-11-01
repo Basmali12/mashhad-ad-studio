@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-31T23:34:47.732Z",
+  "scope": "Local verification of current sequential-trial integration; no cloud inference is inferred from these tests. This file does not rerun tests or publish anything.",
+  "countsAreNotAdditiveAcrossFocusedReruns": true,
+  "broadSuites": {
+    "nodeBackend": {
+      "tests": 701,
+      "passed": 701,
+      "failed": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "exitCode": 0,
+      "durationMs": 138196.5123,
+      "scope": "Fresh complete Backend Node suite after scoped local-commit recovery and coordinator reconciliation changes; no real provider calls from these tests.",
+      "evidence": {
+        "source": "sequential-node-after-recovery.log",
+        "sourceAlias": "private-primary-sequential-validation logs",
+        "sha256": "1f59a50a59b4fcebc19c3af80293e1e8cd56131314cec62be3e14b16bd6721b2",
+        "bytes": 87401,
+        "modifiedAtUTC": "2026-10-31T23:33:41.778Z"
+      }
+    },
+    "python": {
+      "tests": 246,
+      "passed": 246,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "durationSeconds": 12.923,
+      "scope": "Local Python discovery; model/SDK/cloud boundaries mocked. SDK deprecation warnings are retained in the source log.",
+      "evidence": {
+        "source": "sequential-python-final.log",
+        "sourceAlias": "private-primary-sequential-validation logs",
+        "sha256": "f076d0ee6ebea51b984d8b6de59028faf2595526fb2e332b2d688c423405ede0",
+        "bytes": 8390,
+        "modifiedAtUTC": "2026-10-31T23:11:03.167906Z"
+      }
+    }
+  },
+  "builds": {
+    "customer": {
+      "exitCode": 0,
+      "successMarkerObserved": true,
+      "evidence": {
+        "source": "sequential-build-customer.log",
+        "sourceAlias": "private-primary-sequential-validation logs",
+        "sha256": "81570ae2175afbe54a841b379640e0203a26157c65d86d95456bebb2b2255fc0",
+        "bytes": 1886,
+        "modifiedAtUTC": "2026-10-31T22:23:59.696626Z"
+      }
+    },
+    "admin": {
+      "exitCode": 0,
+      "successMarkerObserved": true,
+      "evidence": {
+        "source": "sequential-build-admin.log",
+        "sourceAlias": "private-primary-sequential-validation logs",
+        "sha256": "58bf0cf6e6ca01645d0cd97f103d96266542cc0ead19233a87f725e346294c03",
+        "bytes": 1212,
+        "modifiedAtUTC": "2026-10-31T22:24:45.683046Z"
+      }
+    }
+  },
+  "typeScript": {
+    "exitCode": 0,
+    "scopes": [
+      "application",
+      "convex compatibility declarations",
+      "worker",
+      "services"
+    ],
+    "evidence": {
+      "source": "sequential-typecheck.log",
+      "sourceAlias": "private-primary-sequential-validation logs",
+      "sha256": "da47de2cf8269792c32a451e877dfdd1d588e44ae7699f18d6940f5e344fd0be",
+      "bytes": 180,
+      "modifiedAtUTC": "2026-10-31T22:12:49.934386Z"
+    }
+  },
+  "lint": {
+    "exitCode": 0,
+    "command": "npm run lint",
+    "evidence": {
+      "source": "sequential-lint-final.log",
+      "sourceAlias": "private-primary-sequential-validation logs",
+      "sha256": "911548d61bac0e36afe6f55e119ad2d304b15e0c49255d1f4b10dd88898eff7f",
+      "bytes": 49,
+      "modifiedAtUTC": "2026-10-31T22:28:19.637614Z"
+    }
+  },
+  "exitStatusProvenance": "Root agent supplied execution status 0 for builds, TypeScript and lint. Preserved logs corroborate command/output; their text does not itself contain a process exit-code receipt. Source timestamps are shown individually and are not represented as a new rerun.",
+  "focusedReruns": [
+    {
+      "tests": 12,
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "doNotAddToBroadTotals": true,
+      "evidence": {
+        "source": "private-helper-checks.log",
+        "sourceAlias": "private-primary-sequential-validation logs",
+        "sha256": "3c60441dc200400cfcc1b2f7293132460121900bdf5a5d52fb45df17451188fc",
+        "bytes": 1679,
+        "modifiedAtUTC": "2026-10-31T22:19:28.170973Z"
+      }
+    },
+    {
+      "tests": 17,
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0,
+      "doNotAddToBroadTotals": true,
+      "evidence": {
+        "source": "private-short-smoke-checks.log",
+        "sourceAlias": "private-primary-sequential-validation logs",
+        "sha256": "47736769bf14c4551c8d749a18596da187cbf9faf67db76a751532ba153229b2",
+        "bytes": 2390,
+        "modifiedAtUTC": "2026-10-31T22:44:39.332828Z"
+      }
+    }
+  ],
+  "latestPrivateSafetyChecks": {
+    "observerHealthAndRename": {
+      "passed": 13,
+      "failed": 0,
+      "source": "services/film-engine/tests/private-commissioning-observation.test.mjs",
+      "evidenceKind": "fresh focused local invocation in this session",
+      "doNotAddToBroadTotals": true
+    },
+    "privateVideoSmokePlan": {
+      "passed": 9,
+      "failed": 0,
+      "source": "services/film-engine/tests/private-hunyuan-smoke-plan.test.mjs",
+      "evidenceKind": "fresh focused local invocation in this session",
+      "doNotAddToBroadTotals": true
+    },
+    "privateStopOnlyScope": {
+      "passed": 10,
+      "failed": 0,
+      "source": "services/film-engine/tests/test_private_model_stop_only.py",
+      "evidenceKind": "fresh focused local invocation in this session",
+      "doNotAddToBroadTotals": true
+    },
+    "collectorAllowlist": {
+      "passed": 1,
+      "failed": 0,
+      "source": "scripts/collect-private-model-trial-evidence.mjs --self-test",
+      "evidenceKind": "fresh focused local invocation after native-metrics allowlist change",
+      "doNotAddToBroadTotals": true
+    }
+  },
+  "limitations": [
+    "Local mocks do not prove actual model quality or cloud readiness.",
+    "Cloud trial evidence is collected separately in completion-04-sequential-trial-20261101.json.",
+    "The original five-second Wan incident is retained in completion-04-watchdog-incident-20261101.json and is not validated by a later one-second success.",
+    "Private visual review is delegated-agent review unless evidence explicitly identifies a human; do not relabel it human approval.",
+    "No GPU, paid API, deployment, account mutation, backup or publication was performed to produce this verification file.",
+    "Focused helper reruns overlap the broad suites and must not be added to 690/246 totals.",
+    "Source build/typecheck/lint timestamps precede later private-only helper changes; those helpers additionally passed focused syntax/lint checks."
+  ],
+  "previousBroadNodeSuite": {
+    "tests": 690,
+    "passed": 690,
+    "failed": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "exitCode": 0,
+    "scope": "Backend/engine Node suite, root sequential invocation, with both local FFmpeg environment variables configured. Not a claim that React tests were run in this invocation.",
+    "evidence": {
+      "source": "sequential-node-final.log",
+      "sourceAlias": "private-primary-sequential-validation logs",
+      "sha256": "bc75b6e62fbd9e13adc6baaa0395af79fc81df005bc1d46648b60c3d48d64986",
+      "bytes": 86227,
+      "modifiedAtUTC": "2026-10-31T23:13:14.519191Z"
+    }
+  },
+  "targetedBackendLint": {
+    "exitCode": 0,
+    "command": "npx eslint --no-ignore services/film-engine/engine/engine-commissioning.mjs services/film-engine/engine/admin-model-test-runner.mjs services/film-engine/engine/wan-video-assets.mjs",
+    "evidence": "Fresh terminal command exit status; initial missing Node-global lint declarations corrected."
+  }
+}

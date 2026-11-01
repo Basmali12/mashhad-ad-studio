@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-31",
+  "test": "actual admin runner + actual FLUX adapter + actual transport authorization; only registry allocation/stop mocked",
+  "reproduced": true,
+  "boundaryFailure": "Provided value cannot be bound to SQLite parameter 2.",
+  "outerFailure": "FLUX_IMAGE_EXECUTION_UNCONFIRMED",
+  "missingAttemptFields": [
+    "quoteId",
+    "chargeId"
+  ],
+  "productionModelRunRows": 0,
+  "cloudRunnerCalls": 0,
+  "simulatedLifecycle": [
+    "start mocked",
+    "stop mocked"
+  ],
+  "customerChargeRows": 0,
+  "productionQuoteRows": 0,
+  "conclusion": "Administrative attempt lacks production quote/charge/run authorization required by the actual transport. SQLite first rejects its undefined quoteId. With a null-tolerant store the subsequent authorization predicate also rejects missing records. Previous mocked transport did not exercise this seam. Paid admission must remain closed until a separately scoped administrative authorization path is fixed and verified.",
+  "paidOperationsPerformed": 0
+}

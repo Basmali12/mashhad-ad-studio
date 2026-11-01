@@ -1,0 +1,74 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {randomUUID} from 'node:crypto';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {hash} from './store.mjs';
+import {appendProductionMix} from './production-mix.mjs';
+import {fileDigest} from './media-digest.mjs';
+import {productionId,productionDirectory,resolveProductionAsset,resolveProductionAudioAsset,verifyProductionFile,verifyLocalVideo,verifyLocalAudio,validateProductionVideo} from './production-artifacts.mjs';
+
+const exec=promisify(execFile),FORMAT='av-assembly-v2-layered';
+const defaultRunner=async(args)=>{try{await exec(process.env.FILM_FFMPEG_PATH||process.env.ENGINE_FFMPEG_BIN||'ffmpeg',['-nostdin','-v','error','-threads','2',...args],{windowsHide:true,timeout:Math.min(28800000,Math.max(1800000,Number(args[args.indexOf('-t')+1]||0)*8000)),maxBuffer:4*1024*1024});}catch(e){throw Error(e.code==='ENOENT'?'PRODUCTION_ASSEMBLY_TOOL_UNAVAILABLE':'PRODUCTION_ASSEMBLY_FAILED');}};
+
+/** Absolute story timing -> chapter-local slices. One source interval is never replayed. */
+export function planProductionSoundtrack({narration=[],effects=[],assets,durationMs,timelineStartMs=0}){
+ if(!Array.isArray(narration)||!Array.isArray(effects)||!Array.isArray(assets)||narration.length+effects.length>256||!Number.isSafeInteger(durationMs)||durationMs<=0||!Number.isSafeInteger(timelineStartMs)||timelineStartMs<0)throw Error('PRODUCTION_INVALID_SOUNDTRACK');
+ const byId=new Map(assets.map(a=>[a.id,a])),ranges=new Map(),tracks=[];
+ for(const [kind,rows] of [['narration',narration],['effect',effects]])for(const item of rows){
+  if(!item||typeof item!=='object')throw Error('PRODUCTION_INVALID_SOUNDTRACK');const source=byId.get(item.assetId),offset=item.sourceOffsetMs??0;
+  if(!source||!productionId(item.assetId)||![item.startMs,item.endMs,offset].every(Number.isSafeInteger)||item.startMs<0||item.endMs<=item.startMs||offset<0||offset+item.endMs-item.startMs>source.durationMs+1)throw Error('PRODUCTION_INVALID_SOUNDTRACK');
+  if(item.layer!==undefined&&!['narration','dialogue','vocal_event','ambience','foley','music'].includes(item.layer)||item.gainDb!==undefined&&(!Number.isFinite(item.gainDb)||item.gainDb< -60||item.gainDb>0)||item.duckingRequested!==undefined&&typeof item.duckingRequested!=='boolean')throw Error('PRODUCTION_INVALID_SOUNDTRACK');
+  if(kind==='narration'){const previous=ranges.get(item.assetId)||[],endOffset=offset+item.endMs-item.startMs;if(previous.some(r=>offset<r.end&&endOffset>r.start))throw Error('PRODUCTION_AUDIO_REPEATED');previous.push({start:offset,end:endOffset});ranges.set(item.assetId,previous);}
+  const start=Math.max(item.startMs,timelineStartMs),end=Math.min(item.endMs,timelineStartMs+durationMs);if(end>start)tracks.push({kind,assetId:item.assetId,startMs:start-timelineStartMs,durationMs:end-start,sourceOffsetMs:offset+start-item.startMs,...(item.layer?{layer:item.layer}:{}),...(item.gainDb!==undefined?{gainDb:item.gainDb}:{}),...(item.duckingRequested!==undefined?{duckingRequested:item.duckingRequested}:{})});
+ }
+ return tracks;
+}
+
+/** Explicit CPU assembly. Imports, listing and resumes never invoke FFmpeg themselves. */
+export function createProductionAssembly({store,now=Date.now,verifyVideo=verifyLocalVideo,verifyAudio=verifyLocalAudio,runFFmpeg=defaultRunner,freeSpace=async folder=>{const v=await fs.statfs(folder);return Number(v.bavail)*Number(v.bsize);}}){
+ const pending=new Map();
+ async function owned(projectId,customerId){if(!productionId(projectId)||!productionId(customerId))throw Error('NOT_FOUND');const p=await store.get('production-project',projectId);if(!p||p.customerId!==customerId)throw Error('NOT_FOUND');if(['cancelled','cancelling','deleted'].includes(p.state)||p.cancelledAt||p.cancelRequested)throw Error('PRODUCTION_CANCELLED');return p;}
+ const keyFor=(projectId,groupId)=>hash('production-group:'+projectId+':'+groupId);
+ async function reuse(record,customerId){if(record.customerId!==customerId)throw Error('NOT_FOUND');return resolveProductionAsset({store,projectId:record.projectId,customerId,assetId:record.assetId});}
+ async function assemble({projectId,customerId,groupId,assetIds,narration,effects=[],timelineStartMs=0,silenceWindows=[],transitions=[],onProgress=async()=>{}}){
+  const project=await owned(projectId,customerId);if(!productionId(groupId)||!Array.isArray(assetIds)||!assetIds.length||assetIds.length>64||assetIds.some(a=>!productionId(a))||new Set(assetIds).size!==assetIds.length)throw Error('PRODUCTION_INVALID_GROUP');
+  const assets=[];for(const assetId of assetIds)assets.push(await resolveProductionAsset({store,projectId,customerId,assetId}));
+  const durationMs=assets.reduce((sum,a)=>sum+a.durationMs,0);if(!Number.isSafeInteger(durationMs)||durationMs>3600000)throw Error('PRODUCTION_INVALID_GROUP');
+  const replaceAudio=narration!==undefined,audioAssets=[];
+  if(!Array.isArray(narration??[])||!Array.isArray(effects)||!Number.isSafeInteger(timelineStartMs)||timelineStartMs<0||timelineStartMs+durationMs>(project.measuredDurationMs??project.durationMs)+80)throw Error('PRODUCTION_INVALID_SOUNDTRACK');
+  for(const id of new Set([...(narration||[]),...effects].map(t=>t.assetId)))audioAssets.push(await resolveProductionAudioAsset({store,projectId,customerId,assetId:id}));
+  const tracks=planProductionSoundtrack({narration:narration||[],effects,assets:audioAssets,durationMs,timelineStartMs});
+  if(!Array.isArray(silenceWindows)||silenceWindows.length>256||silenceWindows.some(w=>!Number.isSafeInteger(w.startMs)||!Number.isSafeInteger(w.endMs)||w.startMs<timelineStartMs||w.endMs<=w.startMs||w.endMs>timelineStartMs+durationMs))throw Error('PRODUCTION_INVALID_SOUNDTRACK');const windows=silenceWindows.map(w=>({startMs:w.startMs-timelineStartMs,endMs:w.endMs-timelineStartMs}));if(tracks.some(t=>['narration','dialogue','vocal_event'].includes(t.layer??(t.kind==='narration'?'narration':'foley'))&&windows.some(w=>w.startMs<t.startMs+t.durationMs&&w.endMs>t.startMs)))throw Object.assign(Error('FINAL_SILENCE_CUTS_SPEECH'),{needsReview:true});
+  if(!Array.isArray(transitions)||transitions.length>64||transitions.some(t=>t.type!=='fade'||t.requested!==true||!Number.isSafeInteger(t.durationMs)||t.durationMs<1||t.durationMs>500||!assetIds.includes(t.assetId)))throw Error('PRODUCTION_INVALID_TRANSITION');
+  const formatIdentity=p=>JSON.stringify([p.width??null,p.height??null,p.fps??null,p.plan?.orientation??null]),sourceIdentity=assets.map(a=>({id:a.id,sha256:a.sha256,durationMs:a.durationMs})),inputFingerprint=hash(JSON.stringify({format:FORMAT,settings:formatIdentity(project),sources:sourceIdentity,replaceAudio,tracks,windows,transitions,audio:audioAssets.map(a=>[a.id,a.sha256]),timelineStartMs})),key=keyFor(projectId,groupId),token=randomUUID();let previous;
+  await store.transaction(async()=>{await owned(projectId,customerId);previous=await store.get('production-assembly',key);if(previous){if(previous.customerId!==customerId||previous.inputFingerprint!==inputFingerprint)throw Error('PRODUCTION_GROUP_ALREADY_COMPLETED');return;}const intent=await store.get('production-assembly-intent',key);if(intent?.state==='writing')throw Error('PRODUCTION_ASSEMBLY_PENDING');await store.put('production-assembly-intent',{id:key,projectId,customerId,groupId,inputFingerprint,token,state:'writing',startedAt:now()});});
+  if(previous)return reuse(previous,customerId);
+  let temporary;
+  try{
+   const requiredBytes=assets.reduce((n,a)=>n+a.bytes,0)*4+audioAssets.reduce((n,a)=>n+a.bytes,0)*2+64*1024*1024;const availableBytes=await freeSpace(store.folder);if(!Number.isFinite(availableBytes)||availableBytes<0)throw Error('PRODUCTION_STORAGE_UNAVAILABLE');if(availableBytes<requiredBytes)throw Error('PRODUCTION_STORAGE_INSUFFICIENT');await onProgress({completed:0,total:assets.length+2,unit:'items'});
+   const metadata=[];for(const asset of assets)metadata.push(validateProductionVideo(await verifyVideo({file:asset.path,expectedDurationMs:asset.durationMs,hasAudio:false}),asset.durationMs,{requireAudio:false}));
+   for(const asset of audioAssets)await verifyAudio({file:asset.path,expectedDurationMs:asset.durationMs});
+   const width=project.width??(project.plan?.orientation==='portrait'?720:project.plan?.orientation==='landscape'?1280:metadata[0].width),height=project.height??(project.plan?.orientation==='portrait'?1280:project.plan?.orientation==='landscape'?720:metadata[0].height),fps=project.fps??(project.plan?25:metadata[0].fps??24);
+   if(metadata.some((m,i)=>Math.abs(m.durationMs-assets[i].durationMs)>1000/(m.fps??fps)+1))throw Object.assign(Error('FINAL_VISUAL_COVERAGE_INSUFFICIENT'),{needsReview:true});
+   if(!Number.isSafeInteger(width)||!Number.isSafeInteger(height)||width<2||height<2||width>8192||height>8192||width%2||height%2||!Number.isFinite(fps)||fps<=0||fps>120)throw Error('PRODUCTION_INVALID_FORMAT');
+   const folder=await productionDirectory(store,['production-groups',projectId,groupId,inputFingerprint],{create:true}),target=path.join(folder,'group.mp4');temporary=path.join(folder,'.working-'+token+'.mp4');
+   const filters=assets.flatMap((asset,index)=>{const seconds=(asset.durationMs/1000).toFixed(6),video=`[${index}:v:0]setpts=PTS-STARTPTS,scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=${fps},tpad=stop_mode=clone:stop_duration=${(1/fps).toFixed(6)},trim=duration=${seconds}${transitions.find(t=>t.assetId===asset.id)?`,fade=t=in:st=0:d=${transitions.find(t=>t.assetId===asset.id).durationMs/1000},fade=t=out:st=${Math.max(0,asset.durationMs-transitions.find(t=>t.assetId===asset.id).durationMs)/1000}:d=${transitions.find(t=>t.assetId===asset.id).durationMs/1000}`:''}[v${index}]`;if(replaceAudio)return [video];return [video,metadata[index].hasAudio?`[${index}:a:0]aresample=48000:async=1:first_pts=0,asetpts=PTS-STARTPTS,apad,atrim=duration=${seconds}[a${index}]`:`anullsrc=channel_layout=stereo:sample_rate=48000,atrim=duration=${seconds},asetpts=PTS-STARTPTS[a${index}]`];});
+   const mix=replaceAudio||tracks.length>0;filters.push(assets.map((_,i)=>`[v${i}]${replaceAudio?'':`[a${i}]`}`).join('')+`concat=n=${assets.length}:v=1:a=${replaceAudio?0:1}[v]${replaceAudio?'':mix?'[base]':'[a]'}`);
+   const usedAudio=audioAssets.filter(a=>tracks.some(t=>t.assetId===a.id));
+   if(mix)appendProductionMix({filters,tracks,usedAudio,inputCount:assets.length,replaceAudio,durationMs,silenceWindows:windows});
+   await onProgress({completed:assets.length,total:assets.length+2,unit:'items'});
+   await runFFmpeg([...assets.flatMap(a=>['-i',a.path]),...usedAudio.flatMap(a=>['-i',a.path]),'-filter_complex_threads','2','-filter_complex',filters.join(';'),'-map','[v]','-map','[a]','-t',(durationMs/1000).toFixed(6),'-c:v','libx264','-crf','18','-preset','fast','-pix_fmt','yuv420p','-c:a','aac','-b:a','192k','-movflags','+faststart','-n',temporary]);
+   await onProgress({completed:assets.length+1,total:assets.length+2,unit:'items'});
+   const output=validateProductionVideo(await verifyVideo({file:temporary,expectedDurationMs:durationMs,hasAudio:true}),durationMs);
+   // Neither source substitution nor cancellation during CPU processing is accepted.
+   for(const a of assets){const latest=await resolveProductionAsset({store,projectId,customerId,assetId:a.id});if(latest.sha256!==a.sha256||latest.durationMs!==a.durationMs||latest.path!==a.path)throw Error('PRODUCTION_ASSET_CHANGED');}for(const a of audioAssets){const latest=await resolveProductionAudioAsset({store,projectId,customerId,assetId:a.id});if(latest.sha256!==a.sha256||latest.durationMs!==a.durationMs)throw Error('PRODUCTION_ASSET_CHANGED');}if(formatIdentity(await owned(projectId,customerId))!==formatIdentity(project))throw Error('PRODUCTION_CONFIG_CHANGED');
+   const sha256=await fileDigest(temporary),checked=await verifyProductionFile(temporary,sha256);await productionDirectory(store,['production-groups',projectId,groupId,inputFingerprint]);
+   try{await fs.link(temporary,target);}catch(e){if(e.code!=='EEXIST')throw e;}await verifyProductionFile(target,sha256);
+   const assetId=hash('production-assembly-asset:'+key+':'+inputFingerprint);let result;
+   await store.transaction(async()=>{await owned(projectId,customerId);const intent=await store.get('production-assembly-intent',key);if(intent?.token!==token||intent.state!=='writing'||intent.inputFingerprint!==inputFingerprint)throw Error('PRODUCTION_ASSEMBLY_PENDING');if(await store.get('production-assembly',key))throw Error('PRODUCTION_GROUP_ALREADY_COMPLETED');result={id:assetId,assetId,projectId,customerId,path:target,...output,bytes:checked.bytes,sha256,status:'completed',generatedBy:'production-assembly-v1',groupId,inputFingerprint,sourceAssetIds:[...assetIds],createdAt:now()};await store.put('production-asset',result);await store.put('production-assembly',{id:key,assetId,projectId,customerId,groupId,inputFingerprint,status:'completed',createdAt:now()});await store.put('production-assembly-intent',{...intent,state:'completed',finishedAt:now()});await store.audit('production_group_assembled',key);});await onProgress({completed:assets.length+2,total:assets.length+2,unit:'items'});return result;
+  }catch(e){await store.transaction(async()=>{const intent=await store.get('production-assembly-intent',key);if(intent?.token===token&&intent.state==='writing')await store.put('production-assembly-intent',{...intent,state:'failed',finishedAt:now()});});throw e;}
+  finally{if(temporary)await fs.unlink(temporary).catch(e=>{if(e.code!=='ENOENT')throw e;});}
+ }
+ return {async recover({processStoppedConfirmed=false}={}){if(processStoppedConfirmed!==true)throw Error('PRODUCTION_RECOVERY_CONFIRMATION_REQUIRED');if(pending.size)throw Error('PRODUCTION_ASSEMBLY_PENDING');for(const r of await store.all('production-assembly-intent'))if(r.state==='writing'&&!await store.get('production-assembly',r.id))await store.put('production-assembly-intent',{...r,state:'failed',error:'LOCAL_PROCESS_INTERRUPTED',finishedAt:now()});},async assembleGroup(input){const key=input.projectId+':'+input.customerId+':'+input.groupId,binding=JSON.stringify([input.assetIds,input.narration??null,input.effects??[],input.timelineStartMs??0,input.silenceWindows??[],input.transitions??[]]),old=pending.get(key);if(old){if(old.binding!==binding)throw Error('PRODUCTION_GROUP_ALREADY_COMPLETED');return old.promise;}const promise=assemble(input);pending.set(key,{binding,promise});try{return await promise;}finally{pending.delete(key);}},async readGroup({projectId,customerId,groupId}){await owned(projectId,customerId);if(!productionId(groupId))throw Error('NOT_FOUND');const record=await store.get('production-assembly',keyFor(projectId,groupId));if(!record)throw Error('NOT_FOUND');return reuse(record,customerId);}};
+}

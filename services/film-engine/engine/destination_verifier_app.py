@@ -8,7 +8,7 @@ import re
 import time
 import modal
 from transfer_contract import (ROOT, MANIFEST, PREFIX, FINGERPRINT, CPU, RAM_MIB,
-                               STARTUP, VERIFY_TIMEOUT, verifier_names, add_profile_files, IDENTITY)
+                               STARTUP, VERIFY_TIMEOUT, verifier_names, add_profile_files, IDENTITY, require_model)
 
 def _verify_models(request):
     volume_name=os.environ.get("IFF_VERIFY_VOLUME", "")
@@ -65,6 +65,7 @@ def _verify_models(request):
 
 
 def create_verifier_app(volume_name, create_volume=True):
+    require_model()
     app_name,state_name=verifier_names(volume_name)
     app=modal.App(app_name)
     volume=modal.Volume.from_name(volume_name,create_if_missing=create_volume)

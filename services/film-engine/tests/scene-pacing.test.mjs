@@ -8,7 +8,7 @@ import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import Arabic from '../engine/arabic-dialogue.cjs';
 import {PACING_VERSION,scenePacing,pacingPrompt,PACING_PLAN_INSTRUCTION} from '../engine/scene-pacing.mjs';
-import {createSceneEditor,idleTailCut,pacedArtifact,sceneContinuation} from '../engine/scene-editor.mjs';
+import {createSceneEditor,idleTailCut,pacedArtifact} from '../engine/scene-editor.mjs';
 import {createFilmMerger,fileDigest} from '../engine/film-merge.mjs';
 const exec=promisify(execFile);
 test('timing is chronological, hidden from spoken script, and retains deliberate silent action',()=>{
@@ -28,7 +28,7 @@ test('quiet alone never cuts action, stillness alone never cuts speech, internal
  assert.equal(idleTailCut({duration:10,quiet:[{start:3,end:10}],still:[{start:6,end:10}]}),151/24);
  assert.equal(idleTailCut({duration:10,quiet:[{start:9.5,end:10}],still:[{start:0,end:10}]}),null);
 });
-test('CPU edit produces verified MP4 and its own continuation frame, merges edited duration, preserves originals and rejects tampering',async t=>{
+test('CPU edit produces verified MP4 and an immutable edited artifact, merges edited duration, preserves originals and rejects tampering',async t=>{
  const ffmpeg=process.env.ENGINE_FFMPEG_BIN||'ffmpeg';try{await exec(ffmpeg,['-version'],{windowsHide:true});}catch{t.skip('Existing FFmpeg unavailable; no binary downloaded');return;}
  const folder=await fs.mkdtemp(path.join(tmpdir(),'pacing-cpu-'));t.after(()=>fs.rm(folder,{recursive:true,force:true}));
  const job={id:randomUUID(),tenantId:'owner',projectId:randomUUID(),result:{videoVerified:true}},scene={jobId:job.id,status:'done',audioContract:{mode:'dialogue'},pacing:{version:PACING_VERSION,tailPolicy:'trim_idle'}},project={id:job.projectId,customerId:'owner',scenes:[scene]};
@@ -38,10 +38,7 @@ test('CPU edit produces verified MP4 and its own continuation frame, merges edit
  job.result.sha256=await fileDigest(source);const original=job.result.sha256,store={folder,get:async(kind,id)=>kind==='job'&&id===job.id?job:null};
  const editor=createSceneEditor({ffmpeg}),edit=await editor.prepare({store,project,scene,job});assert.equal(edit.status,'trimmed');assert.ok(edit.durationSeconds>=2&&edit.durationSeconds<2.2);assert.equal(edit.nativeAudio,true);assert.equal(await fileDigest(source),original);
  const artifact=await pacedArtifact(store,job,edit);assert.match(artifact.frame,/paced-last-frame.png$/);assert.equal(await fileDigest(artifact.frame),edit.frameSHA);
- scene.edit=edit;job.rentalId='same-rental';const next=await sceneContinuation({store,project,prior:scene,job,rentalId:'same-rental',index:1});assert.equal(next.previousSceneId,undefined);assert.deepEqual(Buffer.from(next.initialFrame.split(',')[1],'base64'),await fs.readFile(artifact.frame));
- assert.deepEqual(await sceneContinuation({store,project,prior:{...scene,edit:null},job,rentalId:'same-rental',index:1}),{previousSceneId:'scene-0'});
- await assert.rejects(sceneContinuation({store,project:{...project,customerId:'other'},prior:scene,job,rentalId:'same-rental',index:1}),/CONTINUITY/);
- const merged=await createFilmMerger({ffmpeg,ffprobe:path.join(folder,'no-ffprobe')}).merge({store,project});assert.ok(merged.duration<2.2);assert.equal(merged.audio,true);assert.equal(await fileDigest(source),original);
+ scene.edit=edit;const merged=await createFilmMerger({ffmpeg,ffprobe:path.join(folder,'no-ffprobe')}).merge({store,project});assert.ok(merged.duration<2.2);assert.equal(merged.audio,true);assert.equal(await fileDigest(source),original);
  await assert.rejects(editor.prepare({store,project:{...project,customerId:'other'},scene,job}),/OWNERSHIP/);
  await fs.appendFile(artifact.file,'corrupt');await assert.rejects(pacedArtifact(store,job,edit),/SOURCE_CHANGED/);
 });

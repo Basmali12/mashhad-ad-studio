@@ -2,9 +2,8 @@ import {spawn} from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {existsSync} from 'node:fs';
-import {createHash} from 'node:crypto';
 import {ROOT} from './config.mjs';
-const repo=path.dirname(ROOT),sha=b=>createHash('sha256').update(b).digest('hex');
+const repo=path.dirname(ROOT);
 const POLICY='text-detection-and-local-repair-v1';
 export async function replaceWithRetry(source,target){for(let n=0;;n++){try{return await fs.rename(source,target);}catch(e){if(!['EPERM','EACCES','EBUSY'].includes(e.code)||n===3)throw e;await new Promise(r=>setTimeout(r,50*2**n));}}}
 export class TextQuality {
@@ -48,23 +47,8 @@ export class TextQuality {
    await onEvent({kind:'phase_error',phase:'text_verification',error_type:'GENERATION_SUCCEEDED_TEXT_REVIEW_REQUIRED'});
    return {...result,textQuality:{...quality,policy:POLICY},generationSucceeded:true};
   }
-  const original=await fs.readFile(source),clean=await fs.readFile(output);
-  if(sha(original)!==result.sha256||quality.source_sha256!==result.sha256||sha(clean)!==quality.output_sha256||quality.native_audio_bitstream_unchanged!==true)
-   throw Error('TEXT_QC_INTEGRITY_FAILED');
-  // Preserve raw media/audit before installing the accepted presentation copy.
-  await fs.copyFile(source,path.join(folder,'raw-ltx.mp4'),fs.constants.COPYFILE_EXCL);
-  await fs.copyFile(path.join(folder,'audit.json'),path.join(folder,'raw-ltx-audit.json'),fs.constants.COPYFILE_EXCL);
-  const accepted={...result,sha256:quality.output_sha256,generationSucceeded:true,
-                 textQuality:{...quality,policy:POLICY},rawSHA256:result.sha256};
-  // Continuation must use the accepted cleaned last frame, not embedded captions.
-  const ffmpeg=process.env.ENGINE_FFMPEG_BIN||'ffmpeg';
-  const frame=path.join(folder,'text-clean-last-frame.png');
-  await new Promise((resolve,reject)=>{const child=spawn(ffmpeg,['-nostdin','-v','error','-y','-sseof','-0.05','-i',output,'-frames:v','1',frame],{stdio:'ignore',windowsHide:true});child.once('error',reject);child.once('close',code=>code?reject(Error('TEXT_QC_LAST_FRAME_FAILED')):resolve());});
-  // Commit acceptance last. A local write failure must never produce an audit
-  // claiming the quality gate succeeded before the continuation frame exists.
-  await replaceWithRetry(output,source);await replaceWithRetry(frame,path.join(folder,'last-frame.png'));
-  const receipt=path.join(folder,'audit-text-accepted.tmp');await fs.writeFile(receipt,JSON.stringify(accepted));await replaceWithRetry(receipt,path.join(folder,'audit.json'));
+  // Detection only: retirement never rewrites user media or extracts continuation frames.
   await onEvent({kind:'phase_end',phase:'text_verification'});
-  return accepted;
+  return {...result,textQuality:{...quality,policy:POLICY},generationSucceeded:true};
  }
 }

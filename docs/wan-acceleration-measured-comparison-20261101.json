@@ -1,0 +1,92 @@
+{
+  "schema": "wan-original-accelerated-measured-comparison-v1",
+  "date": "2026-11-01",
+  "scope": "One identical 5-second timeline shot, 81 native frames at 720x1280/16fps; no claim about long-film identity consistency.",
+  "status": "generated_and_cpu_verified",
+  "original": {
+    "reuseExisting": true,
+    "steps": 40,
+    "loadSeconds": 47.047844823,
+    "pipelineSeconds": 1719.344514823,
+    "denoisingSeconds": 1695.593498,
+    "vaeDecodeSeconds": null,
+    "previousEstimatedResourceUSD": 2.7674,
+    "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\01-clock-native.mp4"
+  },
+  "accelerated": {
+    "steps": 4,
+    "revision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+    "sourceCommit": "880b7b156a4eb3ae8af8979a8d44b5e5945e17d2",
+    "loadSeconds": 33.086326231,
+    "pipelineIncludingDecodeAndSaveSeconds": 48.54178167399999,
+    "loadPlusPipelineSeconds": 81.628107905,
+    "nativeProfiler": {
+      "source": "native-timing-lines.json",
+      "textAndImageEncodersSeconds": 4.446524,
+      "denoisingStepSeconds": [
+        26.49138,
+        3.566067,
+        3.568925,
+        3.570026
+      ],
+      "denoisingTotalSeconds": 37.196398,
+      "vaeDecoderSeconds": 5.546399,
+      "note": "Log-derived subphase timings, not retroactively inserted into the original runtime receipt. First step slower; cause not conclusively measured."
+    },
+    "resources": {
+      "gpu": "RTX-PRO-6000",
+      "cpu": 4,
+      "ramGiB": 128
+    },
+    "quantization": "NVFP4",
+    "cfgEnabled": false,
+    "nativeVideoSHA256": "08ff1b6adb03e19cd06b52150d3616aa0972ff4b9a455df75958666d468e50e3",
+    "nativeFrames": 81,
+    "nativeDurationMs": 5062.5,
+    "timelineDurationMs": 5000,
+    "sameReferenceAndPromptVerified": true
+  },
+  "pipelineSpeedRatioThisShot": 35.41988891899115,
+  "visualReview": {
+    "method": "10 chronological full-scene frames plus four original-resolution face crops, and full FFmpeg decoding of the clip. Human review remains required.",
+    "findings": [
+      "More visible upward head and gaze movement in accelerated shot; original is subtler and becomes softer later.",
+      "No obvious person swap or extra limbs in the inspected frames; identity not certified and not tested across scenes.",
+      "Room, shirt and wall-clock composition retained.",
+      "No generated subtitle overlay observed in inspected frames; original clock markings are present.",
+      "Requested gaze is still toward the bright window rather than clearly toward the wall clock; daylight in the shared input does not become the requested night.",
+      "Different native encoders/bitrate: accelerated native file is much smaller. Codec/settings are a confound for fine-detail comparison."
+    ],
+    "qualityCertified": false
+  },
+  "cost": {
+    "recordedAccountDeltaAllComparisonAttemptsUSD": 0.30086935000000015,
+    "billingFinal": false,
+    "note": "Includes preparation, failed compatibility attempts and successful run; delayed accounting prevents treating per-attempt snapshot deltas as an isolated invoice.",
+    "usageLimitUSD": 6.35,
+    "spendLimitUSD": 0
+  },
+  "stopProof": {
+    "at": 1793530079559,
+    "grossUSD": "4.65218790",
+    "recordedAdditionalAllComparisonAttemptsUSD": 0.30086935000000015,
+    "recordedAdditionalSuccessfulAttemptUSD": 0.22000000000000064,
+    "activeApps": [],
+    "tasks": 0,
+    "successfulClipGenerated": true,
+    "secondAdditionalGPUAttemptUsed": false,
+    "usageLimitUSD": 6.35,
+    "spendLimitUSD": 0,
+    "billingFinal": false
+  },
+  "media": {
+    "native": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\lightwan-attempt5\\candidate-native.mp4",
+    "timeline": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\lightwan-attempt5\\candidate-5s.mp4",
+    "comparison": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\lightwan-attempt5\\comparison-original-left-accelerated-right.mp4"
+  },
+  "successfulAdditionalAttempts": 1,
+  "secondAdditionalGPUAttemptUsed": false,
+  "deploymentChanged": false,
+  "originalAssetsPreserved": true,
+  "sharedOriginalPromptEncodingIssuePreservedForFairComparison": true
+}

@@ -24,4 +24,9 @@ worker/runtime/
 # Local generated media, diagnostics, and private verification artifacts.
 /outputs/
 
+# Private trial media, request receipts and local build/test state.
+/work/
+**/__pycache__/
+*.py[cod]
+
 dist-admin/

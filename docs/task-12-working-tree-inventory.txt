@@ -1,0 +1,316 @@
+Task 12 worktree inventory, 2026-10-31. Status against current HEAD; includes pre-existing tasks 1-11 and task 12 changes. Not a backup or proof of live-server state.
+
+ M AGENTS.md
+ D FINAL-FILM-RESEARCH-20261030.md
+ M INTEGRATION-2026-10-29.md
+ M README.md
+ M docs/PREPARATION-RECOVERY-20261030.md
+ M docs/final-film-gallery.md
+ D docs/prompt-pacing-release-candidate.md
+ D scripts/continue-approved-film.mjs
+ M scripts/deploy-primary-transfer-worker.mjs
+ D scripts/import-existing-backup-link.py
+ D scripts/inspect-nor-preparation.mjs
+ D scripts/inspect-nor-quality.py
+ D scripts/inspect-nor-text-regions.py
+ D scripts/install-prompt-pacing.py
+ D scripts/prompt-pacing-release.json
+ M services/film-engine/.env.example
+ M services/film-engine/BRIDGE-CONTRACT.md
+ M services/film-engine/NATIVE-BRIDGE.md
+ M services/film-engine/OPERATIONS.md
+ M services/film-engine/README.md
+ M services/film-engine/bridge-contract.json
+ M services/film-engine/engine/api.mjs
+ M services/film-engine/engine/cinematography.mjs
+ M services/film-engine/engine/cloud_transfer_core.py
+ M services/film-engine/engine/cloud_transfer_host.py
+ M services/film-engine/engine/config.mjs
+ M services/film-engine/engine/deploy_transfer_worker.py
+ M services/film-engine/engine/destination_verifier_app.py
+ M services/film-engine/engine/film-contracts.ts
+ M services/film-engine/engine/film-media-library.mjs
+ M services/film-engine/engine/film-money.mjs
+ M services/film-engine/engine/film-platform.mjs
+ M services/film-engine/engine/film-review.mjs
+ M services/film-engine/engine/generation-rules.mjs
+ D services/film-engine/engine/gpu_host.py
+ D services/film-engine/engine/ingredients-plan.json
+ M services/film-engine/engine/modal_bridge.py
+ M services/film-engine/engine/openai-director.mjs
+ M services/film-engine/engine/provider.mjs
+ M services/film-engine/engine/provision-primary.mjs
+ D services/film-engine/engine/requirements-test.lock
+ D services/film-engine/engine/runtime/benchmark_image.py
+ D services/film-engine/engine/runtime/build-requirements.lock
+ D services/film-engine/engine/runtime/cloud_output.py
+ D services/film-engine/engine/runtime/conv-profile.json
+ D services/film-engine/engine/runtime/dfr_engine.py
+ D services/film-engine/engine/runtime/engine.py
+ D services/film-engine/engine/runtime/gpu_service.py
+ D services/film-engine/engine/runtime/inference_profile.py
+ D services/film-engine/engine/runtime/planner.py
+ D services/film-engine/engine/runtime/production-profile.json
+ D services/film-engine/engine/runtime/requirements-remote.lock
+ D services/film-engine/engine/runtime/residency.py
+ D services/film-engine/engine/runtime/settings.py
+ D services/film-engine/engine/runtime/source-manifest.json
+ D services/film-engine/engine/runtime/story-full.json
+ D services/film-engine/engine/runtime/story-horror.json
+ D services/film-engine/engine/runtime/story-short.json
+ D services/film-engine/engine/runtime/story.py
+ D services/film-engine/engine/runtime/telemetry.py
+ D services/film-engine/engine/runtime/weights.py
+ M services/film-engine/engine/scene-editor.mjs
+ M services/film-engine/engine/text-quality.mjs
+ M services/film-engine/engine/transfer-profile.mjs
+ M services/film-engine/engine/transfer_contract.py
+ M services/film-engine/engine/transfer_identity.py
+ M services/film-engine/engine/transfer_worker.py
+ M services/film-engine/service.mjs
+ M services/film-engine/tests/admin-commissioning.test.mjs
+ M services/film-engine/tests/ai-wallet.test.mjs
+ M services/film-engine/tests/artifact-storage.test.mjs
+ M services/film-engine/tests/chat-persona.test.mjs
+ M services/film-engine/tests/cinematography.test.mjs
+ D services/film-engine/tests/conv-fixture-profile.mjs
+ D services/film-engine/tests/dfr-profile.test.mjs
+ D services/film-engine/tests/director-follow.test.mjs
+ M services/film-engine/tests/film-orientation.test.mjs
+ M services/film-engine/tests/film-progress.test.mjs
+ M services/film-engine/tests/foundation.test.mjs
+ M services/film-engine/tests/media-retention.test.mjs
+ M services/film-engine/tests/platform.test.mjs
+ M services/film-engine/tests/preparation-observation.test.mjs
+ M services/film-engine/tests/preparation-recovery.test.mjs
+ M services/film-engine/tests/preparation.test.mjs
+ M services/film-engine/tests/prompt-contract.test.mjs
+ M services/film-engine/tests/provider-builder.test.mjs
+ M services/film-engine/tests/retirement.test.mjs
+ M services/film-engine/tests/scene-pacing.test.mjs
+ M services/film-engine/tests/test_profile_preparation.py
+ D services/film-engine/tests/test_profiles.py
+ M services/film-engine/tests/test_transfer_setup.py
+ M services/film-engine/tests/transfer-service.test.mjs
+ M services/film-engine/tests/validate_transfer_images.py
+ M services/film-engine/tests/visual-acceptance.test.mjs
+ M services/film-engine/tests/visual-world.test.mjs
+ M services/film-gateway/film-bridge.mjs
+ M services/film-gateway/tests/gateway.check.mjs
+ M shared/film-contracts.ts
+ M shared/film-request-policy.ts
+ M src/features/film/AccountSetup.tsx
+ M src/features/film/AdminCommissioning.tsx
+ M src/features/film/AdminVideoTest.test.tsx
+ M src/features/film/AdminVideoTest.tsx
+ M src/features/film/FilmAdmin.tsx
+ M src/features/film/FilmThumbnail.tsx
+ M src/features/film/FilmWorkspace.tsx
+ M src/features/film/accountSetup.test.tsx
+ M src/features/film/accountSetupModel.ts
+ M src/features/film/filmTransport.test.ts
+ M src/features/film/filmTransport.ts
+?? docs/TASK-12-FINAL-READINESS-REPORT-2026-10-31.md
+?? docs/task-01-retirement.md
+?? docs/task-02-engine-infrastructure.md
+?? docs/task-02-model-sources.md
+?? docs/task-03-production-workflow.md
+?? docs/task-04-flux-integration.md
+?? docs/task-04-flux-runtime.md
+?? docs/task-05-qwen-integration.md
+?? docs/task-05-qwen-runtime.md
+?? docs/task-06-wan-integration.md
+?? docs/task-06-wan-runtime.md
+?? docs/task-07-hunyuan-integration.md
+?? docs/task-07-hunyuan-runtime.md
+?? docs/task-08-speech-integration.md
+?? docs/task-08-speech-runtime.md
+?? docs/task-09-smart-director.md
+?? docs/task-10-cinematic-integration.md
+?? docs/task-10-latentsync-runtime.md
+?? docs/task-10-timeline-sync.md
+?? docs/task-11-final-production.md
+?? docs/task-11-final-quality.md
+?? docs/task-11-sound-effects.md
+?? docs/task-12-admin-api-audit.md
+?? docs/task-12-gpu-test-plan.json
+?? docs/task-12-gpu-test-plan.md
+?? docs/task-12-long-film-audit.md
+?? docs/task-12-model-audit.md
+?? docs/task-12-node-security.json
+?? docs/task-12-secret-scan.json
+?? docs/task-12-verification.json
+?? docs/task-12-working-tree-inventory.txt
+?? services/film-engine/engine/cinematic-media.mjs
+?? services/film-engine/engine/cinematic-sync.mjs
+?? services/film-engine/engine/cinematic-timeline-sync.mjs
+?? services/film-engine/engine/director-research.mjs
+?? services/film-engine/engine/director-story.mjs
+?? services/film-engine/engine/engine-registry.mjs
+?? services/film-engine/engine/final-film-composer.mjs
+?? services/film-engine/engine/final-film-quality.mjs
+?? services/film-engine/engine/final-film-thumbnail.mjs
+?? services/film-engine/engine/flux-image-assets.mjs
+?? services/film-engine/engine/flux-integration.mjs
+?? services/film-engine/engine/flux-modal-transport.mjs
+?? services/film-engine/engine/flux-prompt.mjs
+?? services/film-engine/engine/flux/__init__.py
+?? services/film-engine/engine/flux/deploy.py
+?? services/film-engine/engine/flux/image.py
+?? services/film-engine/engine/flux/modal_app.py
+?? services/film-engine/engine/flux/model-manifest.json
+?? services/film-engine/engine/flux/prepare.py
+?? services/film-engine/engine/flux/requirements-cpu.lock
+?? services/film-engine/engine/flux/requirements-gpu.lock
+?? services/film-engine/engine/flux/runtime.py
+?? services/film-engine/engine/flux_modal_bridge.py
+?? services/film-engine/engine/hunyuan-integration.mjs
+?? services/film-engine/engine/hunyuan-modal-transport.mjs
+?? services/film-engine/engine/hunyuan-prompt.mjs
+?? services/film-engine/engine/hunyuan/__init__.py
+?? services/film-engine/engine/hunyuan/deploy.py
+?? services/film-engine/engine/hunyuan/image.py
+?? services/film-engine/engine/hunyuan/modal_app.py
+?? services/film-engine/engine/hunyuan/model-manifest.json
+?? services/film-engine/engine/hunyuan/prepare.py
+?? services/film-engine/engine/hunyuan/requirements-cpu.lock
+?? services/film-engine/engine/hunyuan/requirements-gpu.lock
+?? services/film-engine/engine/hunyuan/runtime.py
+?? services/film-engine/engine/image-quality.mjs
+?? services/film-engine/engine/latentsync-integration.mjs
+?? services/film-engine/engine/latentsync-modal-transport.mjs
+?? services/film-engine/engine/latentsync/__init__.py
+?? services/film-engine/engine/latentsync/alignment.py
+?? services/film-engine/engine/latentsync/backend.py
+?? services/film-engine/engine/latentsync/deploy.py
+?? services/film-engine/engine/latentsync/image.py
+?? services/film-engine/engine/latentsync/manifest.json
+?? services/film-engine/engine/latentsync/modal_app.py
+?? services/film-engine/engine/latentsync/prepare.py
+?? services/film-engine/engine/latentsync/requirements-cpu.lock
+?? services/film-engine/engine/latentsync/requirements-gpu.lock
+?? services/film-engine/engine/latentsync/runtime.py
+?? services/film-engine/engine/model-profile.json
+?? services/film-engine/engine/model_profile.py
+?? services/film-engine/engine/production-artifacts.mjs
+?? services/film-engine/engine/production-assembly.mjs
+?? services/film-engine/engine/production-billing.mjs
+?? services/film-engine/engine/production-costs.mjs
+?? services/film-engine/engine/production-director.mjs
+?? services/film-engine/engine/production-engine.mjs
+?? services/film-engine/engine/production-mix.mjs
+?? services/film-engine/engine/production-models.mjs
+?? services/film-engine/engine/production-plan.mjs
+?? services/film-engine/engine/production-renderer.mjs
+?? services/film-engine/engine/qwen-integration.mjs
+?? services/film-engine/engine/qwen-modal-transport.mjs
+?? services/film-engine/engine/qwen-prompt.mjs
+?? services/film-engine/engine/qwen/__init__.py
+?? services/film-engine/engine/qwen/deploy.py
+?? services/film-engine/engine/qwen/image.py
+?? services/film-engine/engine/qwen/modal_app.py
+?? services/film-engine/engine/qwen/model-manifest.json
+?? services/film-engine/engine/qwen/prepare.py
+?? services/film-engine/engine/qwen/requirements-cpu.lock
+?? services/film-engine/engine/qwen/requirements-gpu.lock
+?? services/film-engine/engine/qwen/runtime.py
+?? services/film-engine/engine/sound-effects.mjs
+?? services/film-engine/engine/speech-audio-assets.mjs
+?? services/film-engine/engine/speech-audio-merge.mjs
+?? services/film-engine/engine/speech-integration.mjs
+?? services/film-engine/engine/speech-modal-transport.mjs
+?? services/film-engine/engine/speech-policy.mjs
+?? services/film-engine/engine/speech/__init__.py
+?? services/film-engine/engine/speech/backends.py
+?? services/film-engine/engine/speech/deploy.py
+?? services/film-engine/engine/speech/image.py
+?? services/film-engine/engine/speech/manifests/audar-tts-v1-flash.json
+?? services/film-engine/engine/speech/manifests/habibi-egy.json
+?? services/film-engine/engine/speech/manifests/habibi-irq.json
+?? services/film-engine/engine/speech/manifests/habibi-msa.json
+?? services/film-engine/engine/speech/modal_app.py
+?? services/film-engine/engine/speech/prepare.py
+?? services/film-engine/engine/speech/requirements-cpu.lock
+?? services/film-engine/engine/speech/requirements-gpu.lock
+?? services/film-engine/engine/speech/runtime.py
+?? services/film-engine/engine/sync-assets.mjs
+?? services/film-engine/engine/video-comparison-hooks.mjs
+?? services/film-engine/engine/video-comparison.mjs
+?? services/film-engine/engine/video-routing.mjs
+?? services/film-engine/engine/voice-profiles.mjs
+?? services/film-engine/engine/wan-integration.mjs
+?? services/film-engine/engine/wan-modal-transport.mjs
+?? services/film-engine/engine/wan-prompt.mjs
+?? services/film-engine/engine/wan-shot-plan.mjs
+?? services/film-engine/engine/wan-video-assets.mjs
+?? services/film-engine/engine/wan/__init__.py
+?? services/film-engine/engine/wan/deploy.py
+?? services/film-engine/engine/wan/image.py
+?? services/film-engine/engine/wan/modal_app.py
+?? services/film-engine/engine/wan/model-manifest.json
+?? services/film-engine/engine/wan/prepare.py
+?? services/film-engine/engine/wan/requirements-cpu.lock
+?? services/film-engine/engine/wan/requirements-gpu.lock
+?? services/film-engine/engine/wan/runtime.py
+?? services/film-engine/tests/cinematic-media.test.mjs
+?? services/film-engine/tests/cinematic-sync.test.mjs
+?? services/film-engine/tests/cinematic-timeline-sync.test.mjs
+?? services/film-engine/tests/director-adoption.test.mjs
+?? services/film-engine/tests/director-research-flow.test.mjs
+?? services/film-engine/tests/director-research.test.mjs
+?? services/film-engine/tests/director-story.test.mjs
+?? services/film-engine/tests/director-structured.test.mjs
+?? services/film-engine/tests/engine-accounts.test.mjs
+?? services/film-engine/tests/engine-registry.test.mjs
+?? services/film-engine/tests/final-film-quality.test.mjs
+?? services/film-engine/tests/final-production.test.mjs
+?? services/film-engine/tests/flux-image-assets.test.mjs
+?? services/film-engine/tests/flux-integration.test.mjs
+?? services/film-engine/tests/flux-modal-transport.test.mjs
+?? services/film-engine/tests/hunyuan-integration.test.mjs
+?? services/film-engine/tests/hunyuan-modal-transport.test.mjs
+?? services/film-engine/tests/image-quality.test.mjs
+?? services/film-engine/tests/latentsync-integration.test.mjs
+?? services/film-engine/tests/latentsync-modal-transport.test.mjs
+?? services/film-engine/tests/model-retirement.test.mjs
+?? services/film-engine/tests/production-artifacts.test.mjs
+?? services/film-engine/tests/production-assembly.test.mjs
+?? services/film-engine/tests/production-billing.test.mjs
+?? services/film-engine/tests/production-director.test.mjs
+?? services/film-engine/tests/production-engine.test.mjs
+?? services/film-engine/tests/production-models.test.mjs
+?? services/film-engine/tests/production-plan.test.mjs
+?? services/film-engine/tests/production-renderer.test.mjs
+?? services/film-engine/tests/qwen-integration.test.mjs
+?? services/film-engine/tests/qwen-modal-transport.test.mjs
+?? services/film-engine/tests/sound-effects.test.mjs
+?? services/film-engine/tests/speech-audio-assets.test.mjs
+?? services/film-engine/tests/speech-integration.test.mjs
+?? services/film-engine/tests/speech-modal-transport.test.mjs
+?? services/film-engine/tests/task12-readiness.test.mjs
+?? services/film-engine/tests/test_flux_modal_transport.py
+?? services/film-engine/tests/test_flux_runtime.py
+?? services/film-engine/tests/test_hunyuan_modal_transport.py
+?? services/film-engine/tests/test_hunyuan_runtime.py
+?? services/film-engine/tests/test_latentsync_runtime.py
+?? services/film-engine/tests/test_model_retirement.py
+?? services/film-engine/tests/test_qwen_modal_transport.py
+?? services/film-engine/tests/test_qwen_runtime.py
+?? services/film-engine/tests/test_speech_modal_transport.py
+?? services/film-engine/tests/test_speech_runtime.py
+?? services/film-engine/tests/test_task12_dependency_contracts.py
+?? services/film-engine/tests/test_wan_modal_transport.py
+?? services/film-engine/tests/test_wan_runtime.py
+?? services/film-engine/tests/video-comparison.test.mjs
+?? services/film-engine/tests/voice-fixtures.mjs
+?? services/film-engine/tests/voice-profiles.test.mjs
+?? services/film-engine/tests/wan-integration.test.mjs
+?? services/film-engine/tests/wan-modal-transport.test.mjs
+?? services/film-engine/tests/wan-video-assets.test.mjs
+?? shared/cinematic-contracts.ts
+?? shared/director-contracts.ts
+?? shared/engine-catalog.ts
+?? shared/final-film-contracts.ts
+?? shared/production-contracts.ts
+?? src/features/film/EngineDefinitions.test.tsx
+?? src/features/film/EngineDefinitions.tsx

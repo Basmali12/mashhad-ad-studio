@@ -1,0 +1,7 @@
+{
+  "upstreamSHA256": "636b6c536a0a35acc4a31b7571a53f3ca86a409801e5fb6363f65376a9705e2f",
+  "derivedSHA256": "d414addcc02b7cffabee8bf544cafc72fe095f4189f7a121a9638836245d0862",
+  "onlyChange": "workspace package name irodori-tts -> arabic-tts",
+  "dependencyGraphEqual": true,
+  "cloudBuildVerified": false
+}

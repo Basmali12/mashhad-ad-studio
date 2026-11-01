@@ -1,0 +1,19 @@
+{
+  "at": 1793529732931,
+  "grossUSD": "4.43218790",
+  "additionalSinceComparisonBaselineUSD": 0.0808693499999995,
+  "remainingToAccountCapUSD": 1.9178121,
+  "activeApps": [],
+  "tasks": 0,
+  "kernelInspectionPassed": true,
+  "weightsLoadedOnGPU": true,
+  "denoisingStarted": false,
+  "videoGenerated": false,
+  "error": "Explicit negative_prompt is rejected with CFG disabled",
+  "fix": "Omit unsupported negative_prompt, preserving original positive prompt and exact input image. Strict-signature regression reproduced the failure and passes after correction.",
+  "localTestsPassed": 18,
+  "automaticRetry": false,
+  "accountLimitUSD": 6.35,
+  "spendLimitUSD": 0,
+  "billingFinal": false
+}

@@ -1,0 +1,71 @@
+{
+  "checkedDate": "2026-10-31",
+  "repository": "Basmali12/mashhad-ad-studio",
+  "branch": "codex/ltx-film-engine-integration",
+  "head": "d875cd769355c8822d3c9f6aa837ba666c3fa207",
+  "scope": "Task 12 only; local worktree, no commit/push/deployment",
+  "tests": {
+    "backend": {
+      "passed": 494,
+      "failed": 0,
+      "composition": "485 final regression tests plus 9 unchanged long-film tests; repeated runs counted once",
+      "runner": "node --test services/film-engine/tests/*.test.mjs"
+    },
+    "python": {
+      "passed": 174,
+      "failed": 0,
+      "runner": "python -X utf8 -m unittest discover -s services/film-engine/tests -p test_*.py"
+    },
+    "gateway": {
+      "passed": 64,
+      "failed": 0,
+      "runner": "npm run film:gateway:check"
+    },
+    "react": {
+      "passed": 694,
+      "failed": 0,
+      "files": 167,
+      "runner": "npm test"
+    },
+    "uniqueTotalPassed": 1426,
+    "uniqueTotalFailed": 0
+  },
+  "checks": {
+    "customerBuildAndTypecheck": "passed",
+    "adminBuildAndTypecheck": "passed",
+    "reelsWorkerBuild": "passed; no service started",
+    "eslint": "passed; repository config plus explicit new engine files",
+    "pythonCompileall": "passed",
+    "modalSdkDefinitionValidator": "passed without hydration or dispatch",
+    "localFfmpegMediaTests": "passed; synthetic local media only",
+    "gitDiffCheck": "passed with LF/CRLF warnings"
+  },
+  "security": {
+    "npmProductionAuditHighEntries": 2,
+    "npmProductionAuditCriticalEntries": 0,
+    "sameAdvisoryChain": "GHSA-mrhx-c7xc-m3w5; zod via @imgly/background-removal",
+    "forcedDependencyUpdate": false,
+    "secretScanDetails": "task-12-secret-scan.json; bounded current text scan only"
+  },
+  "longFilmMocksSeconds": [
+    30,
+    60,
+    300,
+    600,
+    1200,
+    3600
+  ],
+  "liveVerified": {
+    "gpuInference": false,
+    "modelImageBuild": false,
+    "weightsDownloaded": false,
+    "openaiRequest": false,
+    "modalDispatch": false,
+    "livePostgresql": false,
+    "serverCurrentState": false,
+    "productionDeployment": false
+  },
+  "releaseDecision": "NOT READY: customer pipeline and generic test/approve/publish/rental wiring incomplete; licence, real native validation, npm security and internal-media retention gates unresolved",
+  "report": "TASK-12-FINAL-READINESS-REPORT-2026-10-31.md",
+  "futureGpuPlanExecuted": false
+}

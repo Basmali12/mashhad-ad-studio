@@ -27,3 +27,8 @@ it('does not dispatch for a changed actor and never retries an uncertain paid re
  await expect(filmTransport(async()=>({Authorization:'Bearer fixture'}),()=>false,fetcher)('session',{},'request-id')).rejects.toThrow('تغيّر الحساب');expect(fetcher).not.toHaveBeenCalled();
  await expect(filmTransport(async()=>({Authorization:'Bearer fixture'}),()=>true,fetcher)('rental.start',{},'paid-request-id')).rejects.toThrow();expect(fetcher).toHaveBeenCalledOnce();
 });
+it('retired generation reports a safe unavailable-engine message without exposing provider details or retrying',async()=>{
+ const fetcher=vi.fn<typeof fetch>(async()=>Response.json({error:'ENGINE_NOT_CONFIGURED',message:'private provider details'},{status:503}));
+ await expect(filmTransport(async()=>({Authorization:'Bearer fixture'}),()=>true,fetcher)('project.launch',{},'retired-engine-check')).rejects.toThrow('إنتاج الفيديو متوقف إلى حين إعداد محرك جديد');
+ expect(fetcher).toHaveBeenCalledOnce();
+});

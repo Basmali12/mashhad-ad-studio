@@ -1,0 +1,404 @@
+{
+  "schema": "wan-accelerated-manifest-v1",
+  "checkedAt": "2026-11-01",
+  "modelId": "wan22-i2v-a14b",
+  "profileId": "accelerated-lightwan-nvfp4-4step",
+  "version": "2.2",
+  "source": {
+    "repo": "https://github.com/ModelTC/LightX2V",
+    "commit": "880b7b156a4eb3ae8af8979a8d44b5e5945e17d2"
+  },
+  "weights": {
+    "repoId": "lightx2v/LightWan2.2-A14B",
+    "revision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+    "license": "Apache-2.0"
+  },
+  "base": {
+    "repoId": "Wan-AI/Wan2.2-I2V-A14B",
+    "revision": "206a9ee1b7bfaaf8f7e4d81335650533490646a3",
+    "license": "Apache-2.0",
+    "layout": "native_lightx2v",
+    "existingDiffusersLayoutCompatible": false,
+    "nativeExpertsRequired": false,
+    "note": "Quantizedexpertpathsreplace originalexperts. NativeT5pth/VAEpth/tokenizer required; existingDiffusers safetensors arenotdropin orcertifiedconversion."
+  },
+  "files": [
+    {
+      "repoId": "lightx2v/LightWan2.2-A14B",
+      "revision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+      "path": "lightwan/Wan2.2-I2V-A14B_NVFP4_Sparse_high.safetensors",
+      "targetPath": "lightwan/Wan2.2-I2V-A14B_NVFP4_Sparse_high.safetensors",
+      "size": 8379833592,
+      "sha256": "c77b92616d678fa8373462973a3d2e3ceefd2fbdb3ccf33454e74f4c79fcf07a",
+      "role": "high_noise_nvfp4",
+      "remotePath": "Wan2.2-I2V-A14B_NVFP4_Sparse_high.safetensors"
+    },
+    {
+      "repoId": "lightx2v/LightWan2.2-A14B",
+      "revision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+      "path": "lightwan/Wan2.2-I2V-A14B_NVFP4_Sparse_low.safetensors",
+      "targetPath": "lightwan/Wan2.2-I2V-A14B_NVFP4_Sparse_low.safetensors",
+      "size": 8379833592,
+      "sha256": "d76b53286dd9b68f5d956941037c0a6fd5a1fe0fd05eb97f8bf8abf9915da562",
+      "role": "low_noise_nvfp4",
+      "remotePath": "Wan2.2-I2V-A14B_NVFP4_Sparse_low.safetensors"
+    },
+    {
+      "repoId": "Wan-AI/Wan2.2-I2V-A14B",
+      "revision": "206a9ee1b7bfaaf8f7e4d81335650533490646a3",
+      "path": "base/models_t5_umt5-xxl-enc-bf16.pth",
+      "targetPath": "base/models_t5_umt5-xxl-enc-bf16.pth",
+      "size": 11361920418,
+      "sha256": "7cace0da2b446bbbbc57d031ab6cf163a3d59b366da94e5afe36745b746fd81d",
+      "role": "text_encoder_native",
+      "remotePath": "models_t5_umt5-xxl-enc-bf16.pth"
+    },
+    {
+      "repoId": "Wan-AI/Wan2.2-I2V-A14B",
+      "revision": "206a9ee1b7bfaaf8f7e4d81335650533490646a3",
+      "path": "base/Wan2.1_VAE.pth",
+      "targetPath": "base/Wan2.1_VAE.pth",
+      "size": 507609880,
+      "sha256": "38071ab59bd94681c686fa51d75a1968f64e470262043be31f7a094e442fd981",
+      "role": "vae_native",
+      "remotePath": "Wan2.1_VAE.pth"
+    },
+    {
+      "repoId": "Wan-AI/Wan2.2-I2V-A14B",
+      "revision": "206a9ee1b7bfaaf8f7e4d81335650533490646a3",
+      "path": "base/google/umt5-xxl/special_tokens_map.json",
+      "targetPath": "base/google/umt5-xxl/special_tokens_map.json",
+      "size": 6623,
+      "sha256": "7b8a9f5040adb67b5805abdfd42c1f8d0f3d0e711f10726580eb3789cd0ad61d",
+      "role": "tokenizer_native",
+      "remotePath": "google/umt5-xxl/special_tokens_map.json"
+    },
+    {
+      "repoId": "Wan-AI/Wan2.2-I2V-A14B",
+      "revision": "206a9ee1b7bfaaf8f7e4d81335650533490646a3",
+      "path": "base/google/umt5-xxl/spiece.model",
+      "targetPath": "base/google/umt5-xxl/spiece.model",
+      "size": 4548313,
+      "sha256": "e3909a67b780650b35cf529ac782ad2b6b26e6d1f849d3fbb6a872905f452458",
+      "role": "tokenizer_native",
+      "remotePath": "google/umt5-xxl/spiece.model"
+    },
+    {
+      "repoId": "Wan-AI/Wan2.2-I2V-A14B",
+      "revision": "206a9ee1b7bfaaf8f7e4d81335650533490646a3",
+      "path": "base/google/umt5-xxl/tokenizer.json",
+      "targetPath": "base/google/umt5-xxl/tokenizer.json",
+      "size": 16837417,
+      "sha256": "6e197b4d3dbd71da14b4eb255f4fa91c9c1f2068b20a2de2472967ca3d22602b",
+      "role": "tokenizer_native",
+      "remotePath": "google/umt5-xxl/tokenizer.json"
+    },
+    {
+      "repoId": "Wan-AI/Wan2.2-I2V-A14B",
+      "revision": "206a9ee1b7bfaaf8f7e4d81335650533490646a3",
+      "path": "base/google/umt5-xxl/tokenizer_config.json",
+      "targetPath": "base/google/umt5-xxl/tokenizer_config.json",
+      "size": 61728,
+      "sha256": "ed9a3a8b0faa71a70a32847e0435fe036e6e112d4df4edb7bb48a921e344dc05",
+      "role": "tokenizer_native",
+      "remotePath": "google/umt5-xxl/tokenizer_config.json"
+    },
+    {
+      "repoId": "Wan-AI/Wan2.2-I2V-A14B",
+      "revision": "206a9ee1b7bfaaf8f7e4d81335650533490646a3",
+      "path": "base/high_noise_model/config.json",
+      "targetPath": "base/high_noise_model/config.json",
+      "size": 250,
+      "sha256": "481cf6e035b2aa9c442512ca08cc69a8d371799dc4d1626426ab8714e78add47",
+      "role": "native_model_config",
+      "remotePath": "high_noise_model/config.json"
+    },
+    {
+      "repoId": "Wan-AI/Wan2.2-I2V-A14B",
+      "revision": "206a9ee1b7bfaaf8f7e4d81335650533490646a3",
+      "path": "base/low_noise_model/config.json",
+      "targetPath": "base/low_noise_model/config.json",
+      "size": 250,
+      "sha256": "481cf6e035b2aa9c442512ca08cc69a8d371799dc4d1626426ab8714e78add47",
+      "role": "native_model_config",
+      "remotePath": "low_noise_model/config.json"
+    }
+  ],
+  "totalBytes": 28650652063,
+  "totalGiB": 26.68299904372543,
+  "runtime": {
+    "image": "lightx2v/lightx2v:26052801-cu130-5090",
+    "imageDigest": "sha256:a7e92ffa9c9a5320f8b68dc5b733abbcf56062d13d472548bb2f11769359af97",
+    "imageRegistryMetadataSource": "https://hub.docker.com/v2/repositories/lightx2v/lightx2v/tags/26052801-cu130-5090",
+    "imageCompressedBytes": 18967940228,
+    "imagePlatform": "linux/amd64",
+    "cuda": "13.0 (recommended image tag)",
+    "python": "officialgenericminimum3.10; exactimageinstalledversionnotinspected",
+    "torch": "nativekernelbuildrequires>=2.7; exactimageversionandABIunverified",
+    "sourceCommit": "880b7b156a4eb3ae8af8979a8d44b5e5945e17d2",
+    "pythonApi": {
+      "module": "lightx2v",
+      "class": "LightX2VPipeline",
+      "init": {
+        "model_cls": "wan2.2_moe",
+        "task": "i2v",
+        "distill_method": "dmd2"
+      },
+      "create": "create_generator(config_json=isolated_runtime_config, fps=16)",
+      "generate": "generate(seed=42,prompt=exact_prompt,negative_prompt=exact_negative_prompt,image_path=owned_png,save_result_path=unique_mp4,size=(height,width),num_frames=81)"
+    },
+    "configSource": "https://github.com/ModelTC/LightX2V/blob/880b7b156a4eb3ae8af8979a8d44b5e5945e17d2/configs/wan22/extreme/wan_moe_i2v_distill_nvfp4_sparse_attn.json",
+    "configSourceSHA256": "05046a5e5487cf0e0372cc7b93d9438b20dd3bba3468aacee2a6296d5bd2a2d5",
+    "configDefaults": {
+      "infer_steps": 4,
+      "num_frames": 81,
+      "text_len": 512,
+      "size": [
+        720,
+        1280
+      ],
+      "distill_method": "dmd2",
+      "self_attn_1_type": "dynamic_sparse_attn",
+      "dynamic_sparse_attn_setting": {
+        "sparsity_ratio": 0.9,
+        "operator": "sage2"
+      },
+      "cross_attn_1_type": "sage_attn2",
+      "sample_guide_scale": [
+        3.5,
+        3.5
+      ],
+      "sample_shift": 7,
+      "enable_cfg": false,
+      "cpu_offload": false,
+      "t5_cpu_offload": true,
+      "vae_cpu_offload": false,
+      "use_image_encoder": false,
+      "boundary_step_index": 2,
+      "denoising_step_list": [
+        1000,
+        750,
+        500,
+        250
+      ],
+      "dit_quantized": true,
+      "dit_quant_scheme": "nvfp4",
+      "high_noise_quantized_ckpt": "lightwan/Wan2.2-I2V-A14B_NVFP4_Sparse_high.safetensors",
+      "low_noise_quantized_ckpt": "lightwan/Wan2.2-I2V-A14B_NVFP4_Sparse_low.safetensors",
+      "high_noise_original_ckpt": null,
+      "low_noise_original_ckpt": null,
+      "fps": 16
+    },
+    "orientationSizes": {
+      "landscape": [
+        720,
+        1280
+      ],
+      "portrait": [
+        1280,
+        720
+      ]
+    },
+    "imageEncoderRequired": false,
+    "configNotes": [
+      "UpstreamNVFP4presetdefaults480x832;720psizeMUSTbeexplicit.",
+      "sizeisheight,width.",
+      "create_generatorconfig_jsondoesnotapply methoddefaultsize/infersteps;immutableJSONmustcarryselectedprofile.",
+      "ModelcardgenericI2VimageencoderwordingisbroaderthanpinnedMoEconfig;use_image_encoderfalseinthisprofile.",
+      "Do not use autogeneratedHF Diffusers snippet asactualNVFP4supportproof."
+    ]
+  },
+  "dependencies": [
+    {
+      "name": "lightx2v",
+      "sourceCommit": "880b7b156a4eb3ae8af8979a8d44b5e5945e17d2",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "lightx2v-kernel-nvidia",
+      "version": "0.0.1",
+      "sourceCommit": "880b7b156a4eb3ae8af8979a8d44b5e5945e17d2",
+      "gpuArch": "120a",
+      "buildNeeds": [
+        "CUDA toolkit",
+        "CUTLASS",
+        "scikit-build-core>=0.10",
+        "torch>=2.7",
+        "wheel"
+      ]
+    },
+    {
+      "name": "sageattention",
+      "sourceCommit": "d1a57a546c3d395b1ffcbeecc66d81db76f3b4b5",
+      "role": "cross_attn_1_type=sage_attn2;SM120dispatch"
+    },
+    {
+      "name": "spas_sage_attn",
+      "sourceRepo": "https://github.com/thu-ml/SpargeAttn",
+      "sourceCommit": "ae5b629ebb41e41f86b3ea2ab5a3283f13ac151a",
+      "role": "dynamic_sparse_attn operator sage2 calls _fused and _qattn"
+    },
+    {
+      "name": "CUTLASS",
+      "sourceCommit": "e13f5cd4142c43efc37c2f6339923eb4a57afb99",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "name": "triton",
+      "version": null,
+      "status": "mustmatchverifiedcontainerTorchCUDA"
+    },
+    {
+      "name": "sgl-kernel",
+      "version": null,
+      "role": "nativeT5defaultRMSNormbackend",
+      "status": "mustmatchverifiedcontainerTorchCUDA"
+    }
+  ],
+  "licenses": [
+    {
+      "component": "LightX2V code and NVIDIA kernels",
+      "license": "Apache-2.0",
+      "revision": "880b7b156a4eb3ae8af8979a8d44b5e5945e17d2",
+      "source": "https://github.com/ModelTC/LightX2V/blob/880b7b156a4eb3ae8af8979a8d44b5e5945e17d2/LICENSE",
+      "status": "source_verified"
+    },
+    {
+      "component": "LightWan I2V distilled NVFP4 expert weights",
+      "license": "Apache-2.0",
+      "revision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+      "source": "https://huggingface.co/lightx2v/LightWan2.2-A14B/blob/f4b91eba1fd7dc2eb038191e2bca7ed33423032d/README.md",
+      "status": "publisher_model_card_verified"
+    },
+    {
+      "component": "Wan2.2 native T5 VAE tokenizer and base configuration",
+      "license": "Apache-2.0",
+      "revision": "206a9ee1b7bfaaf8f7e4d81335650533490646a3",
+      "source": "https://huggingface.co/Wan-AI/Wan2.2-I2V-A14B/blob/206a9ee1b7bfaaf8f7e4d81335650533490646a3/README.md",
+      "status": "publisher_model_card_verified",
+      "note": "PublisherHFmodelcarddeclaresApache2; noLICENSEfileisdistributedinthisweightrepository."
+    },
+    {
+      "component": "SageAttention",
+      "license": "Apache-2.0",
+      "revision": "d1a57a546c3d395b1ffcbeecc66d81db76f3b4b5",
+      "source": "https://github.com/thu-ml/SageAttention/blob/d1a57a546c3d395b1ffcbeecc66d81db76f3b4b5/LICENSE",
+      "status": "source_verified"
+    },
+    {
+      "component": "SpargeAttn/spas_sage_attn",
+      "license": "Apache-2.0",
+      "revision": "ae5b629ebb41e41f86b3ea2ab5a3283f13ac151a",
+      "source": "https://github.com/thu-ml/SpargeAttn/blob/ae5b629ebb41e41f86b3ea2ab5a3283f13ac151a/LICENSE",
+      "status": "source_verified",
+      "licenseTextSHA256": "0b79354c6e3d1ec02c1711f40de6303e347efd4ab6dc3d0778e6332f29beaa6b"
+    },
+    {
+      "component": "CUTLASS",
+      "license": "BSD-3-Clause",
+      "revision": "e13f5cd4142c43efc37c2f6339923eb4a57afb99",
+      "source": "https://github.com/NVIDIA/cutlass/blob/e13f5cd4142c43efc37c2f6339923eb4a57afb99/LICENSE.txt",
+      "status": "source_verified"
+    },
+    {
+      "component": "NVIDIA CUDA runtime and toolchain",
+      "license": "NVIDIA CUDA EULA",
+      "revision": "CUDA13.0 recommended container",
+      "source": "https://docs.nvidia.com/cuda/eula/index.html",
+      "status": "proprietary_runtime_terms_apply_not_model_weight_license"
+    }
+  ],
+  "support": {
+    "task": "i2v",
+    "resolution": "720p",
+    "widthHeightPairs": [
+      [
+        1280,
+        720
+      ],
+      [
+        720,
+        1280
+      ]
+    ],
+    "numFrames": 81,
+    "fps": 16,
+    "nativeDurationSeconds": 5.0625,
+    "inferenceSteps": 4,
+    "expertSteps": [
+      2,
+      2
+    ],
+    "cfgEnabled": false,
+    "quantization": "NVFP4",
+    "attention": "dynamic_sparse_attn sage2 + sage_attn2",
+    "hardwareFamily": "Blackwell",
+    "targetGPU": "RTX PRO6000Blackwell96GiB",
+    "providerGPU": "RTX-PRO-6000",
+    "hardwareCompatibility": "publisherfamilyclaimed_notdevicebenchmarked"
+  },
+  "publisherBenchmark": {
+    "gpu": "RTX5090singleGPU",
+    "i2v720pEndToEndSeconds": 26.7,
+    "inferenceSteps": 4,
+    "source": "https://huggingface.co/lightx2v/LightWan2.2-A14B/blob/f4b91eba1fd7dc2eb038191e2bca7ed33423032d/README.md",
+    "isLocalRTXPRO6000Result": false
+  },
+  "proposedResources": {
+    "gpu": "RTX-PRO-6000",
+    "vramGiB": 96,
+    "cpu": 4,
+    "ramGiB": 128,
+    "tested": false
+  },
+  "gates": {
+    "downloaded": false,
+    "containerBuilt": false,
+    "gpuTested": false,
+    "canStart": false,
+    "commercialPublished": false,
+    "blockers": [
+      "Weightsnotdownloaded",
+      "ContainerABIandinstalledkernelsnotverified",
+      "BlackwellSM120NVFP4/Sage2/Sparsekernelavailabilityuntested",
+      "Realqualityandperformancecomparisonpendingexplicitspendapproval"
+    ]
+  },
+  "variantVersion": "LightWan2.2-A14B-NVFP4-Sparse",
+  "executionProfile": "accelerated",
+  "revision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+  "sourceCommit": "880b7b156a4eb3ae8af8979a8d44b5e5945e17d2",
+  "repoId": "lightx2v/LightWan2.2-A14B",
+  "researchedAlternatives": [
+    {
+      "id": "lightning-bf16-lora",
+      "selected": false,
+      "repoId": "lightx2v/Wan2.2-Lightning",
+      "revision": "18bccf8884ec0a078eed79785eb4ef13ea16ce1e",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "path": "Wan2.2-I2V-A14B-4steps-lora-rank64-Seko-V1/high_noise_model.safetensors",
+          "size": 1226977424,
+          "sha256": "d176c808d6fc461999b68e321efcb7501b20b8c3797523ed0df14f7d1deff11e"
+        },
+        {
+          "path": "Wan2.2-I2V-A14B-4steps-lora-rank64-Seko-V1/low_noise_model.safetensors",
+          "size": 1226977424,
+          "sha256": "024f21de095bc8fad9809ded3e9e49a2e170dcf27075da8145ba7d60d8aab7f9"
+        }
+      ],
+      "note": "Separate4stepdistilledLoRAoption; notLightWanNVFP4,sparsekernelstackorclaimed100xspeed. Notpartofselecteddownloadplan."
+    },
+    {
+      "id": "full-720p-distill-checkpoints",
+      "selected": false,
+      "repoId": "lightx2v/Wan2.2-Distill-Models",
+      "revision": "52699089e1dac804cbedd2400d0d2aea969577de",
+      "license": "Apache-2.0",
+      "totalExpertBytes": 114311435184,
+      "note": "Twofull57.16GB720pcheckpoints, notsmallLoRAfiles. Notpartofselecteddownloadplan."
+    }
+  ],
+  "license": "Apache-2.0"
+}

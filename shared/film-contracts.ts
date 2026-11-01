@@ -1,5 +1,18 @@
 // Frozen v1 transport contract. Detailed field semantics: ../BRIDGE-CONTRACT.md
 export const FILM_OPERATIONS = [
+  "sfx.list", "sfx.event.approve", "final.quality.get", "final.quality.review", "production.costs",
+  "sync.face.approve", "sync.asset.get", "sync.review", "sync.timeline.get",
+  "director.research.quote", "director.research", "director.get", "director.message.quote", "director.message", "director.plan.quote", "director.plan", "director.call", "director.approve", "director.cancel",
+  "production.legacy.import", "director.source.set", "production.reference.attach",
+  "production.source.begin", "production.source.chunk", "production.source.complete", "production.source.get", "production.organize",
+  "production.create",
+  "production.get",
+  "production.list",
+  "production.plan",
+  "production.quote",
+  "production.approve",
+  "production.retry",
+  "production.cancel",
   "session",
   "preferences.get",
   "preferences.save",
@@ -32,6 +45,16 @@ export const FILM_OPERATIONS = [
   "files.list",
   "files.ticket",
   "files.delete",
+  "admin.engine.test.project", "admin.engine.test.quote", "admin.engine.test.execute", "admin.engine.test.status", "admin.engine.test.review", "admin.engine.test.stop", "admin.engine.test.asset.ticket", "admin.engine.approve", "admin.engine.publish", "admin.engine.unpublish",
+  "admin.engine.models",
+  "admin.engine.list",
+  "admin.engine.save",
+  "admin.engine.inspect",
+  "admin.engine.quote",
+  "admin.engine.start",
+  "admin.engine.prepare",
+  "admin.engine.stop",
+  "admin.engine.status",
   "admin.customers.list",
   "admin.credit.add",
   "admin.accounts.list",
@@ -80,4 +103,19 @@ export interface FilmProject {orientationConfirmed?:boolean;pinned?:boolean;arch
 export interface FilmError {error:string;message:string;}
 export interface FilmEmergencyStop {id:string;requested:true;confirmed:boolean;pending:number;jobs:Array<{id:string;status:string;cloudStopped:boolean}>;rentals:Array<{id:string;state:string}>;createdAt:number;finishedAt:number|null;message:string;}
 
-export interface FilmFile {id:string;projectId:string;index:number|'merged';kind:'scene'|'film';name:string;createdAt:number;expiresAt:number;bytes:number;}
+export interface FilmFile {id:string;projectId:string;index:number|'merged';kind:'scene'|'film';name:string;createdAt:number;expiresAt:number;bytes:number;durationMs?:number;width?:number;height?:number;thumbnailReady?:boolean;}
+
+// Generic administrator-only registry. Catalog entries are inactive declarations, not installed adapters.
+export type FilmEngineGPU = 'RTX-PRO-6000'|'L40S';
+export type FilmEngineRuntimeState = 'stopped'|'starting'|'running'|'stopping'|'failed';
+export interface FilmEngineModel {id:string;name:string;version:string|null;kind:string;variant:string|null;enabled:false;sourceURL:string|null;sourceVerification:string;revision:string|null;resources:{recommendedCPU:number|null;recommendedRAMGiB:number|null;recommendedVRAMGiB:number|null;verification:string;note:string};}
+export interface FilmEngineRuntime {id?:string;state:FilmEngineRuntimeState;cloudStopped:boolean;elapsedSeconds:number;estimatedCustomerUSD:number;recordedProviderUSD:number|null;error:string|null;requiresReconcile:boolean;}
+export interface FilmEnginePreparationProgress {phase?:string;completed?:number;total?:number;unit?:string;file?:string;transferredBytes?:number;completedBytes?:number;totalBytes?:number;filesCompleted?:number;totalFiles?:number;}
+export interface FilmEnginePreparation {status:string;progress:FilmEnginePreparationProgress|null;error:string|null;cloudStopped:boolean;}
+export interface FilmEngineEntry {id:string;name:string;modelId:string;modelName:string;version:string|null;kind:string;variant:string|null;accountId:string;gpu:FilmEngineGPU;cpu:number;ramGiB:number;minVramGiB:number|null;volume:string|null;weightPath:string;preparationState:string;deploymentState:'unpublished'|'deployed';expectedBytes:number|null;softwareInstalled:boolean;preparation:FilmEnginePreparation|null;enabled:boolean;adapterAvailable:boolean;hourPriceUSD:number;revision:number;runtime:FilmEngineRuntime;blockers:string[];}
+export interface FilmEngineSaveInput {id?:string;modelId:string;accountId:string;name:string;version?:string|null;gpu:FilmEngineGPU;cpu:number;ramGiB:number;minVramGiB?:number|null;volume?:string;hourPriceUSD:string;}
+export interface FilmEngineQuoteInput {id:string;action:'start'|'prepare';}
+export interface FilmEngineQuote {id:string;engineId:string;action:'start'|'prepare';expiresAt:number;settingsRevision:number;expectedBytes?:number|null;missingBytes?:number|null;fileCount?:number|null;missingFiles?:Array<{path:string;size:number}>;estimate:{resourceWindowUSD:number|null;expectedSeconds?:number|null;windowSeconds?:number|null;customerRateUSD?:number;recordedUSD:number|null;networkUSD?:number|null;storageUSDPerMonth?:number|null;buildUSD?:number|null;note:string};dispatchAvailable:boolean;blockers:string[];}
+export interface FilmEngineStartInput {id:string;quoteId:string;requestId:string;approved:true;}
+export interface FilmEnginePrepareInput {id:string;quoteId:string;requestId:string;approved:true;}
+export interface FilmEngineStopInput {id:string;approved:true;}

@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-31",
+  "scope": "Completion task 1 of 4 (B1) only",
+  "repository": "Basmali12/mashhad-ad-studio",
+  "branch": "codex/ltx-film-engine-integration",
+  "tests": {
+    "backend": {
+      "passed": 504,
+      "failed": 0,
+      "parts": "495 regression excluding long-film plus 9 long-film mocks; 45 affected tests rerun after final backend changes; no repeated tests counted twice"
+    },
+    "gateway": {
+      "passed": 75,
+      "failed": 0
+    },
+    "react": {
+      "passed": 723,
+      "failed": 0,
+      "files": 169,
+      "affectedFilmSubset": 76
+    },
+    "uniqueTotalPassed": 1302,
+    "uniqueTotalFailed": 0
+  },
+  "checks": {
+    "typescript": "passed",
+    "customerBuild": "passed",
+    "adminBuild": "passed",
+    "reelsWorkerBuild": "passed; no service started",
+    "repositoryLint": "passed",
+    "explicitBackendLint": "passed; 9 changed backend/test modules",
+    "gitDiffCheck": "passed; existing LF/CRLF warnings only"
+  },
+  "commands": [
+    "npm test -- --maxWorkers=2",
+    "npm run film:gateway:check",
+    "node --test --test-concurrency=2 tests/*.test.mjs (regression run excludes task12-readiness.test.mjs)",
+    "node --test tests/task12-readiness.test.mjs",
+    "npm run typecheck",
+    "npm run lint",
+    "npm run build",
+    "npm run build:admin",
+    "node scripts/build-reels-worker.mjs"
+  ],
+  "realLocalEvidence": {
+    "http": "two loopback servers; actual Gateway, HMAC and film platform; synthetic membership and mocked Responses only",
+    "media": "real FFmpeg local MP4 commit, final-file list and owner ticket; cross-user denial",
+    "browser": "local design preview rendered, composer text entry, history menu and new-story clearing checked via actual in-app browser accessibility state; no connected account/model",
+    "longMockDurationsSeconds": [
+      30,
+      60,
+      300,
+      600,
+      1200,
+      3600
+    ]
+  },
+  "fixedRegressionFixtures": "Five old synthetic model fixtures were funded for the full estimate required by new up-front wallet validation; publication fixtures explicitly synthetic. No admission guard was relaxed.",
+  "notPerformed": [
+    "GPU or cloud operation",
+    "real OpenAI or web_search",
+    "weight download",
+    "backup or restore point",
+    "production deployment",
+    "commit or push",
+    "live PostgreSQL validation",
+    "completion task 2"
+  ],
+  "remainingGates": [
+    "B2: generic model test/approval/publication and customer catalog binding",
+    "model weight preparation/native cloud validation and licence gates from Task12",
+    "no acoustic, face-identity or real inference quality claim"
+  ],
+  "codeSHA256": {
+    "src/features/film/FilmWorkspace.tsx": "84b8e0df6c2068f808e8f9a2f8dacaf4f8d04c249c811567025dd896a73056fe",
+    "src/features/film/DirectorConversation.tsx": "e8bd0ebb96e61dca7b343c4b23ad77b2798a45513f5d7754f9a24fe3ca00c516",
+    "src/features/film/DirectorSource.tsx": "10ccc066fea0bc167b84c5f7aa38aeff584bc15fc1bed081fc611da04793a283",
+    "src/features/film/directorClient.ts": "1d48894d51c4f17bc31f9453c00be5baf80fd282ea8bd59b5e1e2dd7d90027dc",
+    "src/features/film/ProductionView.tsx": "3545ab85dc8cf7b174400a1209ba2794a4abbdd3f25870bcc5dc16930524567e",
+    "src/features/film/RentalServers.tsx": "d001aea2c55ec16d98d9b3aed66abb760515716fc09c152ab21cf2bc5c5cea57",
+    "services/film-engine/engine/production-director.mjs": "16556af13e0968f5678b4361635cca7b9cccd3395bd745317af561aae1af5e1c",
+    "services/film-engine/engine/production-engine.mjs": "0ac4f1f508e39a06b8bb0765844597b9cccdc284c9e2d2b5565a03a0946bbee4",
+    "services/film-engine/engine/production-sources.mjs": "b16560b8ba2d62e519699e4b61d7029a8e08dc8add2afaebebe4cb04031f4e8f",
+    "services/film-engine/engine/production-customer-dto.mjs": "9219ca735c1691e71ea294a226f1368f1d53d6d9dd3824f8f88cd162213d47a9",
+    "services/film-engine/engine/production-models.mjs": "36140e3fe35131d9fe4970c015868e964ed22f5d239ee4790b7d54f714d891ee",
+    "services/film-engine/engine/film-platform.mjs": "060ba95999cfd90bd1b0175ae9259740f867d087ea539856ac079bf2f1a5ebb4",
+    "services/film-gateway/film-bridge.mjs": "c9f24e93e523921edc4d96e65b24ce8ce3d0ae69cdab064053b1e46ef9a28ab6",
+    "shared/film-contracts.ts": "932988de34f31f4b2687ce6141c8d63408f91a7544c464eff11e769e178ecb8a",
+    "shared/director-contracts.ts": "ed90b1530e1fd566e9abf1a19a9c0a3a3eddec93521534398ecc1977e2a82600",
+    "shared/production-contracts.ts": "7ee70a60b71828b980e6b4773bb592d3a544d2703056ddaf0d77d0afaf2402af"
+  }
+}

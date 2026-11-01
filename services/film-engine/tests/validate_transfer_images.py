@@ -31,10 +31,13 @@ if __name__=='__main__':
     try:validate_image(broken)
     except modal.exception.InvalidError:pass
     else:raise AssertionError('Regression guard did not detect the original build-order error')
+    # Structural validation uses a synthetic profile only and never hydration.
+    import transfer_contract
+    transfer_contract.require_model=lambda: {'fixture':True}
     from transfer_worker import image
     from destination_verifier_app import create_verifier_app
     validate_image(image)
-    app,fn,_=create_verifier_app('iff-ltx25-1234abcd',create_volume=False)
+    app,fn,_=create_verifier_app('mashhad-model-1234abcd',create_volume=False)
     # This SDK exposes registered function specs locally; no function is invoked.
     validate_image(synchronizer._translate_in(fn)._spec.image)
     print('SOURCE_AND_DESTINATION_IMAGE_ORDER_VALID_NO_CLOUD')

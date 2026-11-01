@@ -1,0 +1,111 @@
+{
+  "observedAtUTC": "2026-11-01T01:00:46.420215+00:00",
+  "account": "basm1998ali",
+  "apps": [
+    {
+      "name": "mashhad-hunyuan-7893b4ff02ff",
+      "appId": "ap-vhP71jKPo62L9tk2Ee3eLB",
+      "stopped": true,
+      "activeTasks": 0
+    },
+    {
+      "name": "mashhad-wan-d830d93c394d",
+      "appId": "ap-1j96ElhlVTI56zzEp3EH3b",
+      "stopped": true,
+      "activeTasks": 0
+    },
+    {
+      "name": "mashhad-wan-d830d93c394d",
+      "appId": "ap-yJLA1D4Ux8Tb6fiYdhyWRN",
+      "stopped": true,
+      "activeTasks": 0
+    },
+    {
+      "name": "mashhad-qwen-226b322e3abb",
+      "appId": "ap-bpTgnl0C2o3AHkhmA2O9fQ",
+      "stopped": true,
+      "activeTasks": 0
+    },
+    {
+      "name": "mashhad-flux-ccdb2b9aca33",
+      "appId": "ap-KNTSx2Frte8zk7JIBO1OmS",
+      "stopped": true,
+      "activeTasks": 0
+    },
+    {
+      "name": "mashhad-speech-habibi-irq-ebff694f4522",
+      "appId": "ap-7CPVAySJd0P7Pehm87JkFk",
+      "stopped": true,
+      "activeTasks": 0
+    },
+    {
+      "name": "mashhad-speech-habibi-irq-ebff694f4522",
+      "appId": "ap-8edCaL2cBDykCk6Ain4Ikg",
+      "stopped": true,
+      "activeTasks": 0
+    },
+    {
+      "name": "mashhad-speech-habibi-egy-d2e55735cead",
+      "appId": "ap-ytiSIiVZAl8eK8rALEk9xr",
+      "stopped": true,
+      "activeTasks": 0
+    },
+    {
+      "name": "mashhad-speech-habibi-msa-b85f1892b6e3",
+      "appId": "ap-LpwFneO0ahiQVJfGXEdfT3",
+      "stopped": true,
+      "activeTasks": 0
+    }
+  ],
+  "allStopped": true,
+  "audio": [
+    {
+      "modelId": "habibi-irq",
+      "testId": "ef3440bf-1e28-45db-9bc3-79c96623ba76",
+      "assetId": "7e5c80933a97655bf67c7c843b1366d7afb7d05ac9d51b78adc5a40daee0d9e3",
+      "projectId": "23fe543c-0d98-4f24-890c-b5354443aa8c",
+      "sha256": "782e79432ea62ebd5ef7212d25899009b2c76eb98ba7dcb806db8d2c80d6c25e",
+      "bytes": 164908,
+      "sampleRate": 24000,
+      "durationSeconds": 3.4346666666666668,
+      "peak": 0.313079833984375,
+      "rms": 0.04107432232399225,
+      "clippedSamples": 0,
+      "transcriptionVerified": false,
+      "voiceIdentityVerified": false,
+      "commerciallyPublished": false
+    },
+    {
+      "modelId": "habibi-egy",
+      "testId": "46318f67-14e2-41fd-bec3-145e4f382a6b",
+      "assetId": "896c411e838560253ada265c06c0ce72aaf7697169d1310c6856eb1f0b50c5e0",
+      "projectId": "29551d98-3fa3-456d-a958-a64723065a27",
+      "sha256": "34142c012baaf7927f2644f956da3a96d1f44c17fe142d4c3c46cd88c40d4f04",
+      "bytes": 166444,
+      "sampleRate": 24000,
+      "durationSeconds": 3.466666666666667,
+      "peak": 0.407073974609375,
+      "rms": 0.03986406607046224,
+      "clippedSamples": 0,
+      "transcriptionVerified": false,
+      "voiceIdentityVerified": false,
+      "commerciallyPublished": false
+    },
+    {
+      "modelId": "habibi-msa",
+      "testId": "c4d7716c-1a5a-4222-9444-720d18bd0bf7",
+      "assetId": "ae7a730cb10b1cd6ff76466795cc946a57e12aa358437f087a977c89ed0b903e",
+      "projectId": "cb44e9a8-fab6-4740-8ec6-e97d6bd1d8a4",
+      "sha256": "42bee74104b35c536ab01e026964225c14d3b0db575da0f79d8b7bd6497be304",
+      "bytes": 158252,
+      "sampleRate": 24000,
+      "durationSeconds": 3.296,
+      "peak": 0.2764892578125,
+      "rms": 0.04564728764773686,
+      "clippedSamples": 0,
+      "transcriptionVerified": false,
+      "voiceIdentityVerified": false,
+      "commerciallyPublished": false
+    }
+  ]
+}

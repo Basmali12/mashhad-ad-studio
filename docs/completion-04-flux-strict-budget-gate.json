@@ -1,0 +1,106 @@
+{
+  "date": "2026-10-31",
+  "scope": "FLUX.2 Klein4B only; primary basm1998ali only; strict total5USD pre-dispatch gate",
+  "decision": "STOP_BEFORE_ANY_PAID_RESOURCE",
+  "approvalInterpretedAs": "No permission to exceed5USD total. No other model, site deployment or rental modification.",
+  "administrativePath": {
+    "independentOfLegacyUI": true,
+    "endToEndReady": false,
+    "reproduction": "docs/completion-04-flux-direct-path-probe.json",
+    "gap": "Admin runner creates production-attempt without quoteId/chargeId or production-model-run; actual shared transport requires those production authorization records. Default SQLite throws on undefined query bind before the later authorization predicate. Existing transport-Mock tests bypassed this seam. Never fabricate customer charges to authorize an administrative test."
+  },
+  "liveBillingReadOnly": {
+    "source": "https://modal.com/settings/basm1998ali/usage",
+    "workspace": "basm1998ali",
+    "plan": "Starter",
+    "billingCycle": "Oct1–Oct31 2026",
+    "displayedGrossUsageUSD": 6.32,
+    "displayedCreditsUSD": 23.68,
+    "usageLimitUSD": 42.5,
+    "outOfPocketSpendLimitUSD": 0,
+    "volumeChargesContinueAfterWorkloadsStop": true,
+    "settingsChanged": false
+  },
+  "spendGuard": {
+    "perTestTotal5USDEnforced": false,
+    "currentAdminQuote": "estimate only; no cumulative provider cost breaker covering prepare+build+GPU+RAM+storage+network",
+    "supplierCostLiveMonitor": "flux_modal_bridge.py observe/stop return recordedProviderUSD=None; local customer/rental estimates are not a provider invoice meter",
+    "workspaceBudget": "Monthly across entire shared workspace, not incremental test scope; credits/net spend limit does not cap gross test usage; changing it may affect other workloads and storage remains separately persistent. Not changed.",
+    "environmentBudget": "Team/Enterprise; compute only; not a complete invoice cap; no plan upgrade requested",
+    "storageDeletion": "Official docs state daily snapshots and up to4days billing after deletion; deleting files is not immediate verified zero cost. No deletion performed."
+  },
+  "resources": [
+    {
+      "resource": "CPU image builders for preparation and GPU images",
+      "risk": "Build time is outside FLUX inference timeout and lacks verified scoped cost limit/cancellation in current path",
+      "stopStatus": "Not created; actual builder cancellation not tested"
+    },
+    {
+      "resource": "CPU preparation function",
+      "limits": "2physicalcores/8GiB;3600sexecution,180sstartup,retries0,min0,max1,idle2s",
+      "risk": "Billed during preparation; an unknown remote result must block retries",
+      "stopStatus": "Explicit cancel exists; real stop not tested"
+    },
+    {
+      "resource": "FLUX GPU class",
+      "limits": "L40S/4physicalcores/64GiB;default600sexecution,180sstartup,1200sidle,retries0,min0,max1",
+      "risk": "Startup and idle accrue until stopped; function timeout alone is not total test budget",
+      "stopStatus": "Scoped runtime cancellation+graceful container stop+activeTasks0 and settled calls implemented; only mocked stop exercised here"
+    },
+    {
+      "resource": "Weights Volume",
+      "plannedGiB": 14.879,
+      "risk": "Persistent storage beyond inference stop; gross monthly reference1.339USD before verified allowances",
+      "stopStatus": "Compute stop does not delete or stop storage; no weight download/Volume created"
+    },
+    {
+      "resource": "Results Volume",
+      "risk": "Generated PNG, receipts and deployment metadata persist separately; size and storage/egress invoice not established",
+      "stopStatus": "Not created"
+    },
+    {
+      "resource": "Network egress",
+      "risk": "Additional usage when outputs leave Modal; not monitored as cumulative test invoice in current backend",
+      "stopStatus": "No cloud output transfer performed"
+    }
+  ],
+  "sources": [
+    "https://modal.com/docs/guide/budgets",
+    "https://modal.com/docs/guide/volumes",
+    "https://modal.com/docs/guide/timeouts",
+    "https://modal.com/docs/guide/billing"
+  ],
+  "verification": {
+    "localDiagnostic": "Actual admin runner+FLUX production adapter+shared transport with isolated synthetic Store; only registry allocation/stop mocked",
+    "remoteRunnerCalls": 0,
+    "expectedBugReproduced": true,
+    "firstProbe": "Initially expected explicit authorization error; actual default-store bind error was retained and traced to missing quoteId; second diagnostic confirmed exact actual failure and no cloud calls"
+  },
+  "performed": [
+    "source inspection",
+    "official documentation review",
+    "authenticated billing page read without changes",
+    "local isolated authorization-boundary diagnostic",
+    "internal evidence files"
+  ],
+  "notPerformed": [
+    "GPU",
+    "cloud CPU job",
+    "image/container build",
+    "weight/model download",
+    "new Volume",
+    "OpenAI/paid API",
+    "real resource stop",
+    "budget/account setting change",
+    "legacy/shared resource deletion",
+    "customer financial writes",
+    "site publication",
+    "rental changes",
+    "other model tests"
+  ],
+  "requirementsBeforeReopening": [
+    "Fix and regression-test independently scoped administrative authorization without fabricating customer charge records",
+    "Verify a cumulative5USD guard covering all test costs and cancellation of builders/preparation/GPU, with explicit storage-lifetime treatment and billing-lag reserve",
+    "Do not interpret UI estimates, free credits or0USD net spend limit as that guard"
+  ]
+}

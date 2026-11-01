@@ -1,3 +1,5 @@
+> Retirement status: the inference engine is unconfigured. Generation/preparation capability descriptions below are API compatibility history, not active engine support. New requests must fail safely before paid dispatch. Account management, wallet, files, auth, status and scoped stop remain available.
+
 # Film bridge operation contract v1
 
 `POST /api/film-bridge` is server-to-server only. native action `filmBridge.request({operation,input,requestId})` derives the actor from authenticated server identity and the server administrator email allowlist. The browser must never supply actor/admin status, signature, provider IDs or bridge key. The action returns the gateway JSON unchanged for success, or safe `{error,message}` on failure. Backend customer IDs are hashed opaque IDs; admin topups use IDs from `admin.customers.list`, not raw native actor IDs.

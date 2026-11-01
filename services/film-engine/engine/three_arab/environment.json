@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "python": "3.11",
+  "sourceCommit": "ff242278c423d4cbb03920ab5e1dbb2d468ad26d",
+  "isolatedFromHabibi": true,
+  "installMode": "upstream_uv_lock_frozen",
+  "files": [
+    {
+      "path": "pyproject.toml",
+      "sourceUrl": "https://raw.githubusercontent.com/sherif1313/3arab-TTS/ff242278c423d4cbb03920ab5e1dbb2d468ad26d/pyproject.toml",
+      "sha256": "2e049f46d8628d535a017ea5cd8a7f880750317db24bee665d96b100029bf35f",
+      "bytes": 3849
+    },
+    {
+      "path": "uv.lock",
+      "sourceUrl": "https://raw.githubusercontent.com/sherif1313/3arab-TTS/ff242278c423d4cbb03920ab5e1dbb2d468ad26d/uv.lock",
+      "sha256": "636b6c536a0a35acc4a31b7571a53f3ca86a409801e5fb6363f65376a9705e2f",
+      "bytes": 1518096
+    }
+  ],
+  "syncArguments": [
+    "sync",
+    "--frozen",
+    "--no-dev",
+    "--extra",
+    "cu128"
+  ],
+  "runtimeEnvironment": {
+    "HF_HUB_OFFLINE": "1",
+    "TRANSFORMERS_OFFLINE": "1",
+    "HF_HUB_DISABLE_TELEMETRY": "1",
+    "WANDB_DISABLED": "true"
+  },
+  "cpuPreflightRequired": [
+    "source_commit_and_clean_tree",
+    "upstream_lock_hash",
+    "import_native_dependencies",
+    "local_tokenizer",
+    "local_codec_and_watermark_files"
+  ],
+  "beforeGpu": [
+    "license_scope_resolved",
+    "primary_account_budget_verified",
+    "stop_watchdog_running",
+    "assets_sha256_verified"
+  ],
+  "built": true,
+  "gpuTested": true,
+  "additionalSources": [
+    {
+      "name": "audioseal",
+      "repository": "https://github.com/facebookresearch/audioseal",
+      "commit": "e63a8a0e5cdf7bb797159c92ba15961557fe9bd2",
+      "installMode": "editable_no_deps",
+      "extraPinnedDependencies": [
+        "omegaconf==2.3.0",
+        "antlr4-python3-runtime==4.9.3"
+      ]
+    }
+  ],
+  "watermarkBackend": "audioseal",
+  "nativeIsolation": "venv subprocess, never add venv site-packages to Modal SDK PYTHONPATH",
+  "upstreamLockRepair": "build_lock.py changes only virtual workspace label after exact SHA256 validation",
+  "cpuPreflightVerified": true,
+  "cpuPreflightEvidence": "work/three-arab-audioseal-audition5/inspection.json",
+  "gpuInferenceAdmitted": false,
+  "watermarkHeadroom": "bounded gain >=0.8, no clipping/time/pitch modification; raw float saved before watermark",
+  "privateAuditionVerified": true,
+  "productionReadiness": "awaiting_owner_listening_and_account_engine_admission"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "unconfigured",
+  "enabled": false,
+  "model_repo": null,
+  "model_revision": null,
+  "source_commit": null,
+  "storage_prefix": null,
+  "source_volume": "mashhad-model-source",
+  "files": {}
+}

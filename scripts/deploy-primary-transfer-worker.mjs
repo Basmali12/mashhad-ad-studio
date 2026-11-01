@@ -10,6 +10,10 @@ for(const line of fs.readFileSync('/etc/iraq-ai-film-platform-staging/film.env',
  if(!line||line.startsWith('#'))continue;const index=line.indexOf('=');if(index>0)process.env[line.slice(0,index)]=line.slice(index+1).trim();
 }
 const root='/srv/iraq-ai-studio-staging/current/services/film-engine/engine';
+const profile=JSON.parse(fs.readFileSync(root+'/model-profile.json','utf8'));
+if(profile.enabled!==true||!Object.keys(profile.files||{}).length)throw Error('ENGINE_NOT_CONFIGURED');
+const workerApp=process.env.ENGINE_CLOUD_TRANSFER_APP;
+if(!workerApp||! /^[A-Za-z0-9_-]{1,100}$/.test(workerApp))throw Error('TRANSFER_WORKER_APP_REQUIRED');
 const {openStore}=await import(pathToFileURL(root+'/open-store.mjs'));
 const {ModalProvider,providerEnvironment}=await import(pathToFileURL(root+'/provider.mjs'));
 const store=await openStore(process.env.FILM_DATA_DIR,process.env.ENGINE_MASTER_KEY);
@@ -19,7 +23,7 @@ try{
  const source=(await store.all('account')).find(a=>a.workspace==='basm1998ali'&&!a.unlinked);
  if(!source)throw Error('TRUSTED_PRIMARY_NOT_LINKED');
  const credentials=source.mode==='local_profile'?{mode:'local_profile'}:store.open(source.credentials,source.id);
- const provider=new ModalProvider(),input={source:credentials,workerApp:'iff-ltx25-cloud-copy-v1'};
+ const provider=new ModalProvider(),input={source:credentials,workerApp};
  let checked=await provider.call('cloud_transfer_preflight',input);
  console.log(JSON.stringify({stage:'inspect',...checked}));
  if(process.argv.includes('--diagnose-only')){

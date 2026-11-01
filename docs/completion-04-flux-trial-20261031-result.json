@@ -1,0 +1,59 @@
+{
+  "recordedAtUTC": "2026-10-31T19:37:10Z",
+  "scope": "FLUX.2 Klein 4B only, primary basm1998ali workspace, main environment",
+  "outcome": "cpu_preparation_failed_before_model_download_no_gpu_inference",
+  "productionPublished": false,
+  "rentalSystemChanged": false,
+  "paidAttempts": 1,
+  "automaticPaidRetries": 0,
+  "budget": {
+    "approvedTrialTotalUSD": 20,
+    "workspaceUsageLimitUSD": 26,
+    "workspaceSpendLimitUSD": 0,
+    "savedAndReloadedInProviderUI": true,
+    "baselineGrossUSD": "6.34874585",
+    "latestGrossUSDProvisional": "6.34957980",
+    "billingFinal": false,
+    "note": "Provider usage can lag or be revised. This snapshot is not the final cost of the attempt. Global usage cap was set below baseline plus trial budget; watchdog is an additional lifecycle guard, not a billing guarantee."
+  },
+  "storageCorrection": {
+    "officialSource": "https://modal.com/pricing",
+    "includedVolumeGiB": 1024,
+    "existingPrimaryGiBApprox": 79.449,
+    "plannedFluxGiBApprox": 14.879,
+    "observedVolumeMeteredCostUSD": "0",
+    "note": "Earlier gross list-price storage estimates were not the amount payable while within the included allowance. Free credit balance does not waive charges beyond actual allowances."
+  },
+  "cloudEvidence": {
+    "appName": "mashhad-flux-6b301c38dc38",
+    "appId": "ap-CdngxAQFoaWwujmLhgkwoC",
+    "engineId": "6b301c38-dc38-4b75-8fda-00b2474f79f8",
+    "failedPhase": "CPU preparation, flux/prepare.py storage-root validation",
+    "safeError": "FLUX_UNSAFE_STORAGE",
+    "downloadLoopReached": false,
+    "gpuInferenceRequested": false,
+    "imageGenerated": false,
+    "appStoppedConfirmedIndependently": true,
+    "ownedTasksAfterStop": 0,
+    "activeAppsAfterStop": 0,
+    "stopMechanism": "Independent watchdog issued scoped Modal AppStop and checked AppGetInfo plus TaskList. A subsequent independent read confirmed stopped and zero tasks.",
+    "persistentResources": "Two scoped preparation/result Volumes and built Images remain; stopping an App is not deletion of persistent storage. No models downloaded in this attempt. Existing unrelated Volumes were preserved."
+  },
+  "localRepairs": [
+    "Direct admin commissioning authorization now binds durable test quote/command, account/engine/runtime and exact native payload; no fabricated customer financial records.",
+    "Pinned Modal SDK TaskStats.task_id parsing and deployed FLUX timeout/idle configuration corrected.",
+    "Independent finite trial watchdog monitors exact application, provider usage and shutdown; no paid automatic retries.",
+    "Canonicalize only the two trusted deployment mount anchors, leaving descendant symlinks and traversal forbidden before directory creation. A mount-alias mismatch is the current hypothesis; actual cloud resolved paths were not captured, so this repair still requires cloud validation.",
+    "Observe terminal CPU failure through non-deserializing, non-clearing FunctionGetOutputs metadata. Preserve safe failure through transport/registry; uncertain network state never becomes proof of stopped resources.",
+    "Private preparation harness requests shutdown immediately on failed, uncertain or cancelled preparation."
+  ],
+  "freshVerificationAfterFinalRepairs": {
+    "python": {"passed": 204, "failed": 0},
+    "focusedNode": {"passed": 50, "failed": 0},
+    "typeScriptAllConfiguredScopes": "passed via npm run build",
+    "customerBuild": "passed locally, not deployed",
+    "explicitChangedJavaScriptLintNoIgnore": "passed, zero errors or warnings",
+    "earlierThisRunBackendRegressionBeforeFinalStorageRepair": {"passed": 584, "failed": 0, "note": "Historical within this run; final affected suites rerun above. Excludes task12-readiness long mock suite."}
+  },
+  "nextGate": "A second paid preparation/inference attempt needs explicit renewed approval after the failed single attempt. Refresh workspace caps, billing period, usage and watchdog proof first. No other model trial or publication is authorized."
+}

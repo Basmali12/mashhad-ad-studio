@@ -1,0 +1,19 @@
+{
+  "status": "stopped_before_model_load",
+  "gpuPreflightDispatched": true,
+  "inferenceStarted": false,
+  "videoGenerated": false,
+  "error": "LIGHTWAN_KERNELS_NOT_READY",
+  "confirmedFinding": "Original preflight required renamed lightx2v_kernel_nvidia and did not implement documented upstream legacy compatibility. Actual cached-image package inventory is not yet inspected.",
+  "localFix": "Allow upstream legacy package only when renamed package absent; require NVFP4 callable API, registered SM120 ops, SageAttention and native Sparge kernels. Broken ABI never falls back.",
+  "officialSources": [
+    "https://github.com/ModelTC/LightX2V/blob/880b7b156a4eb3ae8af8979a8d44b5e5945e17d2/lightx2v_kernel/nvidia/README.md",
+    "https://github.com/ModelTC/LightX2V/blob/880b7b156a4eb3ae8af8979a8d44b5e5945e17d2/lightx2v/common/ops/mm/mm_weight.py"
+  ],
+  "localTestsPassed": 18,
+  "nextProposedStep": "One CPU-only inspection of cached image; only if dependencies pass, one new GPU attempt under unchanged existing $6.35/$0 limits and same total budget. Separate approval required after prior failure.",
+  "resourcesStoppedProof": "final-stop-proof.json",
+  "originalAssetsUnchanged": true,
+  "weightsRedownloadRequired": false,
+  "paidRetryExecuted": false
+}

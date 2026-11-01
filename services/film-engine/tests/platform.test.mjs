@@ -1,4 +1,3 @@
-import './conv-fixture-profile.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtemp,rm,mkdir,writeFile} from 'node:fs/promises';
@@ -199,16 +198,6 @@ test('atomic two-slot limit, account group lock and explicit stop guard',async t
  const f=await fixture(t);const results=await Promise.allSettled([f.invoke(admin,'admin.slot.save',{accountId:f.account.id,name:'second',hourPriceUSD:'2'}),f.invoke(admin,'admin.slot.save',{accountId:f.account.id,name:'third',hourPriceUSD:'3'})]);assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.equal(f.store.all('film-slot').length,2);
  await f.invoke(admin,'admin.account.lock',{accountId:f.account.id,locked:true});assert.equal(f.store.all('film-slot').every(s=>s.locked),true);await assert.rejects(f.invoke(admin,'admin.account.stop',{accountId:f.account.id}),/APPROVAL_REQUIRED/);assert.equal(f.provider.calls.length,0);
 });
-test('safe explicit resume only submits remaining scene with backend owned last frame across rentals',async t=>{
- const f=await fixture(t);await f.credit(alice);const r=await warm(f,await f.start(alice)),priorRental='prior-rental',priorJob=randomUUID(),previousScene=randomUUID();
- f.store.put('rental',{id:priorRental,customerId:f.users.alice,state:'closed',engineJobId:priorJob});f.store.put('job',{id:priorJob,action:'start',status:'stopped',cloudStopped:true});
- const project=await f.invoke(alice,'project.save',{name:'resume',story:'fiction',seconds:20,orientation:'portrait'}),p=f.store.get('film-project',project.id);p.state='needs_review';p.rentalId=priorRental;p.scenes=[{attempted:true,status:'done',jobId:previousScene},{attempted:false,status:'pending',prompt:'A chronological scene',audioContract:{lines:[{speaker:'علي',text:'شلونك اليوم؟'}]}}];f.store.put('film-project',p);
- f.store.put('job',{id:previousScene,tenantId:f.users.alice,projectId:p.id,rentalId:priorRental,status:'completed',cloudStopped:true,result:{videoVerified:true}});
- await mkdir(path.join(f.folder,'artifacts',previousScene),{recursive:true});const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jUv0AAAAASUVORK5CYII=','base64');await writeFile(path.join(f.folder,'artifacts',previousScene,'last-frame.png'),png);
- const original=f.engine.invoke;let generated=0,captured;f.engine.invoke=async(route,b,scope,...rest)=>{if(route==='quote'&&b.action==='generate'){captured=b;return {id:'resume-quote'};}if(route==='execute'&&b.quoteId==='resume-quote'){generated++;const id=randomUUID();f.store.put('job',{id,quoteId:b.quoteId,tenantId:scope.tenantId,rentalId:scope.rentalId,projectId:p.id,status:'completed',cloudStopped:true,result:{videoVerified:true}});return {id};}return original(route,b,scope,...rest);};
- await f.invoke(alice,'project.resume',{projectId:p.id,rentalId:r.id,approved:true});await waitFor(()=>f.store.get('film-project',p.id).state==='completed');assert.equal(generated,1);assert.equal(captured.initialFrame,'data:image/png;base64,'+png.toString('base64'));assert.equal(captured.previousSceneId,undefined);assert.equal(f.store.get('film-project',p.id).scenes[0].jobId,previousScene);
- const ticket=await f.invoke(alice,'media.ticket',{projectId:p.id,index:0});assert.equal(ticket.url.includes(previousScene),false);
-});
 test('ambiguous attempted scenes block resume and never silently retry',async t=>{
  const f=await fixture(t);await f.credit(alice);const r=await warm(f,await f.start(alice));const p=await f.invoke(alice,'project.save',{name:'ambiguous',story:'fiction',seconds:20,orientation:'portrait'}),record=f.store.get('film-project',p.id);record.rentalId='old-rental';record.scenes=[{attempted:true,status:'submitted'},{attempted:false,status:'pending'}];f.store.put('film-project',record);f.store.put('rental',{id:'old-rental',customerId:f.users.alice,state:'closed',engineJobId:'old-engine'});f.store.put('job',{id:'old-engine',cloudStopped:true,status:'stopped'});await assert.rejects(f.invoke(alice,'project.resume',{projectId:p.id,rentalId:r.id,approved:true}),/SCENE_ALREADY_ATTEMPTED/);assert.equal(f.store.get('film-project',p.id).scenes[1].attempted,false);
 });
@@ -285,11 +274,6 @@ test('draft saves preserve conversation, report, timestamps and reference except
  await f.invoke(alice,'project.save',{...input,name:'Renamed'});assert.equal(f.store.get('film-project',p.id).state,'planned');
  await f.invoke(alice,'project.save',{...input,story:'Different real story'});current=f.store.get('film-project',p.id);assert.deepEqual(current.messages,old.messages);assert.deepEqual(current.reference,old.reference);assert.deepEqual(current.scenes,[]);assert.equal(current.state,'draft');assert.equal(current.planningCompletedScenes,0);assert.equal(current.createdAt,old.createdAt);
  current.scenes=[{attempted:true,status:'done'}];f.store.put('film-project',current);await assert.rejects(f.invoke(alice,'project.save',input),/ATTEMPTED/);await assert.rejects(f.invoke(alice,'project.reference.ticket',{projectId:p.id}),/LOCKED/);await assert.rejects(f.invoke(alice,'project.reference.remove',{projectId:p.id}),/LOCKED/);
-});
-test('first scene receives stored reference while next scene uses verified last-frame continuation',async t=>{
- const f=await fixture(t);await f.credit(alice);const r=await warm(f,await f.start(alice)),p=await draft(f);await upload(f,await f.invoke(alice,'project.reference.ticket',{projectId:p.id}));const old=f.store.get('film-project',p.id);old.state='planned';old.scenes=[0,1].map(()=>({status:'pending',attempted:false,prompt:'A chronological scene',audioContract:{lines:[{speaker:'علي',text:'شلونك اليوم؟'}]}}));f.store.put('film-project',old);
- const original=f.engine.invoke,captured=[];f.engine.invoke=async(route,b,scope,...rest)=>{if(route==='quote'&&b.action==='generate'){captured.push(b);return {id:'reference-quote-'+captured.length};}if(route==='execute'&&b.quoteId.startsWith('reference-quote-')){const id=randomUUID();f.store.put('job',{id,tenantId:scope.tenantId,rentalId:scope.rentalId,projectId:p.id,status:'completed',cloudStopped:true,result:{videoVerified:true}});return {id};}return original(route,b,scope,...rest);};
- await f.invoke(alice,'project.generate',{projectId:p.id,rentalId:r.id,approved:true});await waitFor(()=>f.store.get('film-project',p.id).state==='completed');assert.equal(captured.length,2);assert.equal(captured[0].initialFrame,'data:image/png;base64,'+tinyPNG().toString('base64'));assert.equal(captured[1].initialFrame,undefined);assert.equal(captured[1].previousSceneId,'scene-0');
 });
 test('reference quota atomically bounds concurrent retained originals across projects',async t=>{
  const f=await fixture(t,{referenceCustomerByteLimit:REFERENCE_LIMIT}),a=await draft(f),b=await draft(f),ta=await f.invoke(alice,'project.reference.ticket',{projectId:a.id}),tb=await f.invoke(alice,'project.reference.ticket',{projectId:b.id});let release,entered;const gate=new Promise(r=>release=r),begun=new Promise(r=>entered=r);const stream=Readable.from((async function*(){entered();await gate;yield tinyPNG();})()),first=upload(f,ta,stream);await begun;
@@ -448,20 +432,6 @@ test('discussion duration is persisted in the hidden project and explicit ready-
  assert.equal(f.store.get('film-project',p.id).seconds,20);assert.equal(details,0);assert.equal(f.provider.calls.length,0);
  await f.invoke(alice,'chat.submit',{projectId:p.id,message:'ابدا اكتب القصة',approved:true});await waitFor(()=>f.store.get('film-project',p.id).state==='planned'&&!f.store.get('film-project',p.id).textPending);
  assert.equal(details,1);assert.equal((await f.invoke(alice,'project.get',{id:p.id})).scenes.length,2);assert.equal(f.provider.calls.length,0);
-});
-
-test('single production approval durably claims one launch; repeated requests cannot allocate a second session',async t=>{
- const f=await fixture(t,{text:true}),p=await draft(f);await f.credit(alice);f.store.put('config',{id:'openai-director',credentials:'local-fixture-presence-only'});
- const planned=f.store.get('film-project',p.id);planned.state='planned';planned.scenes=[{prompt:'An Iraqi courtyard',audioContract:{language:'ar',dialect:'iraqi',mode:'dialogue',lines:[{speaker:'علي',text:'شلونك اليوم؟'}]},status:'pending',attempted:false}];f.store.put('film-project',planned);
- const q=await f.invoke(alice,'rental.quote',{serverId:f.slot.id}),input={projectId:p.id,...q,approved:true,requestId:'launch-once'};
- await assert.rejects(f.invoke(alice,'project.launch',{...input,approved:false}),/APPROVAL_REQUIRED/);
- await assert.rejects(f.invoke(bob,'project.launch',input),/NOT_FOUND/);
- const results=await Promise.all([f.invoke(alice,'project.launch',input),f.invoke(alice,'project.launch',{...input,requestId:'double-click'})]);
- assert.equal(results[0].id,results[1].id);await waitFor(()=>f.store.all('rental').length===1);await waitFor(()=>f.provider.sessions.size===1);
- await f.invoke(alice,'project.launch',{...input,requestId:'reload'});assert.equal(f.store.all('rental').length,1);assert.equal(f.provider.sessions.size,1);
- const saved=f.store.get('film-project',p.id);assert.equal(saved.launch.started,true);assert.equal(saved.launch.serverId,f.slot.id);
- // No external provider or GPU exists in this local fixture. Close before generation dispatch.
- await f.platform.close();
 });
 
 test('launch of an already planned film does not require a review key or create review reservations',async t=>{

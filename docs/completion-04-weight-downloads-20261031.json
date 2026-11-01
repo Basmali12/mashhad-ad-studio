@@ -1,0 +1,167 @@
+{
+  "scope": "CPU-only new-model weight downloads; no website publication, GPU inference or rental changes",
+  "status": "available_weights_prepared_with_access_blocker",
+  "evidence": {
+    "checkedAtUTC": "2026-10-31T21:18:42.710189+00:00",
+    "checkedAtBaghdad": "2026-11-01T00:18:42.710476+03:00",
+    "status": "available_weights_prepared_with_access_blocker",
+    "appStopped": true,
+    "ownedTasks": 0,
+    "activeApps": 0,
+    "verifiedModels": [
+      {
+        "modelId": "flux2-klein-4b",
+        "files": 17,
+        "bytes": 15975692643,
+        "hashVerifiedByCPUPreparation": true
+      },
+      {
+        "modelId": "habibi-irq",
+        "files": 6,
+        "bytes": 1403156767,
+        "hashVerifiedByCPUPreparation": true
+      },
+      {
+        "modelId": "habibi-egy",
+        "files": 6,
+        "bytes": 1403236793,
+        "hashVerifiedByCPUPreparation": true
+      },
+      {
+        "modelId": "habibi-msa",
+        "files": 6,
+        "bytes": 1403064476,
+        "hashVerifiedByCPUPreparation": true
+      },
+      {
+        "modelId": "qwen-image-edit-2511",
+        "files": 34,
+        "bytes": 57720461873,
+        "hashVerifiedByCPUPreparation": true
+      },
+      {
+        "modelId": "wan22-i2v-a14b",
+        "files": 42,
+        "bytes": 126202569662,
+        "hashVerifiedByCPUPreparation": true
+      },
+      {
+        "modelId": "hunyuanvideo15",
+        "files": 71,
+        "bytes": 159203993734,
+        "hashVerifiedByCPUPreparation": true,
+        "committedFileSizesRechecked": true
+      }
+    ],
+    "totalVerifiedGiB": 338.3608310930431,
+    "verifiedFiles": 182,
+    "audar": {
+      "engineId": "43f9bf2e-8688-479b-8ecc-0e410145f4f1",
+      "error": "SPEECH_CODEC_AUTHORIZATION_REQUIRED",
+      "modelId": "audar-tts-v1-flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "status": "blocked"
+    },
+    "grossUSDProvisional": "6.55134100",
+    "billedUSDProvisional": "0.00000000",
+    "originalBaselineGrossUSD": 6.34874585,
+    "increaseUSDProvisional": "0.20259515",
+    "providerUsageLimitUSD": 7,
+    "providerSpendLimitUSD": 0,
+    "budgetCycleStartUTC": "2026-10-01T00:00:00Z",
+    "budgetCycleEndUTC": "2026-11-01T00:00:00Z",
+    "gpuInferenceExecuted": false,
+    "websitePublished": false
+  },
+  "deferred": [
+    {
+      "modelId": "audar-tts-v1-flash",
+      "reason": "No mashhad-hf-read Secret in primary workspace; gated NeuCodec access not bypassed."
+    },
+    {
+      "modelId": "latentsync16",
+      "reason": "InsightFace commercial license blocker; excluded from approved commercial downloads."
+    }
+  ],
+  "repairs": [
+    "Trusted Modal mount anchor normalization; descendant symlinks still rejected.",
+    "Correct FileNotFoundError handling while awaiting first CPU checkpoint.",
+    "One bounded retry for read-only Modal ConnectionError; no paid request retry.",
+    "Scoped account/engine-preserving continuation with separate per-batch receipts; actual faults require renewed explicit recovery consent."
+  ],
+  "freshLocalTests": {
+    "pythonAll": 216,
+    "failed": 0,
+    "weightBatch": 10,
+    "watchdog": 16,
+    "modelInferenceTested": false
+  },
+  "budget": {
+    "approvedTotalUSD": 20,
+    "providerUsageLimitUSD": 7,
+    "providerSpendLimitUSD": 0,
+    "capScreenshot": "docs/evidence/modal-primary-usage-limit-7.png",
+    "providerCostFinal": false
+  },
+  "notes": [
+    "All six verifiedModels entries are FLUX/Qwen/Wan plus three Habibi dialect checkpoints; this does not mean six model families were tested.",
+    "Hunyuan partial receipt is not readiness; no generated image, video or audio is claimed."
+  ],
+  "previousFailureEvidence": {
+    "checkedAtUTC": "2026-10-31T20:43:48.229550+00:00",
+    "appStopped": true,
+    "ownedTasks": 0,
+    "verifiedModels": [
+      {
+        "modelId": "flux2-klein-4b",
+        "files": 17,
+        "bytes": 15975692643,
+        "hashVerifiedByCPUPreparation": true
+      },
+      {
+        "modelId": "habibi-irq",
+        "files": 6,
+        "bytes": 1403156767,
+        "hashVerifiedByCPUPreparation": true
+      },
+      {
+        "modelId": "habibi-egy",
+        "files": 6,
+        "bytes": 1403236793,
+        "hashVerifiedByCPUPreparation": true
+      },
+      {
+        "modelId": "habibi-msa",
+        "files": 6,
+        "bytes": 1403064476,
+        "hashVerifiedByCPUPreparation": true
+      },
+      {
+        "modelId": "qwen-image-edit-2511",
+        "files": 34,
+        "bytes": 57720461873,
+        "hashVerifiedByCPUPreparation": true
+      },
+      {
+        "modelId": "wan22-i2v-a14b",
+        "files": 42,
+        "bytes": 126202569662,
+        "hashVerifiedByCPUPreparation": true
+      }
+    ],
+    "totalVerifiedGiB": 190.0905577596277,
+    "grossUSDProvisional": "6.47682857",
+    "originalBaselineGrossUSD": 6.34874585,
+    "failedModel": "hunyuanvideo15",
+    "failedBatchStatus": "failed",
+    "recordedStopReason": "TRIAL_PROVIDER_STATE_UNKNOWN",
+    "recordedSafeErrorType": "ConnectionError",
+    "providerUsageLimitUSD": 7,
+    "providerSpendLimitUSD": 0
+  },
+  "remaining": [
+    "Audar: authorized Hugging Face token/access required for gated NeuCodec; no gate bypass.",
+    "LatentSync/InsightFace: commercial rights blocker; not downloaded.",
+    "GPU inference/quality and full application integration remain untested by these weight downloads."
+  ]
+}

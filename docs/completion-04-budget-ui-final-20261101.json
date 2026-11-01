@@ -1,0 +1,13 @@
+{
+  "source": "Modal primary workspace Usage limit page",
+  "screenshot": "docs/evidence/modal-primary-test-cap21.png",
+  "capturedAtUTC": "2026-10-31T23:29:28.432Z",
+  "usageLimitUSD": 21,
+  "spendLimitUSD": 0,
+  "displayedGrossUsageUSDProvisional": 9.98,
+  "baselineGrossUSD": 6.34874585,
+  "incrementUSDProvisional": 3.63125415,
+  "displayedCashChargesUSD": 0,
+  "displayedCreditUSD": 20.02,
+  "invoiceVerified": false
+}

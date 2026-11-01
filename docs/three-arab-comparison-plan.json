@@ -1,0 +1,63 @@
+{
+  "modelId": "3arab-voicedesign-v1",
+  "revision": "88c3b2c35dbd6da614a723afcd19b27662ab714c",
+  "text": "في ليلةٍ ساد فيها السكون، جلس رجلٌ يتأمل حياته، ويتذكر الأيام التي مضت. لم يكن يعلم أن لحظةً واحدة قد تغيّر كل شيء.",
+  "textSHA256": "b285d0eba4e96d42682607fbff218b8eb13eb160cdacaf276909ed43b3f8490b",
+  "approved": false,
+  "dispatch": false,
+  "samples": [
+    {
+      "text": "في ليلةٍ ساد فيها السكون، جلس رجلٌ يتأمل حياته، ويتذكر الأيام التي مضت. لم يكن يعلم أن لحظةً واحدة قد تغيّر كل شيء.",
+      "style": "solemn",
+      "seed": 42,
+      "seconds": 15,
+      "numCandidates": 1,
+      "numSteps": 40,
+      "trimTail": false,
+      "qualityVerified": false
+    },
+    {
+      "text": "في ليلةٍ ساد فيها السكون، جلس رجلٌ يتأمل حياته، ويتذكر الأيام التي مضت. لم يكن يعلم أن لحظةً واحدة قد تغيّر كل شيء.",
+      "style": "calm",
+      "seed": 42,
+      "seconds": 15,
+      "numCandidates": 1,
+      "numSteps": 40,
+      "trimTail": false,
+      "qualityVerified": false
+    }
+  ],
+  "runtime": {
+    "account": "primary_only",
+    "gpu": "L40S",
+    "cpu": 2,
+    "ramGiB": 16,
+    "timeoutSeconds": 180,
+    "startupSeconds": 180,
+    "idleSeconds": 10,
+    "retries": 0,
+    "keepLoadedBetweenSamples": true,
+    "measured": false
+  },
+  "knownAssetBytes": 1552418354,
+  "maximumOutputWindowsSeconds": 30,
+  "noReferenceCloning": true,
+  "exactDemoRecreationGuaranteed": false,
+  "review": [
+    "word_accuracy",
+    "natural_pauses",
+    "no_missing_or_repeated_words",
+    "no_excessive_silence",
+    "male_narrator_timbre",
+    "continuity",
+    "watermark_present"
+  ],
+  "adapterVariant": "audioseal-v1",
+  "watermarkBackend": "audioseal",
+  "licenseEligible": true,
+  "blockers": [
+    "WEIGHTS_NOT_PREPARED",
+    "NATIVE_ENVIRONMENT_UNTESTED",
+    "PAID_APPROVAL_REQUIRED"
+  ]
+}

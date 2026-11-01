@@ -9,7 +9,7 @@ test('all director modes send camera guidance without changing schemas, dialogue
  const director=new OpenAIDirector(store,{fetcher:async(url,options)=>{
   calls++;assert.equal(url,'https://api.openai.com/v1/responses');
   const p=JSON.parse(options.body);
-  for(const phrase of ['shot size','motivated light source','720p','exact sentence','Arabic','native audio','event before the reaction','without adding fields'])assert.ok(p.instructions.includes(phrase),phrase);
+  for(const phrase of ['shot size','motivated light source','720p','exact sentence','Arabic','configured engine audio','event before the reaction','without adding fields'])assert.ok(p.instructions.includes(phrase),phrase);
   assert.equal(p.store,false);assert.equal(p.max_output_tokens,6000);
   assert.equal(p.input.at(-1).content,'إعلان عراقي، بإضاءة طبيعية وكاميرا ثابتة');
   return Response.json({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({reply:'نناقش المدة أولاً',proposed_duration_seconds:30,style:'واقعي',ready_to_write:false,missing:[],portrait_prompt:null,continuity_notes:''})}]}]});

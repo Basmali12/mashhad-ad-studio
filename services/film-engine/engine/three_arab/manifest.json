@@ -1,0 +1,186 @@
+{
+  "modelId": "3arab-voicedesign-v1",
+  "version": "V1",
+  "status": "local_candidate_unpublished",
+  "sourceRepo": "https://github.com/sherif1313/3arab-TTS",
+  "sourceCommit": "ff242278c423d4cbb03920ab5e1dbb2d468ad26d",
+  "revisions": {
+    "sherif1313/3arab-TTS-500M-v1-VoiceDesign": "88c3b2c35dbd6da614a723afcd19b27662ab714c",
+    "sherif1313/DACVAE-Arabic-32dim": "cdf438ec7a0ccd1b9d325b167303620e2868eb7c",
+    "sherif1313/llm-ar": "6c6ac6f721924664219d1770dea1d5ff2a5f06c9",
+    "sony/silentcipher": "a1c4d021905e0dc5b24be5f68db5fc4dba410ee1",
+    "facebook/audioseal": "3c19eba53390776cf2cc9ed5f6c9ac67ce72ecba"
+  },
+  "declaredLicenses": {
+    "sherif1313/3arab-TTS-500M-v1-VoiceDesign": "apache-2.0",
+    "sherif1313/DACVAE-Arabic-32dim": "apache-2.0",
+    "sherif1313/llm-ar": "apache-2.0",
+    "sony/silentcipher": null,
+    "facebook/audioseal": "mit"
+  },
+  "files": [
+    {
+      "path": "model/model.safetensors",
+      "repoId": "sherif1313/3arab-TTS-500M-v1-VoiceDesign",
+      "revision": "88c3b2c35dbd6da614a723afcd19b27662ab714c",
+      "sourcePath": "model.safetensors",
+      "size": 1022906824,
+      "sha256": "7ee2789cc932ce1b8bf0e982dda461650cf557ce81477ea790bae07ba41400ac"
+    },
+    {
+      "path": "codec/weights.pth",
+      "repoId": "sherif1313/DACVAE-Arabic-32dim",
+      "revision": "cdf438ec7a0ccd1b9d325b167303620e2868eb7c",
+      "sourcePath": "weights.pth",
+      "size": 429620065,
+      "sha256": "db120339c5ee7eca1912cdf29bc612b947a0808e69c3cebfb4936b45a762c1d5"
+    },
+    {
+      "path": "tokenizer/config.json",
+      "repoId": "sherif1313/llm-ar",
+      "revision": "6c6ac6f721924664219d1770dea1d5ff2a5f06c9",
+      "sourcePath": "config.json",
+      "size": 680,
+      "sha256": "d5eb2e6c59d644bc077e08111359cc15ed21669e7bba8f48f3cfa4450fff7b0c"
+    },
+    {
+      "path": "tokenizer/special_tokens_map.json",
+      "repoId": "sherif1313/llm-ar",
+      "revision": "6c6ac6f721924664219d1770dea1d5ff2a5f06c9",
+      "sourcePath": "special_tokens_map.json",
+      "size": 237,
+      "sha256": "f60631bdd138eb0c7db3d306fcf5e475a22d808fa2e2b2ad98cc32d17281194b"
+    },
+    {
+      "path": "tokenizer/tokenizer.json",
+      "repoId": "sherif1313/llm-ar",
+      "revision": "6c6ac6f721924664219d1770dea1d5ff2a5f06c9",
+      "sourcePath": "tokenizer.json",
+      "size": 6416433,
+      "sha256": "955dc1fa623fab38cc92a3f4ee172423ae6d73201c4207569bfdf5626bc733f0"
+    },
+    {
+      "path": "tokenizer/tokenizer_config.json",
+      "repoId": "sherif1313/llm-ar",
+      "revision": "6c6ac6f721924664219d1770dea1d5ff2a5f06c9",
+      "sourcePath": "tokenizer_config.json",
+      "size": 494,
+      "sha256": "1b457c73c2b6b683cbea24d883f7e5fa56fdd70b7cbf2fc8f42c0fd8de54c7a9"
+    },
+    {
+      "path": "audioseal/generator_base.pth",
+      "repoId": "facebook/audioseal",
+      "revision": "3c19eba53390776cf2cc9ed5f6c9ac67ce72ecba",
+      "sourcePath": "generator_base.pth",
+      "size": 58805980,
+      "sha256": "7a845b5fbe9364a63a3909d8ab3fe064d13a76ae4c2e983573e08c69b7b51748"
+    },
+    {
+      "path": "audioseal/detector_base.pth",
+      "repoId": "facebook/audioseal",
+      "revision": "3c19eba53390776cf2cc9ed5f6c9ac67ce72ecba",
+      "sourcePath": "detector_base.pth",
+      "size": 34667641,
+      "sha256": "8a78e8a83584113523e161fc599fcab10fd0e94c04d2eb9d2fa1e9ec91ab69d9"
+    }
+  ],
+  "totalBytes": 1552418354,
+  "commercialReady": false,
+  "licenseReviewRequired": [],
+  "notes": [
+    "Weight tensors not downloaded. Only metadata/config/tokenizer text used for hash audit.",
+    "V1 checkpoint metadata has use_duration_predictor=false: never silently accept native 30-second fallback.",
+    "Demo 005/003 inference captions and seeds were not published; new captions target similar styles, not exact recreation.",
+    "AudioSeal variant changes only post-synthesis watermarking. Voice-design model and codec stay pinned. SilentCipher weights are not used or downloaded. Acoustic equivalence requires listening review; no public trial or catalog activation implied."
+  ],
+  "licenseEvidence": {
+    "sourceCode": {
+      "declared": "MIT",
+      "source": "https://github.com/sherif1313/3arab-TTS/blob/ff242278c423d4cbb03920ab5e1dbb2d468ad26d/pyproject.toml"
+    },
+    "decoderParent": {
+      "license": "Apache-2.0",
+      "scope": "code_and_weights",
+      "source": "https://huggingface.co/facebook/dacvae-watermarked/discussions/1",
+      "publisher": "lematt1991",
+      "clarificationAt": "2025-12-19T17:26:01.195Z"
+    },
+    "watermarkWeights": {
+      "license": "MIT",
+      "status": "explicit_code_and_weights_permission",
+      "source": "https://github.com/facebookresearch/audioseal/blob/e63a8a0e5cdf7bb797159c92ba15961557fe9bd2/README.md",
+      "appliesTo": "facebook/audioseal generator_base.pth and detector_base.pth"
+    }
+  },
+  "usageEligibility": {
+    "internalTesting": "permitted",
+    "commercial": "permitted_with_license_notices"
+  },
+  "optionalBlockedComponents": {
+    "silentcipher": {
+      "files": [
+        {
+          "path": "watermark/44_1_khz/73999_iteration/dec_c.ckpt",
+          "repoId": "sony/silentcipher",
+          "revision": "a1c4d021905e0dc5b24be5f68db5fc4dba410ee1",
+          "sourcePath": "44_1_khz/73999_iteration/dec_c.ckpt",
+          "size": 2008794,
+          "sha256": "c23b57635172b2fbd3a8531d15ba76b5885a10d0fe902ccb823c521c56041b33"
+        },
+        {
+          "path": "watermark/44_1_khz/73999_iteration/dec_m_0.ckpt",
+          "repoId": "sony/silentcipher",
+          "revision": "a1c4d021905e0dc5b24be5f68db5fc4dba410ee1",
+          "sourcePath": "44_1_khz/73999_iteration/dec_m_0.ckpt",
+          "size": 9554818,
+          "sha256": "829540c058270d29788f05294894d45bf436e44add0e1099422242ebb94b7088"
+        },
+        {
+          "path": "watermark/44_1_khz/73999_iteration/enc_c.ckpt",
+          "repoId": "sony/silentcipher",
+          "revision": "a1c4d021905e0dc5b24be5f68db5fc4dba410ee1",
+          "sourcePath": "44_1_khz/73999_iteration/enc_c.ckpt",
+          "size": 184765,
+          "sha256": "ff64f80d2391fdfc888e4103c499be4a2c958e59626587a1eab6db93204814c7"
+        },
+        {
+          "path": "watermark/44_1_khz/73999_iteration/hparams.yaml",
+          "repoId": "sony/silentcipher",
+          "revision": "a1c4d021905e0dc5b24be5f68db5fc4dba410ee1",
+          "sourcePath": "44_1_khz/73999_iteration/hparams.yaml",
+          "size": 1474,
+          "sha256": "27735fd4db0c00c29fef7af872ad1e5efe854e48d530a86c75beac2b87f09ce3"
+        }
+      ],
+      "status": "license_unresolved",
+      "source": "https://github.com/sony/silentcipher/issues/9",
+      "usedByThisVariant": false
+    }
+  },
+  "adapterVariant": "audioseal-v1",
+  "watermarkBackend": "audioseal",
+  "watermarkSourceCommit": "e63a8a0e5cdf7bb797159c92ba15961557fe9bd2",
+  "commercialLicenseEligible": true,
+  "privateTrial": {
+    "status": "completed_pending_listening",
+    "date": "2026-11-01",
+    "accountScope": "primary_account_only",
+    "audioCount": 2,
+    "cpuVerified": true,
+    "gpuVerified": true,
+    "resourcesStopped": true,
+    "evidence": "docs/three-arab-private-audition-20261101.json",
+    "auditions": [
+      {
+        "style": "solemn",
+        "durationSeconds": 15.0,
+        "mp3SHA256": "cd7d901262de9ac1ae11bb8e8349c047f4124f1e25b69bdb665ef6f9b3c63b43"
+      },
+      {
+        "style": "calm",
+        "durationSeconds": 15.0,
+        "mp3SHA256": "5d98099a1d22e24fd3aa5cdc9c0e5c490da13b889b6dc71c1a9377589b629740"
+      }
+    ]
+  }
+}

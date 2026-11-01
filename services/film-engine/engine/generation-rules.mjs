@@ -23,7 +23,7 @@ const V4_RULES=[
  'Show the requested physical action in its stated order, once. The cause visibly happens before the reaction. Do not replace the event with a conversation or show its completed outcome before it happens.',
  'Keep surfaces plain and unlettered. No subtitles, captions, titles, logos, watermarks, credits or written dialogue appear in the picture.',
  'Speech follows only the supplied Arabic script and named speakers, in the specified Arabic dialect, defaulting to Iraqi. Only the active speaker moves their mouth; listeners remain silent. Explicitly silent scenes contain ambience only.',
- 'Preserve LTX native synchronized audio. Voices sound natural and clear above quiet location ambience, without robotic doubling, hiss, hum or distortion. Do not add music unless requested. Production directions are neither spoken nor displayed.'
+ 'Preserve configured engine synchronized audio. Voices sound natural and clear above quiet location ambience, without robotic doubling, hiss, hum or distortion. Do not add music unless requested. Production directions are neither spoken nor displayed.'
 ].join(' ');
 export const FIXED_RULES_VERSION='native-av-clean-v5';
 // Positive visual directions; the locked Arabic transcript is emitted only once.
@@ -32,7 +32,7 @@ export const FIXED_RULES=[
  'Preserve the authored medium, appearances, clothes and the exact size and type of every prop. Animation remains animation and live action remains live action.',
  'Show the authored action once in chronological order. The cause visibly happens before the reaction. Continue the authored physical action after speaking.',
  'Walls, garments and props have plain undecorated surfaces. The frame presents the characters, location and physical action.',
- 'Preserve LTX native synchronized audio. The supplied Arabic words occur only in the soundtrack, once, in the specified dialect. Only the named active speaker moves their mouth; listeners stay silent. Explicitly silent scenes contain location ambience only.',
+ 'Preserve configured engine synchronized audio. The supplied Arabic words occur only in the soundtrack, once, in the specified dialect. Only the named active speaker moves their mouth; listeners stay silent. Explicitly silent scenes contain location ambience only.',
  'Voices are natural and clear above quiet location ambience, without robotic doubling, hiss, hum or distortion. Music occurs only when authored. Production directions are neither spoken nor displayed.'
 ].join(' ');
 export function applyGenerationRules(value,script=""){

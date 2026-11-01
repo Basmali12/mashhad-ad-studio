@@ -51,11 +51,3 @@ export async function pacedArtifact(store,job,edit){
  for(const [p,digest] of [[file,edit.sha256],[frame,edit.frameSHA]]){const stat=await fs.lstat(p);if(!stat.isFile()||stat.isSymbolicLink()||await fileDigest(p)!==digest)throw Error('PACING_SOURCE_CHANGED');}
  return {file,frame,sha256:edit.sha256};
 }
-export async function sceneContinuation({store,project,prior,job,rentalId,index}){
- if(prior.status!=='done'||!job?.result?.videoVerified||job.tenantId!==project.customerId||job.projectId!==project.id||!SAFE.test(job.id))throw Error('CONTINUITY_REQUIRES_REVIEW');
- if(prior.edit?.status!=='trimmed'&&job.rentalId===rentalId)return {previousSceneId:'scene-'+(index-1)};
- const frame=prior.edit?.status==='trimmed'?(await pacedArtifact(store,job,prior.edit)).frame:path.resolve(store.folder,'artifacts',job.id,'last-frame.png');
- const stat=await fs.lstat(frame);if(!stat.isFile()||stat.isSymbolicLink())throw Error('CONTINUITY_REQUIRES_REVIEW');
- const bytes=await fs.readFile(frame);if(bytes.length<8||bytes.length>4000000||bytes.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')throw Error('CONTINUITY_REQUIRES_REVIEW');
- return {initialFrame:'data:image/png;base64,'+bytes.toString('base64')};
-}

@@ -1,3 +1,5 @@
+> Retirement status: the inference engine is unconfigured. Generation/preparation capability descriptions below are API compatibility history, not active engine support. New requests must fail safely before paid dispatch. Account management, wallet, files, auth, status and scoped stop remain available.
+
 # Native Studio bridge integration
 
 Native Google OIDC and SQL sessions supply the trusted ctx.actor. filmIdentity.actor reads that stable native user ID; platform administrator status comes only from the verified server allowlist. Browser project/device selectors confer no role. Public filmIdentity.ownAccess returns only {isAdmin}.

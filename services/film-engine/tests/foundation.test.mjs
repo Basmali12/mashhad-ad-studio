@@ -1,4 +1,3 @@
-import './conv-fixture-profile.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtemp,rm,writeFile} from 'node:fs/promises';
@@ -6,10 +5,9 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {Readable} from 'node:stream';
-import {execFileSync} from 'node:child_process';
 import {createEngineAPI} from '../engine/api.mjs';
 import {Store} from '../engine/store.mjs';
-import {quality,settings} from '../engine/config.mjs';
+import {quality,settings,modelConfigured} from '../engine/config.mjs';
 
 // Strict isolated provider boundary. No SDK, network, GPU, model or paid API.
 class IsolatedProvider {
@@ -34,7 +32,7 @@ async function fixture(t,{paid=true,rentals=true}={}){
   const store=new Store(folder,key);store.installRentalSchema();
   const account={id:randomUUID(),mode:'local_profile',workspace:'fixture-only',volume:'fixture-only',activated:true};store.put('account',account);
   const provider=new IsolatedProvider();
-  const api=await createEngineAPI({folder,key,store,provider,allowPaid:paid,allowCustomerRentals:rentals,origin:'https://fixture.test',textQuality:{available(){throw Error('CONV_MUST_NOT_REQUIRE_TEXT_MODELS');},process(){throw Error('CONV_MUST_NOT_REQUIRE_TEXT_MODELS');}}});
+  const api=await createEngineAPI({folder,key,store,provider,allowPaid:paid,allowCustomerRentals:rentals,origin:'https://fixture.test',textQuality:{available(){throw Error('UNCONFIGURED_MUST_NOT_REQUIRE_TEXT_MODELS');},process(){throw Error('UNCONFIGURED_MUST_NOT_REQUIRE_TEXT_MODELS');}}});
   const a={tenantId:'tenant-a',rentalId:randomUUID(),engineSlotId:'slot-a',accountId:account.id};
   const b={tenantId:'tenant-b',rentalId:randomUUID(),engineSlotId:'slot-b',accountId:account.id};
   t.after(async()=>{for(const s of provider.sessions.values())s.stop();await api.close();await rm(folder,{recursive:true,force:true});});
@@ -57,12 +55,12 @@ test('storage becoming unwritable after quote fails before GPU dispatch and reco
  assert.equal(f.provider.calls.some(c=>['session','generate','stop'].includes(c.action)),false);
 });
 
-test('Conv stable is an explicit fixture rollback with original native audio, 720p and resource contract',()=>{
-  assert.equal(quality.profile,'conv-stable');assert.equal(quality.contract,'ltx25-native-crop-720-v1');
-  assert.equal(quality.convVAE,true);assert.equal(quality.textQualityRequired,false);assert.equal(quality.nativeAudio,true);
-  assert.deepEqual([quality.width,quality.height],[720,1280]);
-  assert.deepEqual([settings().gpu,settings().cpu,settings().ram],['RTX-PRO-6000',4,96]);
+test('unconfigured model cannot select a retired fallback but preserves generic GPU settings',()=>{
+ assert.equal(modelConfigured,false);assert.equal(quality.profile,'unconfigured');assert.equal(quality.contract,'unconfigured');
+ assert.equal(quality.nativeAudio,false);assert.equal(quality.pipeline,null);assert.equal(quality.videoDecoder,null);
+ assert.deepEqual([settings().gpu,settings().cpu,settings().ram],['RTX-PRO-6000',4,96]);
 });
+
 test('two tenants on different slots share one account but run separate simultaneous sessions',async t=>{
   const f=await fixture(t);const qa=await f.quote(f.a),qb=await f.quote(f.b);
   const [ja,jb]=await Promise.all([f.execute(qa,f.a),f.execute(qb,f.b)]);
@@ -123,24 +121,6 @@ test('customer rentals require migration and remain disabled unless explicitly e
 test('rental schema readiness fails before modifying an unmigrated store',async t=>{
   const folder=await mkdtemp(path.join(tmpdir(),'film-unmigrated-')),key=randomBytes(32).toString('base64'),store=new Store(folder,key);
   try{await assert.rejects(createEngineAPI({folder,key,store,allowCustomerRentals:true,provider:new IsolatedProvider()}),/RENTAL_MIGRATION_002_REQUIRED/);assert.equal(store.all('config').length,0);}finally{store.close();await rm(folder,{recursive:true,force:true});}
-});
-test('profile selection validates values and optional DFR retains stricter contract',()=>{
-  const cwd=path.resolve(import.meta.dirname,'..');
-  const code="import {quality} from './engine/config.mjs';console.log(JSON.stringify(quality));";
-  const dfr=JSON.parse(execFileSync(process.execPath,['--input-type=module','-e',code],{cwd,env:{...process.env,LTX_INFERENCE_PROFILE:'dfr-candidate'},encoding:'utf8'}));
-  assert.equal(dfr.profile,'dfr-main');assert.equal(dfr.convVAE,false);assert.equal(dfr.textQualityRequired,true);assert.equal(dfr.contract,'ltx25-dfr-diffvae-720-v1');
-  assert.throws(()=>execFileSync(process.execPath,['--input-type=module','-e',code],{cwd,env:{...process.env,LTX_INFERENCE_PROFILE:'typo'},stdio:'pipe'}));
-});
-test('DFR candidate refuses missing text checker and missing extra weights before any session',()=>{
-  const code=`
-    import assert from 'node:assert/strict';import {mkdtemp,rm} from 'node:fs/promises';import {tmpdir} from 'node:os';import path from 'node:path';import {randomBytes,randomUUID} from 'node:crypto';
-    import {Store} from './engine/store.mjs';import {createEngineAPI} from './engine/api.mjs';
-    const folder=await mkdtemp(path.join(tmpdir(),'dfr-guard-'));const key=randomBytes(32).toString('base64');const store=new Store(folder,key);const account={id:randomUUID(),mode:'local_profile',workspace:'fixture',volume:'fixture'};store.put('account',account);
-    let checker=false,sessions=0;const provider={call:async action=>action==='discover'?{ready:true,files:[]}:{ready:false,files:[]},session(){sessions++;throw Error('NO_REAL_SESSION');}};
-    const api=await createEngineAPI({folder,key,store,provider,allowPaid:false,textQuality:{available:async()=>{if(!checker)throw Error('TEXT_QC_NOT_CONFIGURED');}}});
-    try{const q=()=>api.invoke('quote',{accountId:account.id,action:'start',settings:{}});await assert.rejects(q(),/TEXT_QC_NOT_CONFIGURED/);checker=true;await assert.rejects(q(),/LTX_DFR_WEIGHTS_REQUIRED/);assert.equal(sessions,0);}finally{await api.close();await rm(folder,{recursive:true,force:true});}
-  `;
-  execFileSync(process.execPath,['--input-type=module','-e',code],{cwd:path.resolve(import.meta.dirname,'..'),env:{...process.env,LTX_INFERENCE_PROFILE:'dfr-candidate'},stdio:'pipe'});
 });
 test('paid actions default to disabled and quotes never dispatch sessions',async t=>{
   const f=await fixture(t,{paid:false});const q=await f.quote();assert.equal(q.paidEnabled,false);

@@ -1,0 +1,196 @@
+{
+  "modelId": "audar-tts-v1-flash",
+  "version": "V1-Flash",
+  "repoId": "audarai/Audar-TTS-V1-Flash",
+  "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+  "sourceRepo": "https://github.com/AudarAI/Audar-TTS-V1",
+  "sourceCommit": "8316d3f50e87f5622af3ecb78c1ef95261bff655",
+  "license": "AudarAI-Open-v1.0",
+  "codecLicense": "Apache-2.0-gated",
+  "codecRevision": "a940021324df13a07f44185f0a17c6dac3698179",
+  "semanticRevision": "da985ba0987f70aaeb84a80f2851cfac8c697a7b",
+  "codecSecretName": "mashhad-hf-read",
+  "codecSourcePackage": "neucodec==0.0.6",
+  "sampleRate": 24000,
+  "resourcesVerified": false,
+  "files": [
+    {
+      "path": "audar/LICENSE",
+      "sourcePath": "LICENSE",
+      "repoId": "audarai/Audar-TTS-V1-Flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "size": 20705,
+      "sha256": "c7e7c38af48d7750bc2afba214d7b4e6d769fd7887ec4d9bffcfbfaf1766d16e",
+      "verificationSource": "public-config-sha256-gitblob-verified",
+      "gated": false
+    },
+    {
+      "path": "audar/README.md",
+      "sourcePath": "README.md",
+      "repoId": "audarai/Audar-TTS-V1-Flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "size": 21634,
+      "sha256": "0f04db023ee81e44c5031d62a48dd27d87dca354e660b3efe88e244197b7e64c",
+      "verificationSource": "public-config-sha256-gitblob-verified",
+      "gated": false
+    },
+    {
+      "path": "audar/transformers/added_tokens.json",
+      "sourcePath": "transformers/added_tokens.json",
+      "repoId": "audarai/Audar-TTS-V1-Flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "size": 1963523,
+      "sha256": "518d7d210188768db822a9b72eb3c0b42e099a65f10b67134c0152fc645253c3",
+      "verificationSource": "public-config-sha256-gitblob-verified",
+      "gated": false
+    },
+    {
+      "path": "audar/transformers/chat_template.jinja",
+      "sourcePath": "transformers/chat_template.jinja",
+      "repoId": "audarai/Audar-TTS-V1-Flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "size": 2507,
+      "sha256": "cd8e9439f0570856fd70470bf8889ebd8b5d1107207f67a5efb46e342330527f",
+      "verificationSource": "public-config-sha256-gitblob-verified",
+      "gated": false
+    },
+    {
+      "path": "audar/transformers/config.json",
+      "sourcePath": "transformers/config.json",
+      "repoId": "audarai/Audar-TTS-V1-Flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "size": 1227,
+      "sha256": "2c8fefb9d6d0176dfae61da1f8a3c8ddfd69391fe86403e10a25078da1479ab1",
+      "verificationSource": "public-config-sha256-gitblob-verified",
+      "gated": false
+    },
+    {
+      "path": "audar/transformers/generation_config.json",
+      "sourcePath": "transformers/generation_config.json",
+      "repoId": "audarai/Audar-TTS-V1-Flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "size": 216,
+      "sha256": "38a0879498bfd0c286aac53a018bebb4aa5b1e2515a5de93ec7363d68ee3e723",
+      "verificationSource": "public-config-sha256-gitblob-verified",
+      "gated": false
+    },
+    {
+      "path": "audar/transformers/merges.txt",
+      "sourcePath": "transformers/merges.txt",
+      "repoId": "audarai/Audar-TTS-V1-Flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "size": 1671853,
+      "sha256": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+      "verificationSource": "public-config-sha256-gitblob-verified",
+      "gated": false
+    },
+    {
+      "path": "audar/transformers/model.safetensors",
+      "sourcePath": "transformers/model.safetensors",
+      "repoId": "audarai/Audar-TTS-V1-Flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "size": 1105889664,
+      "sha256": "7a70f5be8361721c0004c4d3ae83ef2b9b89b169b5f1a8fd6adf1561c8ac784e",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "gated": false
+    },
+    {
+      "path": "audar/transformers/special_tokens_map.json",
+      "sourcePath": "transformers/special_tokens_map.json",
+      "repoId": "audarai/Audar-TTS-V1-Flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "size": 686,
+      "sha256": "8ae2fb7b6bba106554613d1fd5d0194c2e36887ce7d96c1d9fc070ea70534ff0",
+      "verificationSource": "public-config-sha256-gitblob-verified",
+      "gated": false
+    },
+    {
+      "path": "audar/transformers/tokenizer.json",
+      "sourcePath": "transformers/tokenizer.json",
+      "repoId": "audarai/Audar-TTS-V1-Flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "size": 24143303,
+      "sha256": "bd7a90e83b7d8f600797a5b04e99c113a48c184e6ca90e0c924d02fd6bcabc8c",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "gated": false
+    },
+    {
+      "path": "audar/transformers/tokenizer_config.json",
+      "sourcePath": "transformers/tokenizer_config.json",
+      "repoId": "audarai/Audar-TTS-V1-Flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "size": 12066161,
+      "sha256": "6c989a68bee235b552774e3b4e90af84bb70e830a887402eeea8e76527c6ab66",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "gated": false
+    },
+    {
+      "path": "audar/transformers/vocab.json",
+      "sourcePath": "transformers/vocab.json",
+      "repoId": "audarai/Audar-TTS-V1-Flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "size": 2776833,
+      "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+      "verificationSource": "public-config-sha256-gitblob-verified",
+      "gated": false
+    },
+    {
+      "path": "semantic/README.md",
+      "sourcePath": "README.md",
+      "repoId": "facebook/w2v-bert-2.0",
+      "revision": "da985ba0987f70aaeb84a80f2851cfac8c697a7b",
+      "size": 4792,
+      "sha256": "478afeacb3b4ce0d86b361f099416d28a7e7673ade31775c0f85f396979b7fc2",
+      "verificationSource": "public-config-sha256-gitblob-verified",
+      "gated": false
+    },
+    {
+      "path": "semantic/config.json",
+      "sourcePath": "config.json",
+      "repoId": "facebook/w2v-bert-2.0",
+      "revision": "da985ba0987f70aaeb84a80f2851cfac8c697a7b",
+      "size": 1874,
+      "sha256": "f5572bd5998b68182e9c328a43127ed21fed687f6910497136b91a4e3b0e3675",
+      "verificationSource": "public-config-sha256-gitblob-verified",
+      "gated": false
+    },
+    {
+      "path": "semantic/model.safetensors",
+      "sourcePath": "model.safetensors",
+      "repoId": "facebook/w2v-bert-2.0",
+      "revision": "da985ba0987f70aaeb84a80f2851cfac8c697a7b",
+      "size": 2322063736,
+      "sha256": "eb890c9660ed6e3414b6812e27257b8ce5454365d5490d3ad581ea60b93be043",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "gated": false
+    },
+    {
+      "path": "semantic/preprocessor_config.json",
+      "sourcePath": "preprocessor_config.json",
+      "repoId": "facebook/w2v-bert-2.0",
+      "revision": "da985ba0987f70aaeb84a80f2851cfac8c697a7b",
+      "size": 275,
+      "sha256": "8e6281aad64f97e40534135a59dcc5d33571efae376f2a25adf5551951897ab4",
+      "verificationSource": "public-config-sha256-gitblob-verified",
+      "gated": false
+    },
+    {
+      "path": "codec/pytorch_model.bin",
+      "sourcePath": "pytorch_model.bin",
+      "repoId": "neuphonic/neucodec",
+      "revision": "a940021324df13a07f44185f0a17c6dac3698179",
+      "size": 1160509432,
+      "sha256": "30c3ea13ceeb2de693c56e5e33a1b7e00d44c95dcdd08a4ed0d552d0bf59ebdf",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "gated": true
+    }
+  ],
+  "totalBytes": 4631138421,
+  "codecSoftware": {
+    "package": "neucodec",
+    "version": "0.0.6",
+    "wheelFile": "neucodec-0.0.6-py3-none-any.whl",
+    "wheelSHA256": "7e0231a631ac649b73769d8fb3c10b229054e42914c6da512c3f186dfb2cf57f",
+    "sourceRepo": "https://github.com/neuphonic/neucodec"
+  }
+}

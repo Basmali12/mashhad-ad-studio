@@ -21,7 +21,7 @@
     "project.follow",
     "chat.submit",
     "plan.submit",
-  "review.submit",
+    "review.submit",
     "text.status",
     "plan.status",
     "project.generate",
@@ -30,7 +30,15 @@
     "project.merge",
     "project.reference.ticket",
     "project.reference.remove",
-    "project.reference.view"
+    "project.reference.view",
+    "production.create",
+    "production.get",
+    "production.list",
+    "production.plan",
+    "production.quote",
+    "production.approve",
+    "production.retry",
+    "production.cancel"
   ],
   "adminOperations": [
     "admin.customers.list",
@@ -61,7 +69,15 @@
     "admin.text.key.save",
     "admin.text.key.remove",
     "admin.test.quote",
-    "admin.test.execute"
+    "admin.test.execute",
+    "admin.engine.models",
+    "admin.engine.list",
+    "admin.engine.save",
+    "admin.engine.inspect",
+    "admin.engine.quote",
+    "admin.engine.start",
+    "admin.engine.stop",
+    "admin.engine.status"
   ],
   "readOnlyOperations": [
     "session",
@@ -80,7 +96,15 @@
     "admin.billing.list",
     "admin.alerts.list",
     "admin.operation.status",
-    "admin.text.config"
+    "admin.text.config",
+    "admin.engine.models",
+    "admin.engine.list",
+    "admin.engine.inspect",
+    "admin.engine.quote",
+    "admin.engine.status",
+    "production.get",
+    "production.list",
+    "production.quote"
   ],
   "textCostPolicy": "administrator_funded_separate_from_gpu_wallet",
   "capabilities": {

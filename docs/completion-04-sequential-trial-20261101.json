@@ -1,0 +1,1199 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-31T23:34:06.631Z",
+  "evidenceScope": "Local persisted records from primary-account private sequential tests; no cloud query by collector",
+  "storeAlias": "private-primary-sequential-validation",
+  "accountScope": "primary account only",
+  "budget": {
+    "ownerApprovedTotalUSD": 20,
+    "baselineGrossUSD": 6.34874585,
+    "providerUsageLimitUSD": 21,
+    "providerSpendLimitUSD": 0,
+    "globalStopUTC": "23:30",
+    "recordedGlobalDeadlineISO": "2026-10-31T23:30:00Z",
+    "latestProviderGrossUSDProvisional": 10.35312484,
+    "incrementSinceBaselineUSDProvisional": 4.004378989999999,
+    "providerSampleAt": 1793488745020,
+    "invoiceVerified": false,
+    "note": "Provider usage snapshots are provisional, can lag, and are not an invoice. Earlier per-round caps may differ; see watchdog records. Storage/build/network are not inferred from GPU elapsed time."
+  },
+  "modelTrials": [
+    {
+      "modelId": "flux2-klein-4b",
+      "state": "cloud_output_verified_pending_or_completed_review",
+      "definitions": [
+        {
+          "id": "ccdb2b9a-ca33-4606-8aed-0f172191ab2f",
+          "version": "4B",
+          "revision": 2,
+          "gpu": "L40S",
+          "cpu": 4,
+          "ramGiB": 64,
+          "minVramGiB": 24
+        }
+      ],
+      "preparations": [
+        {
+          "engineId": "ccdb2b9a-ca33-4606-8aed-0f172191ab2f",
+          "status": "completed",
+          "cloudStopped": true,
+          "createdAt": 1793483102096,
+          "error": null
+        }
+      ],
+      "tests": [
+        {
+          "id": "cf11c158-d442-46ef-863f-a46233a5d927",
+          "engineId": "ccdb2b9a-ca33-4606-8aed-0f172191ab2f",
+          "projectId": null,
+          "status": "needs_review",
+          "cloudStopped": true,
+          "verified": true,
+          "reviewed": false,
+          "accepted": false,
+          "error": null,
+          "createdAt": 1793483364391,
+          "finishedAt": 1793483621687,
+          "elapsedMs": 257296,
+          "estimatedMicroUSD": 2500000,
+          "providerRecordedUSDProvisional": null
+        }
+      ],
+      "historicalUnsuccessfulTestsRetained": 0,
+      "nativeTests": [
+        {
+          "id": "cf11c158-d442-46ef-863f-a46233a5d927",
+          "runId": "14039a77-e921-4774-bba5-f79d8632540a",
+          "status": "completed",
+          "cloudStopped": true,
+          "createdAt": 1793483364401
+        }
+      ],
+      "nativeOperations": [
+        {
+          "id": "f22f429ea4a98e0f012d73eac3a40e59c321795cc5bfc2ff1a6550ed97c3440b",
+          "modelId": "flux2-klein-4b",
+          "namespace": "flux",
+          "engineId": "ccdb2b9a-ca33-4606-8aed-0f172191ab2f",
+          "action": "prepare",
+          "requestId": "private-flux-prepare-once",
+          "runId": null,
+          "state": "completed",
+          "createdAt": 1793483102099,
+          "finishedAt": 1793483127195,
+          "elapsedMs": 25096,
+          "rpcElapsedMs": 25096,
+          "modelReportedMetrics": {
+            "loadSeconds": null,
+            "inferenceSeconds": null,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": null,
+            "peakReservedBytes": null,
+            "steps": null,
+            "guidanceScale": null,
+            "fps": null,
+            "numFrames": null,
+            "durationMs": null
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        },
+        {
+          "id": "9f716fd5cdfdf24a716cdf60d2b57d118844dea884251dd50ad12d2354cb7c8a",
+          "modelId": "flux2-klein-4b",
+          "namespace": "flux",
+          "engineId": "ccdb2b9a-ca33-4606-8aed-0f172191ab2f",
+          "action": "start",
+          "requestId": "14039a77-e921-4774-bba5-f79d8632540a",
+          "runId": "14039a77-e921-4774-bba5-f79d8632540a",
+          "state": "completed",
+          "createdAt": 1793483364412,
+          "finishedAt": 1793483369250,
+          "elapsedMs": 4838,
+          "rpcElapsedMs": 4838,
+          "modelReportedMetrics": {
+            "loadSeconds": null,
+            "inferenceSeconds": null,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": null,
+            "peakReservedBytes": null,
+            "steps": null,
+            "guidanceScale": null,
+            "fps": null,
+            "numFrames": null,
+            "durationMs": null
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        },
+        {
+          "id": "dac18ccda7865b9a1897d548846dd0cf4ffd2c5d3a438caebc0737a66253c32d",
+          "modelId": "flux2-klein-4b",
+          "namespace": "flux",
+          "engineId": "ccdb2b9a-ca33-4606-8aed-0f172191ab2f",
+          "action": "generate",
+          "requestId": "cf11c158-d442-46ef-863f-a46233a5d927",
+          "runId": "14039a77-e921-4774-bba5-f79d8632540a",
+          "state": "completed",
+          "createdAt": 1793483397041,
+          "finishedAt": 1793483421187,
+          "elapsedMs": 24146,
+          "rpcElapsedMs": 24146,
+          "modelReportedMetrics": {
+            "loadSeconds": 16.134962652,
+            "inferenceSeconds": 14.172968956999995,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": 8378935296,
+            "peakReservedBytes": 8959033344,
+            "steps": 4,
+            "guidanceScale": 1,
+            "fps": null,
+            "numFrames": null,
+            "durationMs": null
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "66fde50936abd5b7008fad2fae9a1052be8d786b3bafaeb46fedd6ac9a932f48",
+          "kind": "image",
+          "sha256": "c53815c92eea7e9e8eddb035362e8373addcc18abf6377cadd1129e360150ccf",
+          "mime": "image/png",
+          "bytes": 1263464,
+          "width": 720,
+          "height": 1280,
+          "durationMs": null,
+          "fps": null,
+          "numFrames": null,
+          "sampleRate": null,
+          "channels": null,
+          "identityVerified": false,
+          "qualityCertified": false,
+          "projectId": "b0781271-93ca-4f86-aa0a-c3a1edb6aeab",
+          "attemptId": "cf11c158-d442-46ef-863f-a46233a5d927",
+          "artifactLocator": "artifact:66fde50936abd5b7008fad2fae9a1052be8d786b3bafaeb46fedd6ac9a932f48",
+          "localBytesVerified": true
+        }
+      ]
+    },
+    {
+      "modelId": "qwen-image-edit-2511",
+      "state": "cloud_output_verified_pending_or_completed_review",
+      "definitions": [
+        {
+          "id": "226b322e-3abb-4163-8d85-9b4a603ee3a0",
+          "version": "2511",
+          "revision": 1,
+          "gpu": "RTX-PRO-6000",
+          "cpu": 4,
+          "ramGiB": 128,
+          "minVramGiB": 96
+        }
+      ],
+      "preparations": [
+        {
+          "engineId": "226b322e-3abb-4163-8d85-9b4a603ee3a0",
+          "status": "completed",
+          "cloudStopped": true,
+          "createdAt": 1793484691478,
+          "error": null
+        }
+      ],
+      "tests": [
+        {
+          "id": "1e33ce7e-2211-4c40-b668-f00e1b299fed",
+          "engineId": "226b322e-3abb-4163-8d85-9b4a603ee3a0",
+          "projectId": null,
+          "status": "needs_review",
+          "cloudStopped": true,
+          "verified": true,
+          "reviewed": false,
+          "accepted": false,
+          "error": null,
+          "createdAt": 1793485046870,
+          "finishedAt": 1793485231809,
+          "elapsedMs": 184939,
+          "estimatedMicroUSD": 4500000,
+          "providerRecordedUSDProvisional": null
+        }
+      ],
+      "historicalUnsuccessfulTestsRetained": 0,
+      "nativeTests": [
+        {
+          "id": "1e33ce7e-2211-4c40-b668-f00e1b299fed",
+          "runId": "ed12842d-846a-46fb-9093-d6ac536fc5e7",
+          "status": "completed",
+          "cloudStopped": true,
+          "createdAt": 1793485047172
+        }
+      ],
+      "nativeOperations": [
+        {
+          "id": "a6f5c86921c4d567f005814c6b42129eb343a72a406b1916b3f663c8b5465b85",
+          "modelId": "qwen-image-edit-2511",
+          "namespace": "qwen",
+          "engineId": "226b322e-3abb-4163-8d85-9b4a603ee3a0",
+          "action": "prepare",
+          "requestId": "qwen-round-2-prepare",
+          "runId": null,
+          "state": "completed",
+          "createdAt": 1793484691481,
+          "finishedAt": 1793484821053,
+          "elapsedMs": 129572,
+          "rpcElapsedMs": 129572,
+          "modelReportedMetrics": {
+            "loadSeconds": null,
+            "inferenceSeconds": null,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": null,
+            "peakReservedBytes": null,
+            "steps": null,
+            "guidanceScale": null,
+            "fps": null,
+            "numFrames": null,
+            "durationMs": null
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        },
+        {
+          "id": "8a5b06ea49dcfaa0dbd14b28d922fadd8f65dece85d068c3edccfe6e89e09760",
+          "modelId": "qwen-image-edit-2511",
+          "namespace": "qwen",
+          "engineId": "226b322e-3abb-4163-8d85-9b4a603ee3a0",
+          "action": "start",
+          "requestId": "ed12842d-846a-46fb-9093-d6ac536fc5e7",
+          "runId": "ed12842d-846a-46fb-9093-d6ac536fc5e7",
+          "state": "completed",
+          "createdAt": 1793485047186,
+          "finishedAt": 1793485051728,
+          "elapsedMs": 4542,
+          "rpcElapsedMs": 4542,
+          "modelReportedMetrics": {
+            "loadSeconds": null,
+            "inferenceSeconds": null,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": null,
+            "peakReservedBytes": null,
+            "steps": null,
+            "guidanceScale": null,
+            "fps": null,
+            "numFrames": null,
+            "durationMs": null
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        },
+        {
+          "id": "29f871f0c5a90ecfb2b572e7322b48c4d2a13173e83661e466b11be2c27c18a4",
+          "modelId": "qwen-image-edit-2511",
+          "namespace": "qwen",
+          "engineId": "226b322e-3abb-4163-8d85-9b4a603ee3a0",
+          "action": "generate",
+          "requestId": "1e33ce7e-2211-4c40-b668-f00e1b299fed",
+          "runId": "ed12842d-846a-46fb-9093-d6ac536fc5e7",
+          "state": "completed",
+          "createdAt": 1793485094545,
+          "finishedAt": 1793485202859,
+          "elapsedMs": 108314,
+          "rpcElapsedMs": 108314,
+          "modelReportedMetrics": {
+            "loadSeconds": 32.474434687000006,
+            "inferenceSeconds": 96.471298192,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": 41983632384,
+            "peakReservedBytes": 42536534016,
+            "steps": 40,
+            "guidanceScale": 1,
+            "fps": null,
+            "numFrames": null,
+            "durationMs": null
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "f55f564db12b98d659f3e2ea1ec365c03fecc30a04b59606f3f180e59d43011c",
+          "kind": "image",
+          "sha256": "39cc8302d60344238df31148a50f85101c2c4682d773fb6e5da92e9f45b80cb5",
+          "mime": "image/png",
+          "bytes": 872543,
+          "width": 720,
+          "height": 1280,
+          "durationMs": null,
+          "fps": null,
+          "numFrames": null,
+          "sampleRate": null,
+          "channels": null,
+          "identityVerified": false,
+          "qualityCertified": false,
+          "projectId": "b0781271-93ca-4f86-aa0a-c3a1edb6aeab",
+          "attemptId": "1e33ce7e-2211-4c40-b668-f00e1b299fed",
+          "artifactLocator": "artifact:f55f564db12b98d659f3e2ea1ec365c03fecc30a04b59606f3f180e59d43011c",
+          "localBytesVerified": true
+        }
+      ]
+    },
+    {
+      "modelId": "wan22-i2v-a14b",
+      "state": "cloud_output_verified_pending_or_completed_review",
+      "definitions": [
+        {
+          "id": "d830d93c-394d-4c92-bdc2-7fda7c79d9ae",
+          "version": "2.2",
+          "revision": 1,
+          "gpu": "RTX-PRO-6000",
+          "cpu": 8,
+          "ramGiB": 256,
+          "minVramGiB": 96
+        }
+      ],
+      "preparations": [
+        {
+          "engineId": "d830d93c-394d-4c92-bdc2-7fda7c79d9ae",
+          "status": "completed",
+          "cloudStopped": true,
+          "createdAt": 1793487473656,
+          "error": null
+        }
+      ],
+      "tests": [
+        {
+          "id": "c879dd92-6118-47b7-9481-a1cb68185650",
+          "engineId": "d830d93c-394d-4c92-bdc2-7fda7c79d9ae",
+          "projectId": null,
+          "status": "failed",
+          "cloudStopped": true,
+          "verified": null,
+          "reviewed": false,
+          "accepted": false,
+          "error": "ENGINE_TEST_FAILED",
+          "createdAt": 1793485847315,
+          "finishedAt": 1793487029661,
+          "elapsedMs": 1182346,
+          "estimatedMicroUSD": 4500000,
+          "providerRecordedUSDProvisional": null
+        },
+        {
+          "id": "c7e29d4f-86d8-425e-b75f-16ed8c6b5cd7",
+          "engineId": "d830d93c-394d-4c92-bdc2-7fda7c79d9ae",
+          "projectId": null,
+          "status": "needs_review",
+          "cloudStopped": true,
+          "verified": true,
+          "reviewed": false,
+          "accepted": false,
+          "error": null,
+          "createdAt": 1793487528141,
+          "finishedAt": 1793487902028,
+          "elapsedMs": 373887,
+          "estimatedMicroUSD": 4500000,
+          "providerRecordedUSDProvisional": null
+        }
+      ],
+      "historicalUnsuccessfulTestsRetained": 1,
+      "nativeTests": [
+        {
+          "id": "c879dd92-6118-47b7-9481-a1cb68185650",
+          "runId": "59cade63-e191-4e0f-ae86-6b29773b16a4",
+          "status": "uncertain",
+          "cloudStopped": true,
+          "createdAt": 1793485847442
+        },
+        {
+          "id": "c7e29d4f-86d8-425e-b75f-16ed8c6b5cd7",
+          "runId": "b0572581-33d8-4a56-9eb0-91c6fa96736e",
+          "status": "completed",
+          "cloudStopped": true,
+          "createdAt": 1793487528285
+        }
+      ],
+      "nativeOperations": [
+        {
+          "id": "a926f12d4e8598926f67fe76aba5d395532bb046607c9f7344f59f8fa2409e1f",
+          "modelId": "wan22-i2v-a14b",
+          "namespace": "wan",
+          "engineId": "d830d93c-394d-4c92-bdc2-7fda7c79d9ae",
+          "action": "prepare",
+          "requestId": "wan-round-1-prepare",
+          "runId": null,
+          "state": "completed",
+          "createdAt": 1793485317529,
+          "finishedAt": 1793485481053,
+          "elapsedMs": 163524,
+          "rpcElapsedMs": 163524,
+          "modelReportedMetrics": {
+            "loadSeconds": null,
+            "inferenceSeconds": null,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": null,
+            "peakReservedBytes": null,
+            "steps": null,
+            "guidanceScale": null,
+            "fps": null,
+            "numFrames": null,
+            "durationMs": null
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        },
+        {
+          "id": "d21b165ab498e9fe6f50b7c374a72acbf891067233726202a75dd57d9b258cc1",
+          "modelId": "wan22-i2v-a14b",
+          "namespace": "wan",
+          "engineId": "d830d93c-394d-4c92-bdc2-7fda7c79d9ae",
+          "action": "start",
+          "requestId": "59cade63-e191-4e0f-ae86-6b29773b16a4",
+          "runId": "59cade63-e191-4e0f-ae86-6b29773b16a4",
+          "state": "completed",
+          "createdAt": 1793485847452,
+          "finishedAt": 1793485852104,
+          "elapsedMs": 4652,
+          "rpcElapsedMs": 4652,
+          "modelReportedMetrics": {
+            "loadSeconds": null,
+            "inferenceSeconds": null,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": null,
+            "peakReservedBytes": null,
+            "steps": null,
+            "guidanceScale": null,
+            "fps": null,
+            "numFrames": null,
+            "durationMs": null
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        },
+        {
+          "id": "a1cad82ce374ce215fd6f63d627a33948d1891d0644e5651ee494762463860f0",
+          "modelId": "wan22-i2v-a14b",
+          "namespace": "wan",
+          "engineId": "d830d93c-394d-4c92-bdc2-7fda7c79d9ae",
+          "action": "generate",
+          "requestId": "c879dd92-6118-47b7-9481-a1cb68185650",
+          "runId": "59cade63-e191-4e0f-ae86-6b29773b16a4",
+          "state": "uncertain",
+          "createdAt": 1793485955908,
+          "finishedAt": 1793487011490,
+          "elapsedMs": 1055582,
+          "rpcElapsedMs": 1055582,
+          "modelReportedMetrics": {
+            "loadSeconds": null,
+            "inferenceSeconds": null,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": null,
+            "peakReservedBytes": null,
+            "steps": null,
+            "guidanceScale": null,
+            "fps": null,
+            "numFrames": null,
+            "durationMs": null
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        },
+        {
+          "id": "1786ead352b1837ed4491122467575b52b476e4366955f6a10dca2938d13616f",
+          "modelId": "wan22-i2v-a14b",
+          "namespace": "wan",
+          "engineId": "d830d93c-394d-4c92-bdc2-7fda7c79d9ae",
+          "action": "prepare",
+          "requestId": "wan-round-2-prepare",
+          "runId": null,
+          "state": "completed",
+          "createdAt": 1793487473659,
+          "finishedAt": 1793487493836,
+          "elapsedMs": 20177,
+          "rpcElapsedMs": 20177,
+          "modelReportedMetrics": {
+            "loadSeconds": null,
+            "inferenceSeconds": null,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": null,
+            "peakReservedBytes": null,
+            "steps": null,
+            "guidanceScale": null,
+            "fps": null,
+            "numFrames": null,
+            "durationMs": null
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        },
+        {
+          "id": "70b969b7003474ae53bbd27eb2256a4d28326b9878017d371ab7507add06fe0d",
+          "modelId": "wan22-i2v-a14b",
+          "namespace": "wan",
+          "engineId": "d830d93c-394d-4c92-bdc2-7fda7c79d9ae",
+          "action": "start",
+          "requestId": "b0572581-33d8-4a56-9eb0-91c6fa96736e",
+          "runId": "b0572581-33d8-4a56-9eb0-91c6fa96736e",
+          "state": "completed",
+          "createdAt": 1793487528295,
+          "finishedAt": 1793487532959,
+          "elapsedMs": 4664,
+          "rpcElapsedMs": 4664,
+          "modelReportedMetrics": {
+            "loadSeconds": null,
+            "inferenceSeconds": null,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": null,
+            "peakReservedBytes": null,
+            "steps": null,
+            "guidanceScale": null,
+            "fps": null,
+            "numFrames": null,
+            "durationMs": null
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        },
+        {
+          "id": "39b6486325eae0f50908d7ba24e92bc5c2f27de1a09c3d86579b98b49649d529",
+          "modelId": "wan22-i2v-a14b",
+          "namespace": "wan",
+          "engineId": "d830d93c-394d-4c92-bdc2-7fda7c79d9ae",
+          "action": "generate",
+          "requestId": "c7e29d4f-86d8-425e-b75f-16ed8c6b5cd7",
+          "runId": "b0572581-33d8-4a56-9eb0-91c6fa96736e",
+          "state": "completed",
+          "createdAt": 1793487596755,
+          "finishedAt": 1793487870484,
+          "elapsedMs": 273729,
+          "rpcElapsedMs": 273729,
+          "modelReportedMetrics": {
+            "loadSeconds": 56.295302492000005,
+            "inferenceSeconds": 263.045567336,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": 31372221440,
+            "peakReservedBytes": 32403095552,
+            "steps": 40,
+            "guidanceScale": 3.5,
+            "fps": 16,
+            "numFrames": 17,
+            "durationMs": 1063
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "9c838e81604b55c5c01070ca8427d4322f8cb5ce625100df995f7abd7d36d8f4",
+          "kind": "video",
+          "sha256": "f64ed6de483a16694a37421922a3002b040814d24a3155e34c79a555db3a09a5",
+          "mime": null,
+          "bytes": 2671844,
+          "width": 720,
+          "height": 1280,
+          "durationMs": 1000,
+          "fps": 16,
+          "numFrames": 16,
+          "sampleRate": null,
+          "channels": null,
+          "identityVerified": null,
+          "qualityCertified": false,
+          "projectId": "b0781271-93ca-4f86-aa0a-c3a1edb6aeab",
+          "attemptId": "c7e29d4f-86d8-425e-b75f-16ed8c6b5cd7",
+          "artifactLocator": "artifact:9c838e81604b55c5c01070ca8427d4322f8cb5ce625100df995f7abd7d36d8f4",
+          "localBytesVerified": true
+        }
+      ]
+    },
+    {
+      "modelId": "hunyuanvideo15",
+      "state": "cloud_output_verified_pending_or_completed_review",
+      "definitions": [
+        {
+          "id": "7893b4ff-02ff-4744-8629-2f912b245a0e",
+          "version": "1.5",
+          "revision": 1,
+          "gpu": "RTX-PRO-6000",
+          "cpu": 8,
+          "ramGiB": 256,
+          "minVramGiB": 96
+        }
+      ],
+      "preparations": [
+        {
+          "engineId": "7893b4ff-02ff-4744-8629-2f912b245a0e",
+          "status": "completed",
+          "cloudStopped": true,
+          "createdAt": 1793488085251,
+          "error": null
+        }
+      ],
+      "tests": [
+        {
+          "id": "78f6e38b-8987-4748-900c-87d89f7558ca",
+          "engineId": "7893b4ff-02ff-4744-8629-2f912b245a0e",
+          "projectId": null,
+          "status": "needs_review",
+          "cloudStopped": true,
+          "verified": true,
+          "reviewed": false,
+          "accepted": false,
+          "error": null,
+          "createdAt": 1793488155730,
+          "finishedAt": 1793489365708,
+          "elapsedMs": 1209978,
+          "estimatedMicroUSD": 4500000,
+          "providerRecordedUSDProvisional": null
+        }
+      ],
+      "historicalUnsuccessfulTestsRetained": 0,
+      "nativeTests": [
+        {
+          "id": "78f6e38b-8987-4748-900c-87d89f7558ca",
+          "runId": "c28eadbb-582b-4e1e-9fce-a5fed7b47c86",
+          "status": "completed",
+          "cloudStopped": true,
+          "createdAt": 1793488155870
+        }
+      ],
+      "nativeOperations": [
+        {
+          "id": "23817590e5075f464d60f29a848197a13b5e1c2e95411061d3e6097e2b4cb2e1",
+          "modelId": "hunyuanvideo15",
+          "namespace": "hunyuan",
+          "engineId": "7893b4ff-02ff-4744-8629-2f912b245a0e",
+          "action": "prepare",
+          "requestId": "hunyuan-round-1-prepare",
+          "runId": null,
+          "state": "completed",
+          "createdAt": 1793488085255,
+          "finishedAt": 1793488108180,
+          "elapsedMs": 22925,
+          "rpcElapsedMs": 22925,
+          "modelReportedMetrics": {
+            "loadSeconds": null,
+            "inferenceSeconds": null,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": null,
+            "peakReservedBytes": null,
+            "steps": null,
+            "guidanceScale": null,
+            "fps": null,
+            "numFrames": null,
+            "durationMs": null
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        },
+        {
+          "id": "f47be0d4d40814c98f3039ebcc489b56ad25cfcf0f7af3a8765bfb27abef243d",
+          "modelId": "hunyuanvideo15",
+          "namespace": "hunyuan",
+          "engineId": "7893b4ff-02ff-4744-8629-2f912b245a0e",
+          "action": "start",
+          "requestId": "c28eadbb-582b-4e1e-9fce-a5fed7b47c86",
+          "runId": "c28eadbb-582b-4e1e-9fce-a5fed7b47c86",
+          "state": "completed",
+          "createdAt": 1793488155883,
+          "finishedAt": 1793488160442,
+          "elapsedMs": 4559,
+          "rpcElapsedMs": 4559,
+          "modelReportedMetrics": {
+            "loadSeconds": null,
+            "inferenceSeconds": null,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": null,
+            "peakReservedBytes": null,
+            "steps": null,
+            "guidanceScale": null,
+            "fps": null,
+            "numFrames": null,
+            "durationMs": null
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        },
+        {
+          "id": "4e61ab837968e4d9ac5ffdb418e43565af95b7b0551e1a90adf2de76cf7bccc3",
+          "modelId": "hunyuanvideo15",
+          "namespace": "hunyuan",
+          "engineId": "7893b4ff-02ff-4744-8629-2f912b245a0e",
+          "action": "generate",
+          "requestId": "78f6e38b-8987-4748-900c-87d89f7558ca",
+          "runId": "c28eadbb-582b-4e1e-9fce-a5fed7b47c86",
+          "state": "completed",
+          "createdAt": 1793488212950,
+          "finishedAt": 1793488714808,
+          "elapsedMs": 501858,
+          "rpcElapsedMs": 501858,
+          "modelReportedMetrics": {
+            "loadSeconds": 42.088225246,
+            "inferenceSeconds": 489.74700140400006,
+            "encodingSeconds": null,
+            "peakAllocatedBytes": 24183548416,
+            "peakReservedBytes": 25935478784,
+            "steps": 50,
+            "guidanceScale": 6,
+            "fps": 24,
+            "numFrames": 25,
+            "durationMs": 1042
+          },
+          "modelTimingBasis": "Native model-reported loading/inference/encoding intervals, distinct from transport RPC elapsed and total billable runtime; unavailable metrics remain null.",
+          "timingBasis": "persisted native transport operation; includes its local transport wait, not isolated GPU kernel time"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "593be075d06c3426106ba3fe271d1f1ad03b914eb5383fd7ad3180178c913998",
+          "kind": "video",
+          "sha256": "531d986f06beb096f209a13914ba89e53e49a5572e813f2ca1105a7a4a141737",
+          "mime": null,
+          "bytes": 4735781,
+          "width": 720,
+          "height": 1280,
+          "durationMs": 1000,
+          "fps": 24,
+          "numFrames": 24,
+          "sampleRate": null,
+          "channels": null,
+          "identityVerified": null,
+          "qualityCertified": false,
+          "projectId": "b0781271-93ca-4f86-aa0a-c3a1edb6aeab",
+          "attemptId": "78f6e38b-8987-4748-900c-87d89f7558ca",
+          "artifactLocator": "artifact:593be075d06c3426106ba3fe271d1f1ad03b914eb5383fd7ad3180178c913998",
+          "localBytesVerified": true
+        }
+      ]
+    },
+    {
+      "modelId": "habibi-irq",
+      "state": "defined_not_tested",
+      "definitions": [
+        {
+          "id": "ebff694f-4522-4258-b20a-1900ca3daa17",
+          "version": "0.1.1-specialized",
+          "revision": 1,
+          "gpu": "L40S",
+          "cpu": 2,
+          "ramGiB": 16,
+          "minVramGiB": 8
+        }
+      ],
+      "preparations": [],
+      "tests": [],
+      "historicalUnsuccessfulTestsRetained": 0,
+      "nativeTests": [],
+      "nativeOperations": [],
+      "artifacts": []
+    },
+    {
+      "modelId": "habibi-egy",
+      "state": "not_started",
+      "definitions": [],
+      "preparations": [],
+      "tests": [],
+      "historicalUnsuccessfulTestsRetained": 0,
+      "nativeTests": [],
+      "nativeOperations": [],
+      "artifacts": []
+    },
+    {
+      "modelId": "habibi-msa",
+      "state": "not_started",
+      "definitions": [],
+      "preparations": [],
+      "tests": [],
+      "historicalUnsuccessfulTestsRetained": 0,
+      "nativeTests": [],
+      "nativeOperations": [],
+      "artifacts": []
+    },
+    {
+      "modelId": "audar-tts-v1-flash",
+      "state": "not_started",
+      "definitions": [],
+      "preparations": [],
+      "tests": [],
+      "historicalUnsuccessfulTestsRetained": 0,
+      "nativeTests": [],
+      "nativeOperations": [],
+      "artifacts": []
+    },
+    {
+      "modelId": "latentsync16",
+      "state": "not_started",
+      "definitions": [],
+      "preparations": [],
+      "tests": [],
+      "historicalUnsuccessfulTestsRetained": 0,
+      "nativeTests": [],
+      "nativeOperations": [],
+      "artifacts": []
+    }
+  ],
+  "runtimeHistory": [
+    {
+      "runId": "14039a77-e921-4774-bba5-f79d8632540a",
+      "engineId": "ccdb2b9a-ca33-4606-8aed-0f172191ab2f",
+      "state": "stopped",
+      "startedAt": 1793483364407,
+      "stopRequestedAt": 1793483421843,
+      "stoppedAt": 1793483621666,
+      "elapsedUntilConfirmedStopMs": 257259,
+      "cloudStopped": true,
+      "requiresReconcile": false,
+      "providerRecordedUSDProvisional": null
+    },
+    {
+      "runId": "ed12842d-846a-46fb-9093-d6ac536fc5e7",
+      "engineId": "226b322e-3abb-4163-8d85-9b4a603ee3a0",
+      "state": "stopped",
+      "startedAt": 1793485047180,
+      "stopRequestedAt": 1793485203370,
+      "stoppedAt": 1793485231796,
+      "elapsedUntilConfirmedStopMs": 184616,
+      "cloudStopped": true,
+      "requiresReconcile": false,
+      "providerRecordedUSDProvisional": null
+    },
+    {
+      "runId": "59cade63-e191-4e0f-ae86-6b29773b16a4",
+      "engineId": "d830d93c-394d-4c92-bdc2-7fda7c79d9ae",
+      "state": "stopped",
+      "startedAt": 1793485847448,
+      "stopRequestedAt": 1793487011495,
+      "stoppedAt": 1793487029653,
+      "elapsedUntilConfirmedStopMs": 1182205,
+      "cloudStopped": true,
+      "requiresReconcile": false,
+      "providerRecordedUSDProvisional": null
+    },
+    {
+      "runId": "b0572581-33d8-4a56-9eb0-91c6fa96736e",
+      "engineId": "d830d93c-394d-4c92-bdc2-7fda7c79d9ae",
+      "state": "stopped",
+      "startedAt": 1793487528291,
+      "stopRequestedAt": 1793487874079,
+      "stoppedAt": 1793487902009,
+      "elapsedUntilConfirmedStopMs": 373718,
+      "cloudStopped": true,
+      "requiresReconcile": false,
+      "providerRecordedUSDProvisional": null
+    },
+    {
+      "runId": "c28eadbb-582b-4e1e-9fce-a5fed7b47c86",
+      "engineId": "7893b4ff-02ff-4744-8629-2f912b245a0e",
+      "state": "stopped",
+      "startedAt": 1793488155877,
+      "stopRequestedAt": 1793488714814,
+      "stoppedAt": 1793488743649,
+      "elapsedUntilConfirmedStopMs": 587772,
+      "cloudStopped": true,
+      "requiresReconcile": false,
+      "providerRecordedUSDProvisional": null
+    }
+  ],
+  "resourceClosure": {
+    "allPersistedRuntimeStopsConfirmed": true,
+    "unconfirmedRuntimeCount": 0,
+    "activeOrUnconfirmedPreparationCount": 0,
+    "note": "A stopped inference does not delete persistent Volumes or result storage. Missing runtime records do not establish that cloud preparation has stopped."
+  },
+  "watchdogs": [
+    {
+      "source": "hunyuan-round-1-watchdog.json",
+      "modelId": "hunyuanvideo15",
+      "status": "stopped",
+      "cloudStopped": true,
+      "createdAt": 1793488059655,
+      "heartbeatAt": 1793488745020,
+      "stoppedAt": 1793488745020,
+      "deadline": 1793489280000,
+      "globalDeadlineISO": "2026-10-31T23:30:00Z",
+      "periodStartISO": "2026-10-01T00:00:00Z",
+      "periodEndISO": "2026-11-01T00:00:00Z",
+      "providerBudgetVerifiedAt": 1793488059655,
+      "baselineGrossUSD": 6.34874585,
+      "providerCurrentGrossUSDProvisional": 10.35312484,
+      "usageLimitUSD": 21,
+      "spendLimitUSD": 0,
+      "trialMaxUSD": 20,
+      "stopReason": "TRIAL_MAIN_FINISHED"
+    },
+    {
+      "source": "qwen-round-1-watchdog.json",
+      "modelId": "qwen-image-edit-2511",
+      "status": "finished_not_dispatched",
+      "cloudStopped": true,
+      "createdAt": 1793484615040,
+      "heartbeatAt": 1793484660475,
+      "stoppedAt": null,
+      "deadline": 1793487315040,
+      "globalDeadlineISO": "2026-10-31T23:30:00Z",
+      "periodStartISO": "2026-10-01T00:00:00Z",
+      "periodEndISO": "2026-11-01T00:00:00Z",
+      "providerBudgetVerifiedAt": 1793484615040,
+      "baselineGrossUSD": 6.34874585,
+      "providerCurrentGrossUSDProvisional": 6.60138837,
+      "usageLimitUSD": 21,
+      "spendLimitUSD": 0,
+      "trialMaxUSD": 20,
+      "stopReason": "TRIAL_MAIN_FINISHED"
+    },
+    {
+      "source": "qwen-round-2-watchdog.json",
+      "modelId": "qwen-image-edit-2511",
+      "status": "stopped",
+      "cloudStopped": true,
+      "createdAt": 1793484667694,
+      "heartbeatAt": 1793485233809,
+      "stoppedAt": 1793485233809,
+      "deadline": 1793487367694,
+      "globalDeadlineISO": "2026-10-31T23:30:00Z",
+      "periodStartISO": "2026-10-01T00:00:00Z",
+      "periodEndISO": "2026-11-01T00:00:00Z",
+      "providerBudgetVerifiedAt": 1793484667694,
+      "baselineGrossUSD": 6.34874585,
+      "providerCurrentGrossUSDProvisional": 6.94221689,
+      "usageLimitUSD": 21,
+      "spendLimitUSD": 0,
+      "trialMaxUSD": 20,
+      "stopReason": "TRIAL_MAIN_FINISHED"
+    },
+    {
+      "source": "wan-round-1-watchdog.json",
+      "modelId": "wan22-i2v-a14b",
+      "status": "stopped_external_safety",
+      "cloudStopped": true,
+      "createdAt": 1793485293722,
+      "heartbeatAt": 1793486418521,
+      "stoppedAt": 1793487136398,
+      "deadline": 1793487993722,
+      "globalDeadlineISO": "2026-10-31T23:30:00Z",
+      "periodStartISO": "2026-10-01T00:00:00Z",
+      "periodEndISO": "2026-11-01T00:00:00Z",
+      "providerBudgetVerifiedAt": 1793485293722,
+      "baselineGrossUSD": 6.34874585,
+      "providerCurrentGrossUSDProvisional": 7.89311046,
+      "usageLimitUSD": 21,
+      "spendLimitUSD": 0,
+      "trialMaxUSD": 20,
+      "stopReason": "TRIAL_WATCHDOG_PROCESS_FAILED"
+    },
+    {
+      "source": "wan-round-2-watchdog.json",
+      "modelId": "wan22-i2v-a14b",
+      "status": "stopped",
+      "cloudStopped": true,
+      "createdAt": 1793487447144,
+      "heartbeatAt": 1793487904522,
+      "stoppedAt": 1793487904522,
+      "deadline": 1793489400000,
+      "globalDeadlineISO": "2026-10-31T23:30:00Z",
+      "periodStartISO": "2026-10-01T00:00:00Z",
+      "periodEndISO": "2026-11-01T00:00:00Z",
+      "providerBudgetVerifiedAt": 1793487447144,
+      "baselineGrossUSD": 6.34874585,
+      "providerCurrentGrossUSDProvisional": 9.19311046,
+      "usageLimitUSD": 21,
+      "spendLimitUSD": 0,
+      "trialMaxUSD": 20,
+      "stopReason": "TRIAL_MAIN_FINISHED"
+    },
+    {
+      "source": "watchdog-state.json",
+      "modelId": "flux2-klein-4b",
+      "status": "stopped",
+      "cloudStopped": true,
+      "createdAt": 1793483083700,
+      "heartbeatAt": 1793483450775,
+      "stoppedAt": 1793483450775,
+      "deadline": 1793483563700,
+      "globalDeadlineISO": null,
+      "periodStartISO": "2026-10-01T00:00:00Z",
+      "periodEndISO": "2026-11-01T00:00:00Z",
+      "providerBudgetVerifiedAt": 1793483083700,
+      "baselineGrossUSD": 6.34874585,
+      "providerCurrentGrossUSDProvisional": 6.571341,
+      "usageLimitUSD": 7,
+      "spendLimitUSD": 0,
+      "trialMaxUSD": 20,
+      "stopReason": "TRIAL_MAIN_FINISHED"
+    }
+  ],
+  "historicalIncidents": [
+    {
+      "source": "docs/completion-04-watchdog-incident-20261101.json",
+      "kind": "watchdog_failure_during_original_wan_five_second_trial",
+      "detectedUTC": "2026-10-31T22:49:45Z",
+      "lastPersistedHeartbeatUTC": "2026-10-31T22:40:18.521Z",
+      "exactOriginalExceptionAvailable": false,
+      "cashInvoiceVerified": false,
+      "productionPublished": false,
+      "response": {
+        "cancelledAtNativeSteps": 24,
+        "totalNativeSteps": 40,
+        "outputVideoProduced": false,
+        "registryConfirmedStoppedAt": "2026-10-31T22:50:29.653Z",
+        "scopedAppStopVerified": true,
+        "taskListZeroVerified": true
+      },
+      "retry": {
+        "durationMs": 1000,
+        "functionalSmokeOnly": true,
+        "equalDurationQualityComparison": false,
+        "originalFiveSecondTrialValidated": false,
+        "cloudOutputVerified": true
+      }
+    }
+  ],
+  "roundResultFiles": [
+    {
+      "source": "qwen-round-2-result.json",
+      "test": {
+        "id": "1e33ce7e-2211-4c40-b668-f00e1b299fed",
+        "engineId": "226b322e-3abb-4163-8d85-9b4a603ee3a0",
+        "projectId": "b0781271-93ca-4f86-aa0a-c3a1edb6aeab",
+        "status": "needs_review",
+        "cloudStopped": true,
+        "verified": null,
+        "reviewed": false,
+        "accepted": false,
+        "error": null,
+        "createdAt": 1793485046870,
+        "finishedAt": 1793485231809,
+        "elapsedMs": 184939,
+        "estimatedMicroUSD": 4500000,
+        "providerRecordedUSDProvisional": null
+      },
+      "artifacts": [
+        {
+          "id": "f55f564db12b98d659f3e2ea1ec365c03fecc30a04b59606f3f180e59d43011c",
+          "kind": "image",
+          "sha256": "39cc8302d60344238df31148a50f85101c2c4682d773fb6e5da92e9f45b80cb5",
+          "mime": "image/png",
+          "bytes": 872543,
+          "width": 720,
+          "height": 1280,
+          "durationMs": null,
+          "fps": null,
+          "numFrames": null,
+          "sampleRate": null,
+          "channels": null,
+          "identityVerified": false,
+          "qualityCertified": false
+        }
+      ]
+    },
+    {
+      "source": "wan-round-2-result.json",
+      "test": {
+        "id": "c7e29d4f-86d8-425e-b75f-16ed8c6b5cd7",
+        "engineId": "d830d93c-394d-4c92-bdc2-7fda7c79d9ae",
+        "projectId": "b0781271-93ca-4f86-aa0a-c3a1edb6aeab",
+        "status": "needs_review",
+        "cloudStopped": true,
+        "verified": null,
+        "reviewed": false,
+        "accepted": false,
+        "error": null,
+        "createdAt": 1793487528141,
+        "finishedAt": 1793487902028,
+        "elapsedMs": 373887,
+        "estimatedMicroUSD": 4500000,
+        "providerRecordedUSDProvisional": null
+      },
+      "artifacts": [
+        {
+          "id": "9c838e81604b55c5c01070ca8427d4322f8cb5ce625100df995f7abd7d36d8f4",
+          "kind": "video",
+          "sha256": "f64ed6de483a16694a37421922a3002b040814d24a3155e34c79a555db3a09a5",
+          "mime": null,
+          "bytes": 2671844,
+          "width": 720,
+          "height": 1280,
+          "durationMs": 1000,
+          "fps": 16,
+          "numFrames": 16,
+          "sampleRate": null,
+          "channels": null,
+          "identityVerified": null,
+          "qualityCertified": false
+        }
+      ]
+    }
+  ],
+  "privatePlanReviewRecords": [
+    {
+      "id": "wan-round-2",
+      "purpose": "functional_smoke_only",
+      "shotId": "private-wan-smoke",
+      "sourceShotId": "testshot1",
+      "reviewerKind": "delegated_agent_visual",
+      "equalDurationQualityBenchmark": false,
+      "createdAt": 1793487527690,
+      "framePlan": {
+        "fps": 16,
+        "numFrames": 17,
+        "timelineFrames": 16,
+        "nativeDurationMs": 1063
+      }
+    },
+    {
+      "id": "hunyuan-round-1",
+      "purpose": "functional_smoke_only",
+      "shotId": "private-hunyuan-smoke",
+      "sourceShotId": "testshot1",
+      "reviewerKind": "delegated_agent_visual",
+      "equalDurationQualityBenchmark": false,
+      "createdAt": 1793488155282,
+      "framePlan": {
+        "fps": 24,
+        "numFrames": 25,
+        "timelineFrames": 24,
+        "nativeDurationMs": 1042
+      }
+    }
+  ],
+  "privateVisualReviewRecords": [
+    {
+      "id": "f55f564db12b98d659f3e2ea1ec365c03fecc30a04b59606f3f180e59d43011c",
+      "testId": null,
+      "assetId": null,
+      "approved": true,
+      "humanReviewed": null,
+      "reviewerKind": "delegated_agent_visual",
+      "observedAt": 1793485259362,
+      "createdAt": null,
+      "reviewedAt": null
+    }
+  ],
+  "limitations": [
+    "This is a snapshot and pending models remain pending.",
+    "No mock test is counted as cloud inference.",
+    "Artifact byte checks establish local file integrity, not semantic quality or guaranteed identity.",
+    "No customer publication or rental change is performed or asserted.",
+    "No cloud API, SDK, GPU, account secret decryption or paid call is used by this collector.",
+    "Both video outputs are one-second functional smoke tests, not validated full-film or equal-quality long-duration benchmarks.",
+    "Habibi speech was not generated; licensed reference fixtures must not be presented as generated model output.",
+    "The initial five-second Wan trial was cancelled for an infrastructure safety-monitor failure at 24/40 steps; see preserved incident record."
+  ],
+  "roundSummary": {
+    "verifiedFunctionalModels": [
+      "flux2-klein-4b",
+      "qwen-image-edit-2511",
+      "wan22-i2v-a14b",
+      "hunyuanvideo15"
+    ],
+    "videoSmokeDurationMs": 1000,
+    "fiveSecondWanTrialValidated": false,
+    "generatedSpeechTested": false,
+    "fullCustomerFilmTested": false,
+    "productionPublished": false,
+    "cloudStopEvidence": "completion-04-cloud-stop-proof-20261101.json",
+    "budgetUIEvidence": "completion-04-budget-ui-final-20261101.json",
+    "monitorIncident": "completion-04-watchdog-incident-20261101.json",
+    "localVerification": "completion-04-local-verification-20261101.json",
+    "nextPaidOperationsRequireNewAuthorizedTimeWindow": true
+  }
+}

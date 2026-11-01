@@ -2,6 +2,7 @@
 import hashlib
 import json
 from pathlib import Path
+from transfer_identity import runtime_metadata
 
 
 def digest(chunks,on_bytes=lambda n:None):
@@ -64,9 +65,7 @@ def copy_weights(manifest,source_root,target,approved,emit=lambda **e:None,check
         done+=size;verified.append(name)
         emit(kind='file_verified',phase='integrity',file=name,transferred=done,required=required)
     check();target.ensure();emit(kind='phase_start',phase='engine_configuration')
-    runtime={'model_revision':manifest['model_revision'],'source_commit':manifest['source_commit'],
-             'native_audio':True,'vae':'conv','gpu_choices':['RTX-PRO-6000','L40S'],
-             'torch':'2.9.1+cu128','cuda':'12.8','precision':'FP8 cast / BF16 compute','offload':'cpu'}
+    runtime=runtime_metadata(manifest)
     target.upload_bytes('RUNTIME.json',json.dumps(runtime).encode())
     marker={'revision':manifest['model_revision'],'files':files,'hashVerified':True}
     target.upload_bytes('READY.json',json.dumps(marker).encode())

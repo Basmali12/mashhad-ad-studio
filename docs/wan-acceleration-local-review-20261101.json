@@ -1,0 +1,365 @@
+{
+  "schema": "wan-acceleration-local-review-v1",
+  "date": "2026-11-01",
+  "status": "local-integration-tested-cloud-not-commissioned",
+  "paidWorkExecuted": false,
+  "weightsDownloaded": false,
+  "productionDeployed": false,
+  "accountLimitsChanged": false,
+  "remainingOriginalClipsPaused": true,
+  "preserved": [
+    "Original Quality 40-step adapter and all original checkpoints",
+    "Habibi narration, seven images, first native and timeline clip",
+    "Website design, administration, rentals and account secrets"
+  ],
+  "support": {
+    "I2V": true,
+    "resolution": "720p",
+    "frames": 81,
+    "fps": 16,
+    "nativeSeconds": 5.0625,
+    "timelineSeconds": 5,
+    "steps": 4,
+    "schedule": [
+      1000,
+      750,
+      500,
+      250
+    ],
+    "expertBoundary": 2,
+    "quantization": "NVFP4",
+    "cfg": false,
+    "sparseSage2": true,
+    "capability": "SM120 Blackwell 96GiB"
+  },
+  "resources": {
+    "gpu": "RTX-PRO-6000",
+    "cpu": 4,
+    "ramGiB": 128,
+    "measuredOnThisRuntime": false,
+    "qualification": "Original host RAM minute-averaged peak 46.77GiB and CPU average 1.45 cores suggest feasibility, not a peak-memory guarantee. Admission requires a real bounded candidate run."
+  },
+  "pins": {
+    "source": {
+      "repo": "https://github.com/ModelTC/LightX2V",
+      "commit": "880b7b156a4eb3ae8af8979a8d44b5e5945e17d2"
+    },
+    "weights": {
+      "repoId": "lightx2v/LightWan2.2-A14B",
+      "revision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+      "license": "Apache-2.0"
+    },
+    "base": {
+      "repoId": "Wan-AI/Wan2.2-I2V-A14B",
+      "revision": "206a9ee1b7bfaaf8f7e4d81335650533490646a3",
+      "license": "Apache-2.0",
+      "layout": "native_lightx2v",
+      "existingDiffusersLayoutCompatible": false,
+      "nativeExpertsRequired": false,
+      "note": "Quantizedexpertpathsreplace originalexperts. NativeT5pth/VAEpth/tokenizer required; existingDiffusers safetensors arenotdropin orcertifiedconversion."
+    },
+    "runtime": {
+      "image": "lightx2v/lightx2v:26052801-cu130-5090",
+      "imageDigest": "sha256:a7e92ffa9c9a5320f8b68dc5b733abbcf56062d13d472548bb2f11769359af97",
+      "imageRegistryMetadataSource": "https://hub.docker.com/v2/repositories/lightx2v/lightx2v/tags/26052801-cu130-5090",
+      "imageCompressedBytes": 18967940228,
+      "imagePlatform": "linux/amd64",
+      "cuda": "13.0 (recommended image tag)",
+      "python": "officialgenericminimum3.10; exactimageinstalledversionnotinspected",
+      "torch": "nativekernelbuildrequires>=2.7; exactimageversionandABIunverified",
+      "sourceCommit": "880b7b156a4eb3ae8af8979a8d44b5e5945e17d2",
+      "pythonApi": {
+        "module": "lightx2v",
+        "class": "LightX2VPipeline",
+        "init": {
+          "model_cls": "wan2.2_moe",
+          "task": "i2v",
+          "distill_method": "dmd2"
+        },
+        "create": "create_generator(config_json=isolated_runtime_config, fps=16)",
+        "generate": "generate(seed=42,prompt=exact_prompt,negative_prompt=exact_negative_prompt,image_path=owned_png,save_result_path=unique_mp4,size=(height,width),num_frames=81)"
+      },
+      "configSource": "https://github.com/ModelTC/LightX2V/blob/880b7b156a4eb3ae8af8979a8d44b5e5945e17d2/configs/wan22/extreme/wan_moe_i2v_distill_nvfp4_sparse_attn.json",
+      "configSourceSHA256": "05046a5e5487cf0e0372cc7b93d9438b20dd3bba3468aacee2a6296d5bd2a2d5",
+      "configDefaults": {
+        "infer_steps": 4,
+        "num_frames": 81,
+        "text_len": 512,
+        "size": [
+          720,
+          1280
+        ],
+        "distill_method": "dmd2",
+        "self_attn_1_type": "dynamic_sparse_attn",
+        "dynamic_sparse_attn_setting": {
+          "sparsity_ratio": 0.9,
+          "operator": "sage2"
+        },
+        "cross_attn_1_type": "sage_attn2",
+        "sample_guide_scale": [
+          3.5,
+          3.5
+        ],
+        "sample_shift": 7,
+        "enable_cfg": false,
+        "cpu_offload": false,
+        "t5_cpu_offload": true,
+        "vae_cpu_offload": false,
+        "use_image_encoder": false,
+        "boundary_step_index": 2,
+        "denoising_step_list": [
+          1000,
+          750,
+          500,
+          250
+        ],
+        "dit_quantized": true,
+        "dit_quant_scheme": "nvfp4",
+        "high_noise_quantized_ckpt": "lightwan/Wan2.2-I2V-A14B_NVFP4_Sparse_high.safetensors",
+        "low_noise_quantized_ckpt": "lightwan/Wan2.2-I2V-A14B_NVFP4_Sparse_low.safetensors",
+        "high_noise_original_ckpt": null,
+        "low_noise_original_ckpt": null,
+        "fps": 16
+      },
+      "orientationSizes": {
+        "landscape": [
+          720,
+          1280
+        ],
+        "portrait": [
+          1280,
+          720
+        ]
+      },
+      "imageEncoderRequired": false,
+      "configNotes": [
+        "UpstreamNVFP4presetdefaults480x832;720psizeMUSTbeexplicit.",
+        "sizeisheight,width.",
+        "create_generatorconfig_jsondoesnotapply methoddefaultsize/infersteps;immutableJSONmustcarryselectedprofile.",
+        "ModelcardgenericI2VimageencoderwordingisbroaderthanpinnedMoEconfig;use_image_encoderfalseinthisprofile.",
+        "Do not use autogeneratedHF Diffusers snippet asactualNVFP4supportproof."
+      ]
+    }
+  },
+  "licenses": [
+    {
+      "component": "LightX2V code and NVIDIA kernels",
+      "license": "Apache-2.0",
+      "revision": "880b7b156a4eb3ae8af8979a8d44b5e5945e17d2",
+      "source": "https://github.com/ModelTC/LightX2V/blob/880b7b156a4eb3ae8af8979a8d44b5e5945e17d2/LICENSE",
+      "status": "source_verified"
+    },
+    {
+      "component": "LightWan I2V distilled NVFP4 expert weights",
+      "license": "Apache-2.0",
+      "revision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+      "source": "https://huggingface.co/lightx2v/LightWan2.2-A14B/blob/f4b91eba1fd7dc2eb038191e2bca7ed33423032d/README.md",
+      "status": "publisher_model_card_verified"
+    },
+    {
+      "component": "Wan2.2 native T5 VAE tokenizer and base configuration",
+      "license": "Apache-2.0",
+      "revision": "206a9ee1b7bfaaf8f7e4d81335650533490646a3",
+      "source": "https://huggingface.co/Wan-AI/Wan2.2-I2V-A14B/blob/206a9ee1b7bfaaf8f7e4d81335650533490646a3/README.md",
+      "status": "publisher_model_card_verified",
+      "note": "PublisherHFmodelcarddeclaresApache2; noLICENSEfileisdistributedinthisweightrepository."
+    },
+    {
+      "component": "SageAttention",
+      "license": "Apache-2.0",
+      "revision": "d1a57a546c3d395b1ffcbeecc66d81db76f3b4b5",
+      "source": "https://github.com/thu-ml/SageAttention/blob/d1a57a546c3d395b1ffcbeecc66d81db76f3b4b5/LICENSE",
+      "status": "source_verified"
+    },
+    {
+      "component": "SpargeAttn/spas_sage_attn",
+      "license": "Apache-2.0",
+      "revision": "ae5b629ebb41e41f86b3ea2ab5a3283f13ac151a",
+      "source": "https://github.com/thu-ml/SpargeAttn/blob/ae5b629ebb41e41f86b3ea2ab5a3283f13ac151a/LICENSE",
+      "status": "source_verified",
+      "licenseTextSHA256": "0b79354c6e3d1ec02c1711f40de6303e347efd4ab6dc3d0778e6332f29beaa6b"
+    },
+    {
+      "component": "CUTLASS",
+      "license": "BSD-3-Clause",
+      "revision": "e13f5cd4142c43efc37c2f6339923eb4a57afb99",
+      "source": "https://github.com/NVIDIA/cutlass/blob/e13f5cd4142c43efc37c2f6339923eb4a57afb99/LICENSE.txt",
+      "status": "source_verified"
+    },
+    {
+      "component": "NVIDIA CUDA runtime and toolchain",
+      "license": "NVIDIA CUDA EULA",
+      "revision": "CUDA13.0 recommended container",
+      "source": "https://docs.nvidia.com/cuda/eula/index.html",
+      "status": "proprietary_runtime_terms_apply_not_model_weight_license"
+    }
+  ],
+  "weights": {
+    "files": 10,
+    "totalBytes": 28650652063,
+    "newGiB": 26.68299904372543,
+    "originalDiffusersWeightsReused": false,
+    "reason": "Native checkpoint layout required; no unverified conversion."
+  },
+  "integration": {
+    "backend": "services/film-engine/engine/wan-integration.mjs",
+    "profiles": "services/film-engine/engine/wan-execution-profiles.mjs",
+    "accelerated": "services/film-engine/engine/wan-accelerated-integration.mjs",
+    "native": [
+      "wan/lightwan_runtime.py",
+      "wan/lightwan_prepare.py",
+      "wan/lightwan_modal.py"
+    ],
+    "default": "original-quality",
+    "acceleratedPaidEnabled": false,
+    "readyMarker": "LIGHTWAN_READY.json",
+    "separateRequestCollection": "wan-accelerated-video-request",
+    "guard": "A distinct native transport must be commissioned. No silent reuse of original transport or original READY proof."
+  },
+  "remainingGates": [
+    "No CUDA13 image built or downloaded; actual installed dependency versions/ABI need container verification.",
+    "No accelerated native transport deployment has been commissioned; default backend fails closed.",
+    "No real speed, 720p quality, facial consistency or memory peak claimed.",
+    "A fresh approved bounded budget, account allowance and stop watchdog must exist before any build/preparation/inference.",
+    "Publisher 26.7-second RTX5090 result is not a measurement on our RTX PRO6000.",
+    "Separate denoising/VAE timings require native instrumentation; missing values remain null."
+  ],
+  "comparison": {
+    "schema": "wan-comparison-v1",
+    "baseline": {
+      "executionProfile": "original-quality",
+      "videoAssetId": "916997f4b42719603a6e4d4dbb6e799bbdcbeb2ab78d6cd773d155b7fe076756",
+      "videoSHA256": "d6f3409135fbd34aed5211d9a350ee767bfdbfe6a5cdf58e9f62accf615f3064",
+      "reuseExisting": true,
+      "generate": false
+    },
+    "shared": {
+      "imageAssetId": "fbfc790024c2f4ff0a5774ac458c66235dc83a58cbb716a2415a0a416135e6fd",
+      "imageSHA256": "6cdb53a7a5486982261f482aeb27e0e44f6ade0c455398721fa105385e6e6102",
+      "prompt": "Animate the supplied opening photograph as one continuous shot. Initial state: The man sits quietly, looking at the wall clock at night.\nAction progression: His chest rises with natural breathing; he blinks, then slowly raises his gaze toward the clock.\nFinal state reached once: His gaze rests thoughtfully on the clock.\nCamera path: A very slow physical dolly inward.\nMaintain the distinct people, face shapes, hair, body proportions, age, clothing, props and location established by the opening image.\nReference identity man: الرجل العراقي; face An olive-complexioned oval face, short black hair with gray temples, short neat beard.; body Average build and height; natural human proportions.; outfit The same charcoal cotton button shirt and dark trousers.; props .\nNatural continuous body mechanics and environmental motion. The scene contains plain unmarked surfaces without captions, titles or newly added lettering.",
+      "seed": 42,
+      "width": 720,
+      "height": 1280,
+      "numFrames": 81,
+      "fps": 16,
+      "nativeDurationMs": 5063,
+      "timelineDurationMs": 5000
+    },
+    "candidate": {
+      "executionProfile": "accelerated",
+      "modelRevision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+      "sourceCommit": "880b7b156a4eb3ae8af8979a8d44b5e5945e17d2",
+      "steps": 4,
+      "enableCfg": false,
+      "resources": {
+        "gpu": "RTX-PRO-6000",
+        "minVramGiB": 96,
+        "cpu": 4,
+        "ramGiB": 128
+      },
+      "attempts": 1,
+      "automaticRetry": false
+    },
+    "dispatchAvailable": false,
+    "approvalRequired": true,
+    "weightsReady": false,
+    "cloudValidated": false,
+    "metrics": [
+      "model_load_seconds",
+      "prompt_encode_seconds",
+      "denoising_seconds",
+      "vae_decode_seconds",
+      "mp4_encode_seconds",
+      "runtime_seconds",
+      "provider_cost_usd",
+      "peak_gpu_memory",
+      "peak_host_memory",
+      "face_continuity_review",
+      "motion_realism_review",
+      "visible_text_review"
+    ],
+    "preserveExistingOutputs": true,
+    "id": "2c8a237524b3488de26d9e765cbaaa4d7dd9811a2e54f0a36db376c573ab826c",
+    "createdAt": "2026-11-01",
+    "executionAuthorized": false,
+    "notes": [
+      "The exact original prompt bytes are retained, including its pre-existing mojibake character label. Correcting it would confound this comparison.",
+      "Native baseline is 81 frames; the saved timeline clip has 80 frames. Compare native outputs, then trim only the extra final frame for 5.000s timeline.",
+      "No original clip, narration, image, successful stage, account setting or production plan has been modified.",
+      "Different runtime, distilled weights, CFG disabled, sparse attention and quantization mean the same seed does not guarantee deterministic equivalence."
+    ],
+    "costPlan": {
+      "currency": "USD",
+      "source": "https://modal.com/pricing",
+      "checkedAt": "2026-11-01",
+      "gpuPerSecond": 0.000842,
+      "cpuPerCoreSecond": 0.0000131,
+      "ramPerGiBSecond": 0.00000222,
+      "resourcesPerHour": 4.2428159999999995,
+      "windowExamplesSeconds": [
+        {
+          "seconds": 60,
+          "estimatedResourcesUSD": 0.0707136
+        },
+        {
+          "seconds": 120,
+          "estimatedResourcesUSD": 0.1414272
+        },
+        {
+          "seconds": 300,
+          "estimatedResourcesUSD": 0.353568
+        },
+        {
+          "seconds": 600,
+          "estimatedResourcesUSD": 0.707136
+        }
+      ],
+      "boundedGPUWindow": {
+        "startupSeconds": 300,
+        "methodTimeoutSeconds": 600,
+        "idleSeconds": 2,
+        "resourceEstimateUSD": 1.06306112
+      },
+      "CPUPreparationOneHour2Core8GiBUSD": 0.158256,
+      "additionalWeightBytes": 28650652063,
+      "downloadApproved": false,
+      "accountLimitsUnchanged": true,
+      "proposedTotalExperimentBudgetUSD": 2,
+      "budgetApproved": false,
+      "budgetEnforcementRequiredBeforeAnyBuildOrDispatch": true,
+      "extras": "Build, retries (disabled), network egress if applicable and storage quota must be included before acceptance; fixed timeouts alone are not a hard bill cap.",
+      "pricingIsEstimate": true
+    },
+    "testSteps": [
+      "Read-only verify account remaining allowance and no other active work; preserve current limits.",
+      "Approve a fresh finite budget and reliable stop/watchdog before any CPU preparation or container build; otherwise do not start.",
+      "Prepare only the ten pinned native files in a separate accelerated directory; verify every hash; no original checkpoint conversion.",
+      "Build pinned image and verify imports/ABI/CUDA/source; fail closed and stop on any failure.",
+      "One candidate inference using exact shared inputs. No hidden warm-up, cache, compile, automatic retry or original rerun.",
+      "Save native MP4, trim the extra final frame only, compare with the existing original baseline; preserve all outputs.",
+      "Collect loading/pipeline time, instrument subphases where available, VRAM/host RAM and provider charges; do not invent absent phase timings.",
+      "Stop only the isolated candidate app, verify zero tasks/containers and no outstanding work; retain storage subject to quota and explicit retention."
+    ]
+  },
+  "verification": {
+    "nodeUniquePassed": 51,
+    "nodeFailed": 0,
+    "nodeSkippedAfterFFmpegRerun": 0,
+    "pythonPassed": 31,
+    "pythonFailed": 0,
+    "lint": "passed scoped --no-ignore",
+    "typeScript": "passed all four configs",
+    "customerBuild": "passed Vite6.4.5",
+    "cloudCalls": 0
+  },
+  "originalDiagnosis": {
+    "loadSeconds": 47.047844823,
+    "pipelineSeconds": 1719.344514823,
+    "denoisingSeconds": 1695.593498,
+    "vaeSeconds": null,
+    "encodingSeconds": 0.847,
+    "paidWindowSeconds": 1826.524,
+    "estimatedResourcesUSD": 2.7674,
+    "note": "Recorded earlier; no regeneration or fresh billable measurement in this review."
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "modelId": "latentsync16",
+  "version": "1.6",
+  "revision": "c42c7e6c8e9c213626389fa7d9a3c444b8536353",
+  "sourceRepository": "https://github.com/bytedance/LatentSync",
+  "sourceRevision": "a229c3948406bc2cf6eaf4873e662e70c6a04746",
+  "license": "OpenRAIL++ (weights), Apache-2.0 (LatentSync code)",
+  "commercialReady": false,
+  "licenseBlockers": [
+    "InsightFace pretrained face weights are non-commercial research-only absent a separate commercial grant; explicit grant evidence or replacement required."
+  ],
+  "components": [
+    {
+      "name": "LatentSync-1.6",
+      "license": "OpenRAIL++",
+      "source": "https://huggingface.co/ByteDance/LatentSync-1.6"
+    },
+    {
+      "name": "Whisper tiny feature encoder (not alignment ASR)",
+      "license": "MIT",
+      "source": "https://github.com/openai/whisper"
+    },
+    {
+      "name": "sd-vae-ft-mse",
+      "license": "MIT model card; review bundled terms",
+      "source": "https://huggingface.co/stabilityai/sd-vae-ft-mse"
+    },
+    {
+      "name": "Arabic wav2vec2 CTC",
+      "license": "Apache-2.0",
+      "source": "https://huggingface.co/jonatasgrosman/wav2vec2-large-xlsr-53-arabic"
+    },
+    {
+      "name": "InsightFace buffalo_m detection/landmark weights",
+      "license": "non-commercial-research-only without separate grant",
+      "source": "https://github.com/deepinsight/insightface#license"
+    }
+  ],
+  "files": [
+    {
+      "path": "checkpoints/latentsync_unet.pt",
+      "repoId": "ByteDance/LatentSync-1.6",
+      "revision": "c42c7e6c8e9c213626389fa7d9a3c444b8536353",
+      "filename": "latentsync_unet.pt",
+      "size": 5072222488,
+      "sha256": "0a478e89eb660f82da4c35dbdde8a5adfb27f99d1b4e50edd03729e1e98316d3"
+    },
+    {
+      "path": "checkpoints/whisper/tiny.pt",
+      "repoId": "ByteDance/LatentSync-1.6",
+      "revision": "c42c7e6c8e9c213626389fa7d9a3c444b8536353",
+      "filename": "whisper/tiny.pt",
+      "size": 75572083,
+      "sha256": "65147644a518d12f04e32d6f3b26facc3f8dd46e5390956a9424a650c0ce22b9"
+    },
+    {
+      "path": "vae/config.json",
+      "repoId": "stabilityai/sd-vae-ft-mse",
+      "revision": "31f26fdeee1355a5c34592e401dd41e45d25a493",
+      "filename": "config.json",
+      "size": 547,
+      "sha256": "92d3dfb746fca211a2c9e019e285f8597412211728dce3c5bcf4eda0f2d62e7e"
+    },
+    {
+      "path": "vae/diffusion_pytorch_model.safetensors",
+      "repoId": "stabilityai/sd-vae-ft-mse",
+      "revision": "31f26fdeee1355a5c34592e401dd41e45d25a493",
+      "filename": "diffusion_pytorch_model.safetensors",
+      "size": 334643276,
+      "sha256": "a1d993488569e928462932c8c38a0760b874d166399b14414135bd9c42df5815"
+    },
+    {
+      "path": "alignment/config.json",
+      "repoId": "jonatasgrosman/wav2vec2-large-xlsr-53-arabic",
+      "revision": "af46c2d8531b8dcbb5e23b952f739b372c2e5d2d",
+      "filename": "config.json",
+      "size": 1565,
+      "sha256": "9283014cd08d1fbcb13f7965c4dda8ef54a988e40945ff2616e15afcd0f1fac7"
+    },
+    {
+      "path": "alignment/preprocessor_config.json",
+      "repoId": "jonatasgrosman/wav2vec2-large-xlsr-53-arabic",
+      "revision": "af46c2d8531b8dcbb5e23b952f739b372c2e5d2d",
+      "filename": "preprocessor_config.json",
+      "size": 158,
+      "sha256": "c403ce09975b90dff0dd8302c42d422e9de1f166cd7772df23490069893cb0cf"
+    },
+    {
+      "path": "alignment/special_tokens_map.json",
+      "repoId": "jonatasgrosman/wav2vec2-large-xlsr-53-arabic",
+      "revision": "af46c2d8531b8dcbb5e23b952f739b372c2e5d2d",
+      "filename": "special_tokens_map.json",
+      "size": 85,
+      "sha256": "bb7068de1150661a10b55f9e4b12a0e77af8bf91f5e45e1b58afaf1d0e17f675"
+    },
+    {
+      "path": "alignment/vocab.json",
+      "repoId": "jonatasgrosman/wav2vec2-large-xlsr-53-arabic",
+      "revision": "af46c2d8531b8dcbb5e23b952f739b372c2e5d2d",
+      "filename": "vocab.json",
+      "size": 507,
+      "sha256": "96a92ff9bd106f825c878f502fe341f9f0488ace92d3c76dc40a6b30296efedd"
+    },
+    {
+      "path": "alignment/pytorch_model.bin",
+      "repoId": "jonatasgrosman/wav2vec2-large-xlsr-53-arabic",
+      "revision": "af46c2d8531b8dcbb5e23b952f739b372c2e5d2d",
+      "filename": "pytorch_model.bin",
+      "size": 1262142936,
+      "sha256": "a0b26f6d9d3edfde1784aef863c192a8cc1e438a23b45910ab648531ebe1857b"
+    },
+    {
+      "path": "face/buffalo_m.zip",
+      "url": "https://github.com/deepinsight/insightface/releases/download/v0.7/buffalo_m.zip",
+      "revision": "release-asset-372348396",
+      "filename": "buffalo_m.zip",
+      "size": 275951529,
+      "sha256": "d98264bd8f2dc75cbc2ddce2a14e636e02bb857b3051c234b737bf3b614edca9"
+    }
+  ],
+  "totalBytes": 7020535174,
+  "resources": {
+    "gpu": "L40S",
+    "cpu": 4,
+    "ramGiB": 32,
+    "minVramGiB": 24
+  },
+  "operations": [
+    "align",
+    "lip_sync"
+  ]
+}

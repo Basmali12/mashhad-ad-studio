@@ -1,0 +1,118 @@
+{
+  "scope": "Private audio diagnosis and five requested Iraqi/MSA samples; no production deployment or film replacement.",
+  "findings": {
+    "originalFinalWaveformCorrelation": 0.9999847197782907,
+    "meaning": "Shows final film retained original narration signal; not a speech-intelligibility or pronunciation score.",
+    "confirmedBoundaryBug": "Original unpunctuated MSA reference ended in an Arabic letter. Habibi infer_batch_process concatenates reference and target and only supplies its own space for ASCII-ended references. Our caller omitted the corresponding target separator used by the upstream benchmark.",
+    "fix": "Add a single leading target separator for Arabic-ended references; preserve reference transcript and original story metadata.",
+    "possibleContributors": [
+      "Original narration used 27 combining marks and speakingRate 0.9. Duration estimation uses raw UTF8 byte counts. Some supplied punctuation/marks are absent from the exact MSA vocabulary.",
+      "Reference was a licensed short benchmark excerpt with listeningVerified=false, not an auditioned and approved production narrator.",
+      "Original narration split into five chunks, so prosody can reset between them. These five short samples use a single chunk each."
+    ],
+    "notClaimed": "No ASR WER score or confirmed human listening approval; improvements need listening to these samples.",
+    "originalFilmUntouched": true
+  },
+  "officialSources": [
+    "https://github.com/SWivid/Habibi-TTS/blob/3b4d793481f1a8e686a2229c6d7946c5d9f6b8c0/src/habibi_tts/eval/utils_eval.py",
+    "https://github.com/SWivid/Habibi-TTS/blob/3b4d793481f1a8e686a2229c6d7946c5d9f6b8c0/src/habibi_tts/infer/utils_infer.py"
+  ],
+  "samples": [
+    {
+      "id": "01-iraqi-natural",
+      "label": "عراقي — طبيعي",
+      "text": "هلا بيك. شلونك اليوم. خل نحكي حكاية حلوة من واقعنا.",
+      "model": "habibi-irq",
+      "rate": 1,
+      "durationMs": 4352.0,
+      "inferenceSeconds": 2.697920646,
+      "nativePath": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-voice-review1\\01-iraqi-natural-native.wav",
+      "preview": {
+        "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-voice-review1\\01-iraqi-natural.mp3",
+        "gainDB": 6.704292778949464,
+        "speedChangedAfterGeneration": false
+      },
+      "listeningApproved": false
+    },
+    {
+      "id": "02-iraqi-calm",
+      "label": "عراقي — هادئ",
+      "text": "لا تأجل كلامك ويا أهلك. اتصال بسيط منك يفرح قلوبهم.",
+      "model": "habibi-irq",
+      "rate": 0.95,
+      "durationMs": 4640.0,
+      "inferenceSeconds": 2.536508843,
+      "nativePath": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-voice-review1\\02-iraqi-calm-native.wav",
+      "preview": {
+        "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-voice-review1\\02-iraqi-calm.mp3",
+        "gainDB": 6.407235468338024,
+        "speedChangedAfterGeneration": false
+      },
+      "listeningApproved": false
+    },
+    {
+      "id": "03-iraqi-story",
+      "label": "عراقي — قصة",
+      "text": "الدنيا مو بس ركض وشغل. الكلمة الطيبة تبقى بقلوب الناس.",
+      "model": "habibi-irq",
+      "rate": 1,
+      "durationMs": 4693.333333333333,
+      "inferenceSeconds": 2.707947147999999,
+      "nativePath": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-voice-review1\\03-iraqi-story-native.wav",
+      "preview": {
+        "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-voice-review1\\03-iraqi-story.mp3",
+        "gainDB": 5.857384046215364,
+        "speedChangedAfterGeneration": false
+      },
+      "listeningApproved": false
+    },
+    {
+      "id": "04-msa-natural",
+      "label": "فصحى — طبيعي",
+      "text": "نعيش وكأن الوقت لا ينتهي. لا نؤجل الاعتذار لمن نحب.",
+      "model": "habibi-msa",
+      "rate": 1,
+      "durationMs": 4896.0,
+      "inferenceSeconds": 3.5697936650000024,
+      "nativePath": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-voice-review1\\04-msa-natural-native.wav",
+      "preview": {
+        "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-voice-review1\\04-msa-natural.mp3",
+        "gainDB": 4.170145002149843,
+        "speedChangedAfterGeneration": false
+      },
+      "listeningApproved": false
+    },
+    {
+      "id": "05-msa-calm",
+      "label": "فصحى — هادئ",
+      "text": "هذه ليست حكاية الخوف من الموت. بل دعوة لنفهم قيمة الحياة.",
+      "model": "habibi-msa",
+      "rate": 0.95,
+      "durationMs": 5770.666666666667,
+      "inferenceSeconds": 2.455714443999998,
+      "nativePath": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-voice-review1\\05-msa-calm-native.wav",
+      "preview": {
+        "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-voice-review1\\05-msa-calm.mp3",
+        "gainDB": 6.24205085580901,
+        "speedChangedAfterGeneration": false
+      },
+      "listeningApproved": false
+    }
+  ],
+  "notes": "Two existing reference speakers across five recordings; no claim of five separate speaker identities. Preview MP3 uses gain only, without pitch shift, time stretch, denoising or background audio.",
+  "tests": {
+    "boundaryRegressionPassed": 2,
+    "speechRuntimePassed": 17,
+    "speechRatePassed": 2
+  },
+  "stopAndBilling": {
+    "at": 1793533812066,
+    "grossUSD": "4.84218790",
+    "recordedAdditionalSamplesUSD": 0.1299999999999999,
+    "activeApps": [],
+    "tasks": 0,
+    "usageLimitUSD": 6.35,
+    "spendLimitUSD": 0,
+    "billingFinal": false
+  }
+}

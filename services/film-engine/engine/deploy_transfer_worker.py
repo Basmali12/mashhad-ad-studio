@@ -14,7 +14,8 @@ def main():
     args=parser.parse_args()
     if not args.approve_worker_deploy:raise SystemExit('Deployment can incur image/resource costs. Separate approval required.')
     import modal
-    from transfer_contract import APP_NAME,DICT_NAME,FUNCTION_NAME,FINGERPRINT,SOURCE_WORKSPACE
+    from transfer_contract import APP_NAME,DICT_NAME,FUNCTION_NAME,FINGERPRINT,SOURCE_WORKSPACE,require_model
+    require_model()
     PHASE='identity'
     if args.credentials_stdin:
         from modal_bridge import client

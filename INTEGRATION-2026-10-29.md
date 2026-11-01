@@ -1,46 +1,9 @@
-# مشهد مع صناعة الأفلام وإدارة المعالجات
+# Mashhad integration boundaries
 
-## وجهة النشر المحدّثة بطلب المالك
+This repository retains the existing customer/admin Mashhad interfaces, Clerk/Convex scheduling and publishing integrations, file access, subscriptions and the film-service gateway. The former film inference model has been retired; no new engine is activated in this task.
 
-**خطة التفعيل الفعلية بعد فحص الخادم:** يبقى مشهد على GitHub Pages في `iraqaistudio.com` دون تحويل DNS. يستخدم البناء `VITE_FILM_API_ORIGIN=https://scan.iraqaistudio.com` مع CORS لأصل مشهد المحدد فقط. ينشر بناء الأدمن المنفصل في `/admin/` على دومين مشهد؛ وتضاف مسارات البوابة إلى Caddy تحت `scan` دون تغيير التخزين أو الجدولة. لا يُستخدم قالب تبديل الموقع بالكامل أدناه لهذا التفعيل. الوصول المؤقت، ونسخة إعدادات Caddy والبيئات وقاعدة الأفلام، وفحص غياب المهام النشطة أُنجزت على الخادم.
+The authenticated film gateway remains connected to the self-hosted film management service and PostgreSQL. Credential encryption, administrator permissions, wallet settlement, account/slot administration, storage-transfer infrastructure and stop/reconciliation remain in scope to preserve. Existing user projects, messages, media and receipts are not removed.
 
-الوجهة المطلوبة الآن هي `https://iraqaistudio.com/` (مشهد الحالي)، وليست `studio.iraqaistudio.com`. تعليمات النطاق الفرعي أدناه سجل للخطة السابقة. حُدّث قالب Caddy وOrigin في مثال البيئة إلى النطاق الأساسي. لا تنشر بناء الواجهة وحده إلى GitHub Pages: مسار `/api/mashhad-film` يحتاج البوابة الفعلية وHTTPS على الخادم. قبل تحويل النطاق افحص إعداداته الحالية، واتصال Clerk والعضوية والبوابة والتخزين، واحفظ إعدادات DNS السابقة للرجوع. لا تغيّر `scan` أو خدمات النشر والجدولة. هذا تعديل محلي؛ لم يُنفّذ تحويل DNS أو نشر حي.
+Deployment origins remain `https://iraqaistudio.com/` and the existing `scan.iraqaistudio.com` API/admin paths. No DNS or domain changes are part of this work. The presence of local source changes does not establish successful server installation or Modal deletion.
 
-الفرع `codex/ltx-film-engine-integration` داخل مستودع مشهد الحالي، مع الحفاظ على النسخة الأصلية وتعديلاتها المحلية في مكانها. لا تُستبدل جدولة الريلز أو الاشتراكات أو Buffer/Bunny أو بيانات الحسابات.
-
-## ما نُفّذ
-
-- تبويب «توليد الفيديو» يفتح واجهة صناعة الأفلام داخل مشهد، بدلاً من مدخل Flow المحلي التجريبي غير المنشور. كود Flow الأصلي ما زال في النسخة الأصلية؛ لا تشغيل أو إعادة تفعيل تلقائي له.
-- مشاهد وقصص وصور مراجع، اختيار الاتجاه، 720p، صوت LTX الأصلي، إدارة الاستئجار، المراقبة والدمج تستخدم مسار الفيلم الموجود، دون نقل أوزان.
-- تبويب «محركات الأفلام» داخل نسخة الأدمن المنفصلة. بناء الزبون لا يستورد واجهة إدارة المحركات.
-- بوابة Node جديدة على loopback تتحقق في كل طلب من جلسة مشهد الحالية عبر query `publishingUsers:profile` الموجودة. لا تسجيل ثانٍ أو قبول actor/admin من المتصفح، والحظر ودور المالك مصدرهما الخادم.
-- محرك LTX الحالي نُقل كمصدر مستقل إلى `services/film-engine` مع ملفاته المثبتة واختباراته. يبقى تخزين الأفلام وModal والمفاتيح في قاعدة PostgreSQL/مسارات الخادم الحالية؛ بيانات مشهد وجدولته تظل في نظامها الحالي.
-- بيانات رصيد الأفلام منفصلة عن حصة نشر الريلز. الموافقات ومنع التكرار والغموض والإيقاف تبقى في المحرك. لا تشغيل GPU بمجرد فتح التبويب.
-- تنظيف Telea التجريبي الذي شوّه الفيديو لم يُنقل أو يُفعّل. كشف النصوص والمراجعة والصوت الأصلي محفوظة.
-- واجهة البرمجة العامة لـIraq AI Studio ليست جزءاً من بناء مشهد الجديد. لا تحذف خدمات/مجلدات الخادم القديمة قبل نقل بيئة Python والتحقق من غياب اعتماد المحرك عليها.
-
-## فحوص محلية
-
-نجحت TypeScript لكل الواجهة/Convex/worker/services، وlint، و645 اختبار Vitest لمشهد، و105 اختبارات Node للمحرك، و6 اختبارات HTTP للبوابة. نجح بناء الزبون والأدمن وبناء حزم worker دون تشغيلها. الاختبارات تستخدم مزودين اختباريين عند حدود الشبكة، ولا تثبت توفر GPU أو نجاح وصول مستخدم حي.
-
-ظهر timeout في اختبارين قديمين تحت الحمل، وأُعيد إنتاج مشكلة تهيئة Convex الباردة في النسخة الأصلية دون تعديلات. عُدّلت مهلة الاختبارات الباردة إلى 15 ثانية والمهلة الخارجية لملف FFmpeg المتعدد إلى 90 ثانية؛ مهل العمليات والإنتاج لم تتغير. الفحص الكامل اللاحق نجح دون تخطٍ.
-
-فُحصت المعاينة بعرض هاتف 390 بكسل دون تمرير أفقي، وأُصلح تعارض ارتفاع header مع أنماط مشهد. المعاينة المحلية تستعمل بيانات عرض معلّمة بوضوح، ولا تتصل بمحرك أو تستقبل مفاتيح.
-
-## بوابات النشر الحي
-
-المجال المقصود: `studio.iraqaistudio.com`. النشر لا يغير `iraqaistudio.com` أو المواقع الأخرى، ولا يحذف بيانات PostgreSQL أو الأوزان أو الفيديوهات.
-
-1. وصول Console/SSH فعلي إلى `muhtaj-app`. شاشة Console كانت تعرض اتصالاً آخر قائماً؛ لم تُنفذ أوامر نشر على الخادم خلال الدمج.
-2. تجهيز مصدر الإصدار تحت مسار مستقل، مع snapshot من ملفات الخدمة/Caddy والبيئة وقاعدة الفيلم.
-3. تهيئة gateway.env سرياً من إعدادات الربط الحالية، لا من Git. نقل `ENGINE_PYTHON` إلى venv مستقل يحتوي Modal 1.6.2 قبل تقاعد المجلد القديم.
-4. إعادة استخدام استعلام الهوية المنشور دون ترحيل بيانات مشهد أو تعديل صلاحيات الاشتراك.
-5. خدمة التخزين الحالية رفضت OPTIONS من `https://studio.iraqaistudio.com` برمز 403 دون أي رفع. يلزم إضافة هذا الأصل المحدد إلى `REELS_STORAGE_CLIENT_ORIGINS` في خدمة مشهد القائمة، ثم فحص 204 وOrigin المطابق؛ لا تعطيل CORS أو مصادقة الملفات.
-6. مراجعة CSP الحالية للسماح فقط بأصول Clerk/Convex/التخزين الفعلية المطلوبة؛ لا تجاوز TLS أو تعطيل فحوص الشهادات.
-7. تشغيل البوابة فقط، وفحص health ورفض الطلب المجهول وعزل المستخدم والأدمن عبر جلسة حقيقية، دون GPU.
-8. تأكيد عدم وجود مهام أو استئجارات نشطة، وتبديل Caddy لهذا المجال فقط إلى بناء مشهد وبناء الأدمن `/admin/`، مع خطة رجوع فورية.
-9. إزالة وصول واجهة البرمجة القديمة من المجال وتقاعد خدمتها بعد تأكيد عمل مشهد والمحرك. احتفظ بالكود/البيانات القديمة للاستعادة حتى يثبت عدم اعتماد الخدمات عليها.
-
-مثال Caddy ووحدة systemd في `services/film-gateway` قوالب تحتاج مطابقة الخادم الفعلي؛ لا تعتبرها إثبات تنفيذ أو بديلاً لفحص الخدمات القائمة. يلزم نسخ `dist-admin/admin.html` إلى `dist-admin/index.html` في الإصدار المنشور حتى تعمل صفحة الأدمن وملفات assets معاً.
-
-فحص query الهوية الحقيقي دون جلسة رفض الطلب، ولم يُظهر أن الدالة مفقودة؛ هذا لا يثبت الدخول بحساب فعلي. لا GPU ولا نقل أوزان ولا طلب AI مدفوع في هذه المرحلة.
+Current operating instructions: [README](README.md), [service operations](services/film-engine/OPERATIONS.md), and [task 1 record](docs/task-01-retirement.md). Historical local GPU tests are not readiness proof for a future replacement engine.

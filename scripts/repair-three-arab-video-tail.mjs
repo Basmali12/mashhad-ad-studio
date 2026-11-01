@@ -1,0 +1,43 @@
+/** Owner-requested, CPU-only tail repair. Preserve sources and copy video stream. */
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import process from 'node:process';
+import console from 'node:console';
+import {fileURLToPath} from 'node:url';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {randomBytes} from 'node:crypto';
+import {Store,hash} from '../services/film-engine/engine/store.mjs';
+import {inspectNarrationTail,repairReviewedNarrationTail} from '../services/film-engine/engine/narration-tail.mjs';
+import {createThreeArabFilmTrack} from '../services/film-engine/engine/three-arab-film-track.mjs';
+import {appendProductionMix} from '../services/film-engine/engine/production-mix.mjs';
+import {verifyLocalVideo,createProductionArtifacts} from '../services/film-engine/engine/production-artifacts.mjs';
+import {createFinalFilmThumbnail} from '../services/film-engine/engine/final-film-thumbnail.mjs';
+const exec=promisify(execFile),repo=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),base=path.resolve(repo,'../../work/three-arab-video-trial1'),voices=path.resolve(repo,'../../work/three-arab-audioseal-audition6'),work=path.join(base,'review1');
+const ff=path.resolve(repo,'../../work/video-comparison-tools/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe');
+const read=async p=>JSON.parse(await fs.readFile(p,'utf8'));
+process.env.ENGINE_FFMPEG_BIN=ff;process.env.FILM_FFMPEG_PATH=ff;
+await fs.mkdir(work,{recursive:true});
+const original=await read(path.join(base,'film-result.json')),source=await fs.readFile(path.join(voices,'solemn-native.wav')),receipt=await read(path.join(voices,'solemn-receipt.json')),claim=await read(path.join(base,'audio-claim.json'));
+if(hash(await fs.readFile(original.path))!==original.sha256||hash(source)!==receipt.result.sha256)throw Error('SOURCE_CHANGED');
+const review=inspectNarrationTail(source),fixed=repairReviewedNarrationTail(source,{approved:true,muteFromMs:review.proposedMuteMs,fadeMs:10});
+const customerId=original.customerId,projectId='three-arab-film-repaired1',storeRoot=path.join(work,'backend-store');await fs.mkdir(storeRoot,{recursive:true});
+const store=new Store(storeRoot,randomBytes(32).toString('base64'));
+const run=args=>exec(ff,['-nostdin','-hide_banner','-v','error','-threads','2',...args],{windowsHide:true,timeout:180000,maxBuffer:8*1024*1024});
+try{
+ if(!await store.get('production-project',projectId))await store.put('production-project',{id:projectId,customerId,title:'ليلة تغيّر الحياة — نهاية مصححة',story:receipt.request.text,state:'running',durationMs:15000,width:720,height:1280,fps:16,privateTrial:true,createdAt:Date.now(),plan:{orientation:'portrait',utterances:[{id:'narration',narratorId:'narrator',role:'narration',text:receipt.request.text,startMs:0,endMs:15000}]}});
+ const asset=await createThreeArabFilmTrack({store}).admit({actor:{isAdmin:true},trialApproved:true,customerId,projectId,attemptId:'reviewed-tail-repair1',utteranceId:'narration',receipt,claim,bytes:fixed.bytes,originalBytes:source,repair:{approved:true,muteFromMs:review.proposedMuteMs,fadeMs:10}});
+ const target=path.join(work,'reviewed-film.mp4'),filters=[];
+ appendProductionMix({filters,tracks:[{assetId:asset.id,startMs:0,sourceOffsetMs:0,durationMs:15000,kind:'narration',layer:'narration'}],usedAudio:[asset],inputCount:1,replaceAudio:true,durationMs:15000});
+ if(!await fs.stat(target).catch(()=>null))await run(['-i',original.path,'-i',asset.path,'-filter_complex_threads','2','-filter_complex',filters.join(';'),'-map','0:v:0','-map','[a]','-c:v','copy','-c:a','aac','-b:a','192k','-t','15','-movflags','+faststart','-n',target]);
+ const checked=await verifyLocalVideo({file:target,expectedDurationMs:15000,hasAudio:true});
+ const frameHashes=async file=>(await run(['-i',file,'-map','0:v:0','-an','-f','framemd5','-'])).stdout;
+ const before=await frameHashes(original.path),after=await frameHashes(target),rows=s=>s.split('\n').filter(l=>l&&!l.startsWith('#'));
+ if(JSON.stringify(rows(before))!==JSON.stringify(rows(after)))throw Error('REPAIR_VIDEO_FRAMES_CHANGED');
+ await fs.writeFile(path.join(work,'original-video.framemd5'),before);await fs.writeFile(path.join(work,'repaired-video.framemd5'),after);
+ const artifacts=createProductionArtifacts({store,thumbnail:createFinalFilmThumbnail({store})}),final=await artifacts.commitFinal({projectId,customerId,bytes:await fs.readFile(target),expectedDurationMs:15000,hasAudio:true});
+ const report={path:target,originalPath:original.path,sourceSHA256:original.sha256,sha256:hash(await fs.readFile(target)),...checked,final,repairEvidence:fixed.evidence,videoFramesVerifiedUnchanged:rows(before).length,videoReencoded:false,synthesisRepeated:false,gpuStarted:false,paidCalls:0,nativeOriginalPreserved:true,wordCompletenessVerifiedByASR:false,qualityLimitations:['subtle motion and doorway direction remain generation limitations','signal-only tail review is not speech recognition']};
+ await fs.writeFile(path.join(work,'repair-result.json'),JSON.stringify(report,null,2));
+ await fs.writeFile(path.join(work,'clean-narration.wav'),fixed.bytes,{flag:'wx'}).catch(e=>{if(e.code!=='EEXIST')throw e;});
+ console.log(JSON.stringify(report));
+}finally{store.close();}

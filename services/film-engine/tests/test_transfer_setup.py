@@ -28,7 +28,7 @@ class TransferSetupTests(unittest.TestCase):
     def test_verified_unstarted_closure_is_terminal_and_never_redeploys(self):
         state = State()
         record = {'workspace':'destination','fingerprint':host.FINGERPRINT,'setup':{'errorClass':'VersionError'}}
-        request = {'jobId':'job','credentials':{},'volume':'iff-ltx25-1234abcd'}
+        request = {'jobId':'job','credentials':{},'volume':'mashhad-model-1234abcd'}
         state.put('operator-closure:job',{'jobId':'job','noModelCallsStarted':True,'error':'TRANSFER_IMAGE_BUILDER_INCOMPATIBLE'})
         with patch.object(host,'require_external_control'), patch('modal_bridge.client',return_value=(object(),'destination')), \
              patch('destination_verifier_control.lookup_destination_verifier') as lookup, patch.object(host,'advance') as advance:
@@ -48,7 +48,7 @@ class TransferSetupTests(unittest.TestCase):
 
     def test_destination_failure_saves_exact_phase_before_any_model_call(self):
         state = State()
-        request = {'paidApproved':True,'jobId':'job','volume':'iff-ltx25-1234abcd',
+        request = {'paidApproved':True,'jobId':'job','volume':'mashhad-model-1234abcd',
                    'plan':{'transferPlanFingerprint':'bound','mode':'full','files':[]}}
         def fail(*args, progress, **kwargs):
             progress('destination_registry')
@@ -67,7 +67,7 @@ class TransferSetupTests(unittest.TestCase):
     def test_existing_verified_deployment_reattaches_without_redeploy(self):
         state = State()
         record = {'workspace':'destination','fingerprint':host.FINGERPRINT}
-        request = {'jobId':'job','credentials':{},'volume':'iff-ltx25-1234abcd'}
+        request = {'jobId':'job','credentials':{},'volume':'mashhad-model-1234abcd'}
         with patch.object(host, 'require_external_control'), patch('modal_bridge.client', return_value=(object(),'destination')), \
              patch('destination_verifier_control.lookup_destination_verifier', return_value={'appId':'ap-dest'}), \
              patch('destination_verifier_control.ensure_destination_verifier') as deploy, \
@@ -81,7 +81,7 @@ class TransferSetupTests(unittest.TestCase):
     def test_missing_destination_never_triggers_paid_redeploy_or_advance(self):
         state = State()
         record = {'workspace':'destination','fingerprint':host.FINGERPRINT}
-        request = {'jobId':'job','credentials':{},'volume':'iff-ltx25-1234abcd'}
+        request = {'jobId':'job','credentials':{},'volume':'mashhad-model-1234abcd'}
         with patch.object(host, 'require_external_control'), patch('modal_bridge.client', return_value=(object(),'destination')), \
              patch('destination_verifier_control.lookup_destination_verifier', return_value=None), \
              patch('destination_verifier_control.ensure_destination_verifier') as deploy, patch.object(host, 'advance') as advance:

@@ -30,6 +30,6 @@ test('silent scene remains explicitly silent and does not acquire dialogue or an
  const script=Arabic.compile({language:'ar',dialect:'iraqi',mode:'silent',silenceRequested:true,lines:[]});
  assert.ok(script.includes('characters remain silent throughout'));
  assert.ok(!script.includes('says aloud'));
- assert.ok(applyGenerationRules('An empty alley at dusk.',script).includes('Preserve LTX native synchronized audio'));
+ assert.ok(applyGenerationRules('An empty alley at dusk.',script).includes('Preserve configured engine synchronized audio'));
  assert.throws(()=>Arabic.compile({mode:'dialogue',lines:[{speaker:'حيدر',text:'hello'}]}),/ARABIC_DIALOGUE_REQUIRED/);
 });

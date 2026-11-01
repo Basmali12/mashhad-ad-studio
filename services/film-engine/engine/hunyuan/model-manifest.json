@@ -1,0 +1,885 @@
+{
+  "modelId": "hunyuanvideo15",
+  "version": "1.5",
+  "repoId": "tencent/HunyuanVideo-1.5",
+  "revision": "9b49404b3f5df2a8f0b31df27a0c7ab872e7b038",
+  "sourceRepo": "https://github.com/Tencent-Hunyuan/HunyuanVideo-1.5",
+  "sourceCommit": "60783e704160023913bee78f0b47036d393d4dfa",
+  "license": "tencent-hunyuan-community",
+  "licenseURL": "https://huggingface.co/tencent/HunyuanVideo-1.5/blob/9b49404b3f5df2a8f0b31df27a0c7ab872e7b038/LICENSE",
+  "format": "publisher-linked-diffusers-original",
+  "inferenceDtype": "bfloat16",
+  "metadataCheckedAt": "2026-10-31",
+  "resourcesVerified": false,
+  "defaults": {
+    "gpu": "RTX-PRO-6000",
+    "vramGiB": 96,
+    "ramGiB": 128,
+    "cpu": 4,
+    "verified": false
+  },
+  "variants": {
+    "480p_t2v": {
+      "mode": "text_to_video",
+      "resolution": 480,
+      "targetSize": 640,
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf",
+      "pipeline": "HunyuanVideo15Pipeline",
+      "components": {
+        "guider": {
+          "library": "diffusers",
+          "className": "ClassifierFreeGuidance",
+          "path": "shared/guider/6cda03efa3f7b32a"
+        },
+        "scheduler": {
+          "library": "diffusers",
+          "className": "FlowMatchEulerDiscreteScheduler",
+          "path": "shared/scheduler/9bfbaa376f030286"
+        },
+        "text_encoder": {
+          "library": "transformers",
+          "className": "Qwen2_5_VLTextModel",
+          "path": "shared/text_encoder/a7b8194c53c4ec1c"
+        },
+        "text_encoder_2": {
+          "library": "transformers",
+          "className": "T5EncoderModel",
+          "path": "shared/text_encoder_2/6b759d369e535f99"
+        },
+        "tokenizer": {
+          "library": "transformers",
+          "className": "Qwen2TokenizerFast",
+          "path": "shared/tokenizer/ac0651516700b9af"
+        },
+        "tokenizer_2": {
+          "library": "transformers",
+          "className": "ByT5Tokenizer",
+          "path": "shared/tokenizer_2/9c1de516603a89df"
+        },
+        "transformer": {
+          "library": "diffusers",
+          "className": "HunyuanVideo15Transformer3DModel",
+          "path": "variants/480p_t2v/transformer"
+        },
+        "vae": {
+          "library": "diffusers",
+          "className": "AutoencoderKLHunyuanVideo15",
+          "path": "shared/vae/26f090e120effb46"
+        }
+      }
+    },
+    "480p_i2v": {
+      "mode": "image_to_video",
+      "resolution": 480,
+      "targetSize": 640,
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698",
+      "pipeline": "HunyuanVideo15ImageToVideoPipeline",
+      "components": {
+        "feature_extractor": {
+          "library": "transformers",
+          "className": "SiglipImageProcessor",
+          "path": "shared/feature_extractor/29c77ab0eb606609"
+        },
+        "guider": {
+          "library": "diffusers",
+          "className": "ClassifierFreeGuidance",
+          "path": "shared/guider/6cda03efa3f7b32a"
+        },
+        "image_encoder": {
+          "library": "transformers",
+          "className": "SiglipVisionModel",
+          "path": "shared/image_encoder/209078babc517eff"
+        },
+        "scheduler": {
+          "library": "diffusers",
+          "className": "FlowMatchEulerDiscreteScheduler",
+          "path": "shared/scheduler/9bfbaa376f030286"
+        },
+        "text_encoder": {
+          "library": "transformers",
+          "className": "Qwen2_5_VLTextModel",
+          "path": "shared/text_encoder/a7b8194c53c4ec1c"
+        },
+        "text_encoder_2": {
+          "library": "transformers",
+          "className": "T5EncoderModel",
+          "path": "shared/text_encoder_2/6b759d369e535f99"
+        },
+        "tokenizer": {
+          "library": "transformers",
+          "className": "Qwen2TokenizerFast",
+          "path": "shared/tokenizer/ac0651516700b9af"
+        },
+        "tokenizer_2": {
+          "library": "transformers",
+          "className": "ByT5Tokenizer",
+          "path": "shared/tokenizer_2/9c1de516603a89df"
+        },
+        "transformer": {
+          "library": "diffusers",
+          "className": "HunyuanVideo15Transformer3DModel",
+          "path": "variants/480p_i2v/transformer"
+        },
+        "vae": {
+          "library": "diffusers",
+          "className": "AutoencoderKLHunyuanVideo15",
+          "path": "shared/vae/9df90b9144c4ac0c"
+        }
+      }
+    },
+    "720p_t2v": {
+      "mode": "text_to_video",
+      "resolution": 720,
+      "targetSize": 960,
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_t2v",
+      "revision": "f4dbc4a1efa4ac8ea56680cdf79d9f455105e814",
+      "pipeline": "HunyuanVideo15Pipeline",
+      "components": {
+        "guider": {
+          "library": "diffusers",
+          "className": "ClassifierFreeGuidance",
+          "path": "shared/guider/6cda03efa3f7b32a"
+        },
+        "scheduler": {
+          "library": "diffusers",
+          "className": "FlowMatchEulerDiscreteScheduler",
+          "path": "shared/scheduler/90030c0e4e96d7e2"
+        },
+        "text_encoder": {
+          "library": "transformers",
+          "className": "Qwen2_5_VLTextModel",
+          "path": "shared/text_encoder/a7b8194c53c4ec1c"
+        },
+        "text_encoder_2": {
+          "library": "transformers",
+          "className": "T5EncoderModel",
+          "path": "shared/text_encoder_2/6b759d369e535f99"
+        },
+        "tokenizer": {
+          "library": "transformers",
+          "className": "Qwen2TokenizerFast",
+          "path": "shared/tokenizer/ac0651516700b9af"
+        },
+        "tokenizer_2": {
+          "library": "transformers",
+          "className": "ByT5Tokenizer",
+          "path": "shared/tokenizer_2/9c1de516603a89df"
+        },
+        "transformer": {
+          "library": "diffusers",
+          "className": "HunyuanVideo15Transformer3DModel",
+          "path": "variants/720p_t2v/transformer"
+        },
+        "vae": {
+          "library": "diffusers",
+          "className": "AutoencoderKLHunyuanVideo15",
+          "path": "shared/vae/26f090e120effb46"
+        }
+      }
+    },
+    "720p_i2v": {
+      "mode": "image_to_video",
+      "resolution": 720,
+      "targetSize": 960,
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_i2v",
+      "revision": "dcf088ef4e420dd54bc25930ee810bb6613dfcb5",
+      "pipeline": "HunyuanVideo15ImageToVideoPipeline",
+      "components": {
+        "feature_extractor": {
+          "library": "transformers",
+          "className": "SiglipImageProcessor",
+          "path": "shared/feature_extractor/29c77ab0eb606609"
+        },
+        "guider": {
+          "library": "diffusers",
+          "className": "ClassifierFreeGuidance",
+          "path": "shared/guider/6cda03efa3f7b32a"
+        },
+        "image_encoder": {
+          "library": "transformers",
+          "className": "SiglipVisionModel",
+          "path": "shared/image_encoder/209078babc517eff"
+        },
+        "scheduler": {
+          "library": "diffusers",
+          "className": "FlowMatchEulerDiscreteScheduler",
+          "path": "shared/scheduler/bc7033cf1e1d2bc2"
+        },
+        "text_encoder": {
+          "library": "transformers",
+          "className": "Qwen2_5_VLTextModel",
+          "path": "shared/text_encoder/a7b8194c53c4ec1c"
+        },
+        "text_encoder_2": {
+          "library": "transformers",
+          "className": "T5EncoderModel",
+          "path": "shared/text_encoder_2/6b759d369e535f99"
+        },
+        "tokenizer": {
+          "library": "transformers",
+          "className": "Qwen2TokenizerFast",
+          "path": "shared/tokenizer/ac0651516700b9af"
+        },
+        "tokenizer_2": {
+          "library": "transformers",
+          "className": "ByT5Tokenizer",
+          "path": "shared/tokenizer_2/9c1de516603a89df"
+        },
+        "transformer": {
+          "library": "diffusers",
+          "className": "HunyuanVideo15Transformer3DModel",
+          "path": "variants/720p_i2v/transformer"
+        },
+        "vae": {
+          "library": "diffusers",
+          "className": "AutoencoderKLHunyuanVideo15",
+          "path": "shared/vae/9df90b9144c4ac0c"
+        }
+      }
+    }
+  },
+  "files": [
+    {
+      "path": "shared/guider/6cda03efa3f7b32a/guider_config.json",
+      "sourcePath": "guider/guider_config.json",
+      "size": 224,
+      "sha256": "690862ec179f7a295fe79a4dad8d0c4835bc071cd39655115c611e704dd6c5aa",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/scheduler/9bfbaa376f030286/scheduler_config.json",
+      "sourcePath": "scheduler/scheduler_config.json",
+      "size": 487,
+      "sha256": "d116e24fb2de6b9a3e3e78fe16d19cb89e5b0bdca6a70e4cd56cc142bdb14970",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/text_encoder/a7b8194c53c4ec1c/config.json",
+      "sourcePath": "text_encoder/config.json",
+      "size": 1471,
+      "sha256": "6848bb40490cbc356d531c6ec405b6b12ee54d1367b609169db6c311a00aaa78",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/text_encoder/a7b8194c53c4ec1c/model-00001-of-00003.safetensors",
+      "sourcePath": "text_encoder/model-00001-of-00003.safetensors",
+      "size": 4877660152,
+      "sha256": "a1b9f95e60d6844963933dc20c11cf712d902441ef50d0926e5f2b3521a2f01d",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/text_encoder/a7b8194c53c4ec1c/model-00002-of-00003.safetensors",
+      "sourcePath": "text_encoder/model-00002-of-00003.safetensors",
+      "size": 4932750280,
+      "sha256": "ab32a0fe73edfa4af4eb0c7f17633c44704335d80755f9230200cf16fea42b7e",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/text_encoder/a7b8194c53c4ec1c/model-00003-of-00003.safetensors",
+      "sourcePath": "text_encoder/model-00003-of-00003.safetensors",
+      "size": 4330864528,
+      "sha256": "fe26b2e0da51f3c6522b46056b26603f0642f866a60eacec09ebe66a025cb7ee",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/text_encoder/a7b8194c53c4ec1c/model.safetensors.index.json",
+      "sourcePath": "text_encoder/model.safetensors.index.json",
+      "size": 25702,
+      "sha256": "3374ab25b3226ec4416e0f036c157d577b36329a2c45ba710f8843547ef8ba00",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/text_encoder_2/6b759d369e535f99/config.json",
+      "sourcePath": "text_encoder_2/config.json",
+      "size": 782,
+      "sha256": "093eb86b182657d3c6ab6c32e9c1373082c4ca3c4554e6ccc0dea28094ed8427",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/text_encoder_2/6b759d369e535f99/model.safetensors",
+      "sourcePath": "text_encoder_2/model.safetensors",
+      "size": 877273128,
+      "sha256": "3f3b22f7926015b76022ca4842a3130d83c477d4ecee8a5275252650d96bf97a",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/tokenizer/ac0651516700b9af/added_tokens.json",
+      "sourcePath": "tokenizer/added_tokens.json",
+      "size": 605,
+      "sha256": "58b54bbe36fc752f79a24a271ef66a0a0830054b4dfad94bde757d851968060b",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/tokenizer/ac0651516700b9af/chat_template.jinja",
+      "sourcePath": "tokenizer/chat_template.jinja",
+      "size": 1017,
+      "sha256": "a0bc6f6fc7a29a80017a433e8f03a1cc1236e838a944a2d034295a60c4f2fddb",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/tokenizer/ac0651516700b9af/merges.txt",
+      "sourcePath": "tokenizer/merges.txt",
+      "size": 1671853,
+      "sha256": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/tokenizer/ac0651516700b9af/special_tokens_map.json",
+      "sourcePath": "tokenizer/special_tokens_map.json",
+      "size": 613,
+      "sha256": "76862e765266b85aa9459767e33cbaf13970f327a0e88d1c65846c2ddd3a1ecd",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/tokenizer/ac0651516700b9af/tokenizer.json",
+      "sourcePath": "tokenizer/tokenizer.json",
+      "size": 11421896,
+      "sha256": "9c5ae00e602b8860cbd784ba82a8aa14e8feecec692e7076590d014d7b7fdafa",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/tokenizer/ac0651516700b9af/tokenizer_config.json",
+      "sourcePath": "tokenizer/tokenizer_config.json",
+      "size": 4713,
+      "sha256": "11d20a741a0eda1e7482d29b5d17553328922ed9e7391ec6f44d390215390f3d",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/tokenizer/ac0651516700b9af/vocab.json",
+      "sourcePath": "tokenizer/vocab.json",
+      "size": 2776833,
+      "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/tokenizer_2/9c1de516603a89df/added_tokens.json",
+      "sourcePath": "tokenizer_2/added_tokens.json",
+      "size": 29726,
+      "sha256": "6dbf3df426e1c529b1823b2a9b10b6cd72fab3b375b6d55cbf7608e89f081151",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/tokenizer_2/9c1de516603a89df/special_tokens_map.json",
+      "sourcePath": "tokenizer_2/special_tokens_map.json",
+      "size": 167786,
+      "sha256": "aca482f95fc225629e1a4bf8d2e3784422f03def7d99210fe8101e839a92a00f",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/tokenizer_2/9c1de516603a89df/tokenizer_config.json",
+      "sourcePath": "tokenizer_2/tokenizer_config.json",
+      "size": 247408,
+      "sha256": "56adeaeff12e5819883501744cfc1bea3b6daa1f72d870c5558f0e4794c24c0f",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "variants/480p_t2v/transformer/config.json",
+      "sourcePath": "transformer/config.json",
+      "size": 550,
+      "sha256": "0124be9f1c90d44c591a3b15e92b7a90d13fb3f4775315df4af25db616571af1",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "variants/480p_t2v/transformer/diffusion_pytorch_model-00001-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00001-of-00007.safetensors",
+      "size": 4974650312,
+      "sha256": "b415e1d865d2dd6159af16610044f02596d0f967e798bbb0c043a68cecbe49f1",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "variants/480p_t2v/transformer/diffusion_pytorch_model-00002-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00002-of-00007.safetensors",
+      "size": 4984921240,
+      "sha256": "1150f60e40c82dbe3f30d164742909b5fe14646e7a3802cf28bdece57ee0cd71",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "variants/480p_t2v/transformer/diffusion_pytorch_model-00003-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00003-of-00007.safetensors",
+      "size": 4984921840,
+      "sha256": "7b7058e5a03e021ff5f8aabdc14125a44a3c4c0be001061ab00605b516d58cb4",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "variants/480p_t2v/transformer/diffusion_pytorch_model-00004-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00004-of-00007.safetensors",
+      "size": 4968109672,
+      "sha256": "56fba1c5928b25491302b51f9e19d7a8950500de8656ff4bcec9ad09d56b637c",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "variants/480p_t2v/transformer/diffusion_pytorch_model-00005-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00005-of-00007.safetensors",
+      "size": 4900967800,
+      "sha256": "b505a2bc6ee052a84ccb34ba80f5c50f22b58b741a0fb916c79c26b6a577f5ee",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "variants/480p_t2v/transformer/diffusion_pytorch_model-00006-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00006-of-00007.safetensors",
+      "size": 4934563168,
+      "sha256": "fd93ca43e13ea18af359d0f7080dad6b3b26bcbc4f25e7b3057c01f5306be230",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "variants/480p_t2v/transformer/diffusion_pytorch_model-00007-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00007-of-00007.safetensors",
+      "size": 3558508600,
+      "sha256": "f4f016011645aba0e5581be95f7e4f1ef89864e6dde7f6a09d1921c679556ed3",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "variants/480p_t2v/transformer/diffusion_pytorch_model.safetensors.index.json",
+      "sourcePath": "transformer/diffusion_pytorch_model.safetensors.index.json",
+      "size": 187206,
+      "sha256": "728378184469168b5ffa9cb5ee7f0efaabad13fdc83d63105a8324c9f293e700",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/vae/26f090e120effb46/config.json",
+      "sourcePath": "vae/config.json",
+      "size": 427,
+      "sha256": "e80c0186b8b41b135d4b3937df727ad314e08719d1f36af06577439259b74243",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/vae/26f090e120effb46/diffusion_pytorch_model-00001-of-00002.safetensors",
+      "sourcePath": "vae/diffusion_pytorch_model-00001-of-00002.safetensors",
+      "size": 4929270112,
+      "sha256": "59574f24717e0306bd1c0af33fc5006c42625f615cda08f57246cc14d7f82571",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/vae/26f090e120effb46/diffusion_pytorch_model-00002-of-00002.safetensors",
+      "sourcePath": "vae/diffusion_pytorch_model-00002-of-00002.safetensors",
+      "size": 113292844,
+      "sha256": "7258d3080448036656835e8cf1bfa78e5e4d33b2c56fab6deab844dd2a5fdcc6",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/vae/26f090e120effb46/diffusion_pytorch_model.safetensors.index.json",
+      "sourcePath": "vae/diffusion_pytorch_model.safetensors.index.json",
+      "size": 23187,
+      "sha256": "fdf1ba922364183eb76f24139fb911c0f0e0678222c7b7402a7896846e20ceaf",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "variants/480p_t2v/model_index.json",
+      "sourcePath": "model_index.json",
+      "size": 644,
+      "sha256": "e6573b14a5b008a680f5ff1606003bf8715f82adaf89674917950939578403bb",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "variants/480p_t2v/README.md",
+      "sourcePath": "README.md",
+      "size": 1871,
+      "sha256": "9f2df0ce144b68cfc0ebc8d1ddc59553668df6b991f8dbfd8a9671c7ec29400f",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_t2v",
+      "revision": "286be7ce72277246578a3e3cc2487e95ddae5bcf"
+    },
+    {
+      "path": "shared/feature_extractor/29c77ab0eb606609/preprocessor_config.json",
+      "sourcePath": "feature_extractor/preprocessor_config.json",
+      "size": 394,
+      "sha256": "ec1f371074fb4867ea1c654e00bc5ea99d706f409aaebf8dc614d67c0735aff8",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698"
+    },
+    {
+      "path": "shared/image_encoder/209078babc517eff/config.json",
+      "sourcePath": "image_encoder/config.json",
+      "size": 413,
+      "sha256": "4c50c2c52109c30d99cb825bda612e75f2fa73f64ab4210d274c906bcc706820",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698"
+    },
+    {
+      "path": "shared/image_encoder/209078babc517eff/model.safetensors",
+      "sourcePath": "image_encoder/model.safetensors",
+      "size": 856506120,
+      "sha256": "d769e3a32a6a9bac72d4d93b989e44491f71b50f02bfa14cd9187758d4a68ff1",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698"
+    },
+    {
+      "path": "variants/480p_i2v/transformer/config.json",
+      "sourcePath": "transformer/config.json",
+      "size": 550,
+      "sha256": "9054af333d21cc3047c586785f1341db985708b208a55bef6d055e705a835681",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698"
+    },
+    {
+      "path": "variants/480p_i2v/transformer/diffusion_pytorch_model-00001-of-00004.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00001-of-00004.safetensors",
+      "size": 9993142960,
+      "sha256": "5bae084552cbd9e7e8dafabb5ee70eb4fa79f9736a53d7c18e68d5e387d46444",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698"
+    },
+    {
+      "path": "variants/480p_i2v/transformer/diffusion_pytorch_model-00002-of-00004.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00002-of-00004.safetensors",
+      "size": 9986577616,
+      "sha256": "4b037c84e046bafadb34d89082181f3ddfb7766ecaf9b5f6519d8caf3edf6ab6",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698"
+    },
+    {
+      "path": "variants/480p_i2v/transformer/diffusion_pytorch_model-00003-of-00004.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00003-of-00004.safetensors",
+      "size": 9986627192,
+      "sha256": "0245cb73b5ad1a4c7f82ef80d9fcd0702097fd7364fab93dbd6c66bbb4171aa4",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698"
+    },
+    {
+      "path": "variants/480p_i2v/transformer/diffusion_pytorch_model-00004-of-00004.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00004-of-00004.safetensors",
+      "size": 3340295200,
+      "sha256": "5b255fcd8b5313bf71b29951c9f48b0af59dede83b694094946d68a2c5f4b9bf",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698"
+    },
+    {
+      "path": "variants/480p_i2v/transformer/diffusion_pytorch_model.safetensors.index.json",
+      "sourcePath": "transformer/diffusion_pytorch_model.safetensors.index.json",
+      "size": 187206,
+      "sha256": "1d3474a93009a7a494edab8d89107123d21e0c1381e00770368263eba5ac95e0",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698"
+    },
+    {
+      "path": "shared/vae/9df90b9144c4ac0c/config.json",
+      "sourcePath": "vae/config.json",
+      "size": 427,
+      "sha256": "e80c0186b8b41b135d4b3937df727ad314e08719d1f36af06577439259b74243",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698"
+    },
+    {
+      "path": "shared/vae/9df90b9144c4ac0c/diffusion_pytorch_model.safetensors",
+      "sourcePath": "vae/diffusion_pytorch_model.safetensors",
+      "size": 5042562948,
+      "sha256": "1d54daf92cdecc2fb4e54bc681443dcd671eaa05cc912aa32cd28f8e7cb8d101",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698"
+    },
+    {
+      "path": "variants/480p_i2v/model_index.json",
+      "sourcePath": "model_index.json",
+      "size": 803,
+      "sha256": "668cd92827219098469222a98a58975b9448a18020728bf6f9587c5639daec39",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698"
+    },
+    {
+      "path": "variants/480p_i2v/README.md",
+      "sourcePath": "README.md",
+      "size": 3154,
+      "sha256": "832ceb024378544117e4938812db4bbff69d1da677926a7bcc49ce1626939d46",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-480p_i2v",
+      "revision": "5a700ee883ff4c1b3d887ec4188755a7a5e2f698"
+    },
+    {
+      "path": "shared/scheduler/90030c0e4e96d7e2/scheduler_config.json",
+      "sourcePath": "scheduler/scheduler_config.json",
+      "size": 487,
+      "sha256": "d53ab643a8ac67173386f8ea412baadb3e39d6b9c39347450a090e9fcc65b79d",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_t2v",
+      "revision": "f4dbc4a1efa4ac8ea56680cdf79d9f455105e814"
+    },
+    {
+      "path": "variants/720p_t2v/transformer/config.json",
+      "sourcePath": "transformer/config.json",
+      "size": 550,
+      "sha256": "8e80ab2c8f893d371b660cf1e0cf2856977d77dbf4fd44f4114a3976325c1b98",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_t2v",
+      "revision": "f4dbc4a1efa4ac8ea56680cdf79d9f455105e814"
+    },
+    {
+      "path": "variants/720p_t2v/transformer/diffusion_pytorch_model-00001-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00001-of-00007.safetensors",
+      "size": 4974650312,
+      "sha256": "7f10f6baa7f54e5ae420c9f621e00d669975edf8b03bf84aac502220e10d1e5d",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_t2v",
+      "revision": "f4dbc4a1efa4ac8ea56680cdf79d9f455105e814"
+    },
+    {
+      "path": "variants/720p_t2v/transformer/diffusion_pytorch_model-00002-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00002-of-00007.safetensors",
+      "size": 4984921240,
+      "sha256": "2d78c3e3ed6737cd255f94d1540ab42abc6063204f5d3afc58fa0e95b2846954",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_t2v",
+      "revision": "f4dbc4a1efa4ac8ea56680cdf79d9f455105e814"
+    },
+    {
+      "path": "variants/720p_t2v/transformer/diffusion_pytorch_model-00003-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00003-of-00007.safetensors",
+      "size": 4984921840,
+      "sha256": "a5add36ddfe926ef3e575bc62c6c8c1a845ce9d52c0da40914bc6739cc0ddcf2",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_t2v",
+      "revision": "f4dbc4a1efa4ac8ea56680cdf79d9f455105e814"
+    },
+    {
+      "path": "variants/720p_t2v/transformer/diffusion_pytorch_model-00004-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00004-of-00007.safetensors",
+      "size": 4968109672,
+      "sha256": "b8f74aa73943b2885af7b9adbb7b7e2839e477676200c5022d55f6ba7dcec977",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_t2v",
+      "revision": "f4dbc4a1efa4ac8ea56680cdf79d9f455105e814"
+    },
+    {
+      "path": "variants/720p_t2v/transformer/diffusion_pytorch_model-00005-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00005-of-00007.safetensors",
+      "size": 4900967800,
+      "sha256": "64f9d1f57f274301a64df4d7f3ceb2a093803fdca86d817d550832f266305a66",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_t2v",
+      "revision": "f4dbc4a1efa4ac8ea56680cdf79d9f455105e814"
+    },
+    {
+      "path": "variants/720p_t2v/transformer/diffusion_pytorch_model-00006-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00006-of-00007.safetensors",
+      "size": 4934563168,
+      "sha256": "4713eb9c914d9d402148821d4cb19902be7a239a4b0feb62730ef1875c4b9966",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_t2v",
+      "revision": "f4dbc4a1efa4ac8ea56680cdf79d9f455105e814"
+    },
+    {
+      "path": "variants/720p_t2v/transformer/diffusion_pytorch_model-00007-of-00007.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00007-of-00007.safetensors",
+      "size": 3558508600,
+      "sha256": "cb0bb2e9de20efc2fadd8d0808a642d2c4d18657e8424df77d072adca4447f9a",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_t2v",
+      "revision": "f4dbc4a1efa4ac8ea56680cdf79d9f455105e814"
+    },
+    {
+      "path": "variants/720p_t2v/transformer/diffusion_pytorch_model.safetensors.index.json",
+      "sourcePath": "transformer/diffusion_pytorch_model.safetensors.index.json",
+      "size": 187206,
+      "sha256": "728378184469168b5ffa9cb5ee7f0efaabad13fdc83d63105a8324c9f293e700",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_t2v",
+      "revision": "f4dbc4a1efa4ac8ea56680cdf79d9f455105e814"
+    },
+    {
+      "path": "variants/720p_t2v/model_index.json",
+      "sourcePath": "model_index.json",
+      "size": 644,
+      "sha256": "e6573b14a5b008a680f5ff1606003bf8715f82adaf89674917950939578403bb",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_t2v",
+      "revision": "f4dbc4a1efa4ac8ea56680cdf79d9f455105e814"
+    },
+    {
+      "path": "variants/720p_t2v/README.md",
+      "sourcePath": "README.md",
+      "size": 1842,
+      "sha256": "3042d4e1c6cbaeed7f6737c9aab127625d3befa4eee692b02ce546a8336c8edd",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_t2v",
+      "revision": "f4dbc4a1efa4ac8ea56680cdf79d9f455105e814"
+    },
+    {
+      "path": "shared/scheduler/bc7033cf1e1d2bc2/scheduler_config.json",
+      "sourcePath": "scheduler/scheduler_config.json",
+      "size": 487,
+      "sha256": "8ec387d5fa43c84d22c9531ce117b78a3d7086a37e78809f64648423fa94b53a",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_i2v",
+      "revision": "dcf088ef4e420dd54bc25930ee810bb6613dfcb5"
+    },
+    {
+      "path": "variants/720p_i2v/transformer/config.json",
+      "sourcePath": "transformer/config.json",
+      "size": 550,
+      "sha256": "166de06bd5ad999c5665c39120a5846b29f93e4375439d69102b2261fd3fab64",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_i2v",
+      "revision": "dcf088ef4e420dd54bc25930ee810bb6613dfcb5"
+    },
+    {
+      "path": "variants/720p_i2v/transformer/diffusion_pytorch_model-00001-of-00004.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00001-of-00004.safetensors",
+      "size": 9993142960,
+      "sha256": "5e90c14e7a09512fdb4d7a4bca4efb989852c4a964225cd9740d20b5e53bd174",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_i2v",
+      "revision": "dcf088ef4e420dd54bc25930ee810bb6613dfcb5"
+    },
+    {
+      "path": "variants/720p_i2v/transformer/diffusion_pytorch_model-00002-of-00004.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00002-of-00004.safetensors",
+      "size": 9986577616,
+      "sha256": "cd52499f9a05284e500c4efd50c40a3a206b9a21f7eca190695eadf2d7443ae1",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_i2v",
+      "revision": "dcf088ef4e420dd54bc25930ee810bb6613dfcb5"
+    },
+    {
+      "path": "variants/720p_i2v/transformer/diffusion_pytorch_model-00003-of-00004.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00003-of-00004.safetensors",
+      "size": 9986627192,
+      "sha256": "4a26e7ec648082bb4fa98060c0876b565a17792a525c876326fa3f22231202b0",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_i2v",
+      "revision": "dcf088ef4e420dd54bc25930ee810bb6613dfcb5"
+    },
+    {
+      "path": "variants/720p_i2v/transformer/diffusion_pytorch_model-00004-of-00004.safetensors",
+      "sourcePath": "transformer/diffusion_pytorch_model-00004-of-00004.safetensors",
+      "size": 3340295200,
+      "sha256": "d515573984bde872a60f25e714694bef10eb12cf931d2d660ea077ea0f04c810",
+      "verificationSource": "publisher-lfs-sha256-metadata",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_i2v",
+      "revision": "dcf088ef4e420dd54bc25930ee810bb6613dfcb5"
+    },
+    {
+      "path": "variants/720p_i2v/transformer/diffusion_pytorch_model.safetensors.index.json",
+      "sourcePath": "transformer/diffusion_pytorch_model.safetensors.index.json",
+      "size": 187206,
+      "sha256": "1d3474a93009a7a494edab8d89107123d21e0c1381e00770368263eba5ac95e0",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_i2v",
+      "revision": "dcf088ef4e420dd54bc25930ee810bb6613dfcb5"
+    },
+    {
+      "path": "variants/720p_i2v/model_index.json",
+      "sourcePath": "model_index.json",
+      "size": 803,
+      "sha256": "668cd92827219098469222a98a58975b9448a18020728bf6f9587c5639daec39",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_i2v",
+      "revision": "dcf088ef4e420dd54bc25930ee810bb6613dfcb5"
+    },
+    {
+      "path": "variants/720p_i2v/README.md",
+      "sourcePath": "README.md",
+      "size": 3155,
+      "sha256": "a95daa45308e680e3ea0c0629cb8c40dd94db3a40115004d90440c695bee8ff7",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_i2v",
+      "revision": "dcf088ef4e420dd54bc25930ee810bb6613dfcb5"
+    },
+    {
+      "path": "LICENSE",
+      "sourcePath": "LICENSE",
+      "size": 16424,
+      "sha256": "c38236952096107a4adbc164f44cd1768745b0a20090ea858e0954c96a6b8391",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "tencent/HunyuanVideo-1.5",
+      "revision": "9b49404b3f5df2a8f0b31df27a0c7ab872e7b038"
+    },
+    {
+      "path": "NOTICE",
+      "sourcePath": "NOTICE",
+      "size": 25734,
+      "sha256": "534cc588b18839005089731fd3907af266386d18288b4349be4d75a7705bbfdf",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "tencent/HunyuanVideo-1.5",
+      "revision": "9b49404b3f5df2a8f0b31df27a0c7ab872e7b038"
+    },
+    {
+      "path": "README.md",
+      "sourcePath": "README.md",
+      "size": 59386,
+      "sha256": "fdf86982e7cd3d467e832d622e8779ce4588cb3a05fd09f4e3f5e47caf119437",
+      "verificationSource": "public-text-config-sha256-gitblob-verified",
+      "repoId": "tencent/HunyuanVideo-1.5",
+      "revision": "9b49404b3f5df2a8f0b31df27a0c7ab872e7b038"
+    }
+  ],
+  "totalBytes": 159203993734
+}

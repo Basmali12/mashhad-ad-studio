@@ -1,0 +1,10 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {randomUUID} from 'node:crypto';
+import {hash} from './store.mjs';
+import {productionDirectory,readProductionFile,verifyProductionFile} from './production-artifacts.mjs';
+import {runCinematicFFmpeg} from './cinematic-media.mjs';
+/** Small WebP from a real decoded final-frame; private, hash bound and reusable. */
+export function createFinalFilmThumbnail({store,runner=runCinematicFFmpeg}){
+ return {async create({projectId,customerId,sourceSHA256,file,durationMs}){const p=await store.get('production-project',projectId);if(p?.customerId!==customerId)throw Error('NOT_FOUND');const folder=await productionDirectory(store,['film-exports',projectId,sourceSHA256]);if(path.resolve(file)!==path.join(folder,'merged.mp4'))throw Error('PRODUCTION_UNSAFE_PATH');await verifyProductionFile(file,sourceSHA256);const key=hash('final-thumbnail:'+projectId+':'+sourceSHA256),existing=await store.get('production-thumbnail',key);if(existing){await readProductionFile(existing.path,existing.sha256);return existing;}const temporary=path.join(folder,'.thumbnail-'+randomUUID()+'.webp'),target=path.join(folder,'thumbnail.webp');try{await runner(['-ss',String(Math.min(.5,durationMs/2000)),'-i',file,'-frames:v','1','-vf','scale=480:480:force_original_aspect_ratio=decrease','-c:v','libwebp','-quality','78','-n',temporary]);const bytes=await fs.readFile(temporary);if(bytes.length>512*1024||bytes.length<20||bytes.toString('ascii',0,4)!=='RIFF'||bytes.toString('ascii',8,12)!=='WEBP')throw Error('FINAL_THUMBNAIL_INVALID');const sha256=hash(bytes);await verifyProductionFile(file,sourceSHA256);try{await fs.link(temporary,target);}catch(e){if(e.code!=='EEXIST')throw e;}await readProductionFile(target,sha256);const result={id:key,projectId,customerId,sourceSHA256,path:target,sha256,bytes:bytes.length,mime:'image/webp',fromActualVideo:true};await store.put('production-thumbnail',result);return result;}finally{await fs.unlink(temporary).catch(e=>{if(e.code!=='ENOENT')throw e;});}}};
+}

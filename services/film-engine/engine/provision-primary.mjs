@@ -18,7 +18,7 @@ try{
  const existing=(await store.all('account')).find(a=>a.workspace==='basm1998ali');
  if(existing){console.log(JSON.stringify({workspace:existing.workspace,alreadyLinked:true,replaced:false}));}
  else{
-  const accountId=id(),account={id:accountId,workspace:'basm1998ali',label:'الحساب الأساسي',mode:'token',role:'primary',volume:'modal-ltx25-test-models',createdAt:Date.now(),credentials:store.seal(credentials,accountId)};
+  const accountId=id(),account={id:accountId,workspace:'basm1998ali',label:'الحساب الأساسي',mode:'token',role:'primary',volume:'mashhad-model-source',createdAt:Date.now(),credentials:store.seal(credentials,accountId)};
   const discovery=await provider.call('discover',{credentials:{...credentials,expectedWorkspace:'basm1998ali'},volume:account.volume});
   account.discovery={...discovery,checkedAt:Date.now()};
   await store.put('account',account);await store.put('config',{id:'selection',accountId,settings:settings(),checkedAt:Date.now(),weightsReady:discovery.ready,capacity:'unknown_until_allocation'});

@@ -16,6 +16,8 @@ def control(request):
 
 
 def preflight(request):
+    if not MANIFEST.get('enabled') or not MANIFEST.get('files'):
+        return {'workerReady':False,'fingerprint':FINGERPRINT,**IDENTITY,'workerApp':APP_NAME,'gpuUsed':False,'reason':'ENGINE_NOT_CONFIGURED'}
     try:
         c,state=control(request)
         deployment=state.get('deployment')

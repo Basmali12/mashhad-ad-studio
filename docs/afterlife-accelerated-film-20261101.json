@@ -1,0 +1,214 @@
+{
+  "schema": "afterlife-first-accelerated-film-v1",
+  "date": "2026-11-01",
+  "title": "الحياة ما بعد الموت",
+  "status": "completed_private_experiment",
+  "film": {
+    "title": "الحياة ما بعد الموت",
+    "projectId": "1725c48f-8bc4-4328-98b1-6352a500dad7",
+    "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\accelerated-film-batch1\\الحياة ما بعد الموت — النسخة المسرعة.mp4",
+    "sha256": "f8b7058715db2a089b655a5a401257f8fb44df08ac77e1c6fa60d43720a0b283",
+    "bytes": 7382453,
+    "durationMs": 30000,
+    "width": 720,
+    "height": 1280,
+    "hasAudio": true,
+    "fps": 16,
+    "checker": "ffmpeg_full_decode",
+    "assemblySeconds": 14.205,
+    "shots": [
+      {
+        "shotId": "clock",
+        "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\lightwan-attempt5\\candidate-native.mp4",
+        "sha256": "08ff1b6adb03e19cd06b52150d3616aa0972ff4b9a455df75958666d468e50e3",
+        "modelRevision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+        "steps": 4
+      },
+      {
+        "shotId": "phone",
+        "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\accelerated-film-batch1\\phone-native.mp4",
+        "sha256": "ad032147e4880a40ebf3958f478e5e1b82eba06a14e9f51cbd19484f4f2986be",
+        "modelRevision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+        "steps": 4
+      },
+      {
+        "shotId": "window",
+        "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\accelerated-film-batch1\\window-native.mp4",
+        "sha256": "4923db9f48852928152868778e1f2b1509fa4ae6d20a77f449c410aa78cf7a0b",
+        "modelRevision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+        "steps": 4
+      },
+      {
+        "shotId": "empty-chair",
+        "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\accelerated-film-batch1\\empty-chair-native.mp4",
+        "sha256": "9bb37d0690853495c5dbe4366e6192de8d8cf8bf62af140e9da1b79316ff5f00",
+        "modelRevision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+        "steps": 4
+      },
+      {
+        "shotId": "hands",
+        "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\accelerated-film-batch1\\hands-native.mp4",
+        "sha256": "7c5a805b9b86fa461ce8575299bbf786745e717c42a54d6c2d7937263faef0fe",
+        "modelRevision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+        "steps": 4
+      },
+      {
+        "shotId": "road",
+        "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\accelerated-film-batch1\\road-native.mp4",
+        "sha256": "1187b27a7517d20a8b42475e00d28e6551f2ce5d9ffb55607ca94094ca8af748",
+        "modelRevision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+        "steps": 4
+      }
+    ],
+    "narration": {
+      "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\flux-primary-gpu-round1\\production-assets\\1725c48f-8bc4-4328-98b1-6352a500dad7\\b4c86072c5801bd3a4cce535102deb291b20c8ebf5ab5840e8412a2df0a4dfe5\\audio.wav",
+      "sha256": "7281b12fc14438c0ad11c77d160da5b613b7d6c6e29664cdddfe3259cadf1c1e",
+      "profileId": "03d8e4fddd12dfdab9210ab1e64e0ef75534e88dd95391e2e59f9d533a452b44",
+      "durationMs": 28373,
+      "startMs": 600,
+      "speedChanged": false,
+      "wordsCut": false,
+      "gainDB": 3
+    },
+    "handsEditorialCrop": {
+      "x": 144,
+      "y": 426,
+      "width": 480,
+      "height": 854,
+      "outputWidth": 720,
+      "outputHeight": 1280,
+      "reason": "Requested close-up of hands; preserve native source and avoid emphasizing uncertain frontal face match."
+    },
+    "ambience": "Locally generated quiet brown-noise air texture under speech ducking; no external music or audio service.",
+    "publication": false,
+    "sourceMediaPreserved": true,
+    "createdAt": "2026-11-01T11:22:48.921Z",
+    "checkerLastVideoTimestampMs": 29938,
+    "decodedFrames": 479,
+    "mediaValidation": {
+      "containerDurationMs": 30000,
+      "decodedVideoFrames": 479,
+      "fps": 16,
+      "decodedVideoSpanMs": 29937.5,
+      "muxEndRoundingMs": 62.5,
+      "narrationFullWaveformCorrelation": 0.9999847197782907,
+      "narrationStartMs": 600,
+      "fullNarrationSamplesCompared": 680960,
+      "narrationSamplesPreservedAtSameSpeed": true,
+      "voiceLevels": [
+        "[Parsed_volumedetect_0 @ 0000016507c6a580] mean_volume: -23.3 dB",
+        "[Parsed_volumedetect_0 @ 0000016507c6a580] max_volume: -5.0 dB"
+      ],
+      "fullDecodeSucceeded": true
+    }
+  },
+  "validation": {
+    "containerDurationMs": 30000,
+    "decodedVideoFrames": 479,
+    "fps": 16,
+    "decodedVideoSpanMs": 29937.5,
+    "muxEndRoundingMs": 62.5,
+    "narrationFullWaveformCorrelation": 0.9999847197782907,
+    "narrationStartMs": 600,
+    "fullNarrationSamplesCompared": 680960,
+    "narrationSamplesPreservedAtSameSpeed": true,
+    "voiceLevels": [
+      "[Parsed_volumedetect_0 @ 0000016507c6a580] mean_volume: -23.3 dB",
+      "[Parsed_volumedetect_0 @ 0000016507c6a580] max_volume: -5.0 dB"
+    ],
+    "fullDecodeSucceeded": true
+  },
+  "clipLedger": [
+    {
+      "shot": "phone",
+      "steps": 4,
+      "pipeline_seconds": 53.438117652,
+      "load_seconds_applied": 43.617602675,
+      "warm_model_reused": false,
+      "estimated_resource_usd": 0.11438598974858911,
+      "sha256": "ad032147e4880a40ebf3958f478e5e1b82eba06a14e9f51cbd19484f4f2986be",
+      "native_path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\accelerated-film-batch1\\phone-native.mp4"
+    },
+    {
+      "shot": "window",
+      "steps": 4,
+      "pipeline_seconds": 24.582609176000005,
+      "load_seconds_applied": 0,
+      "warm_model_reused": true,
+      "estimated_resource_usd": 0.028972079870466565,
+      "sha256": "4923db9f48852928152868778e1f2b1509fa4ae6d20a77f449c410aa78cf7a0b",
+      "native_path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\accelerated-film-batch1\\window-native.mp4"
+    },
+    {
+      "shot": "empty-chair",
+      "steps": 4,
+      "pipeline_seconds": 24.63320045200001,
+      "load_seconds_applied": 0,
+      "warm_model_reused": true,
+      "estimated_resource_usd": 0.02903170472470913,
+      "sha256": "9bb37d0690853495c5dbe4366e6192de8d8cf8bf62af140e9da1b79316ff5f00",
+      "native_path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\accelerated-film-batch1\\empty-chair-native.mp4"
+    },
+    {
+      "shot": "hands",
+      "steps": 4,
+      "pipeline_seconds": 24.699312730999992,
+      "load_seconds_applied": 0,
+      "warm_model_reused": true,
+      "estimated_resource_usd": 0.02910962201224735,
+      "sha256": "7c5a805b9b86fa461ce8575299bbf786745e717c42a54d6c2d7937263faef0fe",
+      "native_path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\accelerated-film-batch1\\hands-native.mp4"
+    },
+    {
+      "shot": "road",
+      "steps": 4,
+      "pipeline_seconds": 24.69535909800001,
+      "load_seconds_applied": 0,
+      "warm_model_reused": true,
+      "estimated_resource_usd": 0.029104962418538893,
+      "sha256": "1187b27a7517d20a8b42475e00d28e6551f2ce5d9ffb55607ca94094ca8af748",
+      "native_path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\accelerated-film-batch1\\road-native.mp4"
+    }
+  ],
+  "batchElapsedSeconds": 210.818486432,
+  "modelLoadCount": 1,
+  "modelLoadSeconds": 43.617602675,
+  "warmModelReuseVerified": true,
+  "pipelineTotalSeconds": 152.048599109,
+  "estimatedMeasuredLoadAndPipelineCostUSD": 0.23060435877455104,
+  "estimatedWholeBatchMethodCostUSD": 0.2484622353692979,
+  "costEstimateNote": "Per-shot estimates use fixed GPU/4CPU/128GiB rates and measured pipeline/load time. Startup, idle and persistence overhead are separate; account deltas are delayed and revised, not an isolated final per-shot invoice.",
+  "providerStopAndBilling": {
+    "at": 1793532508977,
+    "grossUSD": "4.71218790",
+    "recordedAdditionalBatchUSD": 0.2599999999999998,
+    "activeApps": [],
+    "tasks": 0,
+    "usageLimitUSD": 6.35,
+    "spendLimitUSD": 0,
+    "billingFinal": false,
+    "successfulClips": 5,
+    "oldProfileUsed": false
+  },
+  "firstClockClipReused": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\afterlife-film-20261101\\lightwan-attempt5\\candidate-native.mp4",
+  "sourceNarrationReused": true,
+  "oldFortyStepProfileUsed": false,
+  "allOriginalsRetained": true,
+  "qualityReview": {
+    "method": "Ten chronological frames per generated clip, final-film six-shot contact sheet and full FFmpeg decode; waveform correlation against entire original narration.",
+    "characterContinuity": "First/seated/standing references retain a similar face, hair, charcoal shirt and room; no obvious person replacement observed in sampled frames. This is not a biometric guarantee.",
+    "hands": "Editorial close-up crop emphasizes the requested hand hold and avoids emphasizing a less certain frontal reference face. Native full frame retained.",
+    "unexpectedRoadCyclist": true,
+    "roadNote": "A distant cyclist appeared without being requested; retained as a documented model adherence issue, no paid repeat.",
+    "captions": "No generated subtitle overlay observed in reviewed frames; clock face markings are in the source image.",
+    "lightingLimitation": "Source room references are already daylit rather than the original requested night. References preserved as previously accepted; no image regeneration."
+  },
+  "testEvidence": {
+    "lightwanPythonTestsPassed": 16,
+    "mountSafetyTestsPassed": 4,
+    "nativeClipsHashVerified": 5,
+    "audioWaveformCorrelation": 0.9999847197782907,
+    "fullFinalDecode": true
+  },
+  "publication": false
+}

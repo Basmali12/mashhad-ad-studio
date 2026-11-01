@@ -1,0 +1,13 @@
+# Task 11 — private sound effects
+
+`createSoundEffects` implements a local/upload PCM16 WAV library and measured-event compilation. It never downloads audio, starts a model, changes a wallet, or performs a paid request. Future generation capability is explicitly unavailable.
+
+Imports require an owned production project, authorized actor, explicit approval, source description and rights attestation. Original WAV bytes, SHA256, samples, channel count and duration are retained in the existing canonical private production-asset storage. Limits are 128 MiB and ten minutes per imported file; this does not change film duration limits. Source URLs are private evidence only and are never fetched. Rights are attested by the uploader, not independently certified.
+
+The library supports ambience, foley, vocal events and explicitly requested music. It preserves source offsets, gain and ducking intent for the assembly mixer. It does not silently stretch or loop a short recording. Intentional silence is a separate explicit timeline window, with no fabricated audio file. Silence that overlaps measured speech, or whose speech clock is unavailable, requires review.
+
+Event approval binds an observed event to the original completed animation asset, its actual SHA and a reviewed measured offset. Events must belong to the current shot. Compilation traces derived video windows back to this exact original asset, accounting for trims. Missing/stale/unreviewed evidence and out-of-bounds placement return `needs_review`; supplied `timingVerified` flags never replace durable evidence. Manual event approval is not an automated visual-event detector. Foley and vocal events without measured anchors cannot be certified from planned timestamps alone. Existing explicitly placed ambience/music remains compatible.
+
+Public library metadata omits paths, ownership identifiers, source evidence and rights documents. Asset reads verify canonical paths, ownership and actual bytes. Repeated/concurrent import requests use a durable idempotency record; a changed body with the same request ID is rejected.
+
+Verification: twelve Node tests use real temporary Store instances and real generated PCM WAV fixtures. They cover import/idempotency, ownership, rights/approval gates, changed bytes, event binding/revisions, trimmed timing, stale evidence, music opt-in, source length, silence/speech conflicts, and the closed generation seam. Video fixture bytes test provenance only; they do not claim actual visual analysis or audiovisual quality. No cloud, GPU, OpenAI, downloads, production deployment or new backups were used.

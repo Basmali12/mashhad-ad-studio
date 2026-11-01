@@ -1,0 +1,142 @@
+{
+  "date": "2026-11-01",
+  "status": "private_video_trial_completed",
+  "modelPath": {
+    "narration": "3arab V1 + AudioSeal, existing solemn 15s sample reused",
+    "motion": "Wan2.2 accelerated, LightWan/LightX2V, 4 steps NVFP4",
+    "assembly": "existing createProductionAssembly + createProductionArtifacts + final thumbnail + local media library"
+  },
+  "newGpuCalls": 1,
+  "newShots": 1,
+  "reusedSuccessfulShots": 2,
+  "narrationRegenerated": false,
+  "cloudResources": {
+    "gpu": "RTX PRO 6000 Blackwell 96GB",
+    "cpu": 4,
+    "ramGiB": 128,
+    "timeout": 180,
+    "startupTimeout": 180
+  },
+  "videoTiming": {
+    "modelLoadSeconds": 29.791147266999996,
+    "pipelineSeconds": 47.278589086,
+    "nativeDurationMs": 5062.5,
+    "assemblySeconds": 9.51,
+    "note": "Pipeline includes denoising, decoding and encoding; subphase receipt metrics remain null, logs separate them informally."
+  },
+  "film": {
+    "title": "ليلة تغيّر الحياة — تجربة السرد",
+    "path": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\three-arab-video-trial1\\مشهد — تجربة السرد الجديدة.mp4",
+    "projectId": "three-arab-film-trial1",
+    "customerId": "private-owner-basm1998ali",
+    "durationMs": 15000,
+    "width": 720,
+    "height": 1280,
+    "hasAudio": true,
+    "fps": 16,
+    "checker": "ffmpeg_full_decode",
+    "sha256": "289978ba095516d15016f6aae5d788de10148dc97de4c1b5c70416d053ec2739",
+    "final": {
+      "artifactId": "0e8bbcf4e615f51a6eb01cb181fd376946cc8b8c0db6e13adb0b3fbc2ead7044",
+      "sha256": "289978ba095516d15016f6aae5d788de10148dc97de4c1b5c70416d053ec2739",
+      "bytes": 4087517,
+      "durationMs": 15000,
+      "width": 720,
+      "height": 1280,
+      "hasAudio": true,
+      "mediaId": "2f92a5421361f46e89e8aae4f376975ffad86509fc3617a87d810994ac3b8eee",
+      "mediaReady": true
+    },
+    "assemblySeconds": 9.51,
+    "narration": {
+      "assetId": "247feefb1edb6b6c4f47850be78957d9ccb9353b37b9f1ba403eed03f32b92bc",
+      "modelId": "3arab-voicedesign-v1",
+      "style": "solemn",
+      "sourceSHA256": "a85a8a444704c9f71220360b2b5aa5a6a22f6e279d6017f820cbf53a53d04081",
+      "profileFingerprint": "dbee63cc27cab9c7795b3a34b15cc9b3f8570bdd31e6d46d71ea4ac61d8eed8a",
+      "durationMs": 15000,
+      "regenerated": false,
+      "speedChanged": false,
+      "wordsIntentionallyTrimmed": false,
+      "pronunciationVerified": false
+    },
+    "shots": [
+      {
+        "name": "clock",
+        "reused": true,
+        "sourceSHA256": "08ff1b6adb03e19cd06b52150d3616aa0972ff4b9a455df75958666d468e50e3",
+        "nativeDurationMs": 5062.5,
+        "timelineDurationMs": 5000,
+        "internalClipNotPublished": true
+      },
+      {
+        "name": "phone",
+        "reused": true,
+        "sourceSHA256": "ad032147e4880a40ebf3958f478e5e1b82eba06a14e9f51cbd19484f4f2986be",
+        "nativeDurationMs": 5062.5,
+        "timelineDurationMs": 5000,
+        "internalClipNotPublished": true
+      },
+      {
+        "name": "doorway",
+        "reused": false,
+        "sourceSHA256": "fb40eb280fcc39b425f3e8a47320929ce18582906a15c403ad0247cc9b535024",
+        "nativeDurationMs": 5062.5,
+        "timelineDurationMs": 5000,
+        "internalClipNotPublished": true
+      }
+    ],
+    "resourcesStopped": true,
+    "privateTrial": true,
+    "published": false,
+    "customerProductionUIEnabled": false
+  },
+  "spend": {
+    "cloudStoppedAndTasksZero": true,
+    "allActiveApps": 0,
+    "grossUSD": 5.06303117,
+    "baselineGrossUSD": 4.92303117,
+    "recordedAdditionalUSD": 0.14000000000000057,
+    "billingMayLag": true,
+    "usageLimitUnchanged": 6.35,
+    "spendLimitUnchanged": 0
+  },
+  "verification": {
+    "fullFfmpegDecode": "passed",
+    "browser": {
+      "readyState": 4,
+      "durationSeconds": 15,
+      "width": 720,
+      "height": 1280,
+      "error": null
+    },
+    "sourceHashes": "verified",
+    "voiceClaimModelRevision": "verified",
+    "narrationOwnershipAndImmutableStyle": "tested",
+    "sourcePCMKept": true,
+    "finalMediaReady": true,
+    "thumbnailGenerated": true,
+    "visualReview": "Sampled frames show stable-looking clothes/room and subtle motion; no visible added captions in sampled frames. The requested doorway turn is weak/not clearly achieved; not a quality approval.",
+    "pronunciationHumanReviewed": false,
+    "identityGuaranteed": false
+  },
+  "publication": false,
+  "customerProductionUIEnabled": false,
+  "scope": "Owner-authorized private test, not new general 3arab production dispatch or customer admission",
+  "accountLimitsChanged": false,
+  "rentalOrWalletChanged": false,
+  "newWeightsDownloaded": false,
+  "localChecks": {
+    "reactTestsPassed": 746,
+    "reactTestFiles": 172,
+    "nodeNarrationBridgeAndCandidateTestsPassed": 9,
+    "pythonLightWanTestsPassed": 17,
+    "failed": 0,
+    "typecheck": "passed",
+    "lint": "passed",
+    "customerBuild": "passed",
+    "serviceBundle": "passed",
+    "realAssembly": "passed; unchanged final SHA on resume",
+    "thumbnail": "actual decoded final-frame WebP indexed"
+  }
+}

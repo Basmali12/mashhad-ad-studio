@@ -1,0 +1,39 @@
+{
+  "date": "2026-11-01",
+  "mode": "local_code_only_owner_confirmed",
+  "tests": {
+    "backend": {
+      "pass": 794,
+      "fail": 0
+    },
+    "gateway": {
+      "pass": 82,
+      "fail": 0
+    },
+    "python": {
+      "pass": 293,
+      "fail": 0
+    },
+    "react": {
+      "pass": 746,
+      "fail": 0
+    }
+  },
+  "uniqueTotalPassed": 1915,
+  "failed": 0,
+  "typecheck": "passed",
+  "customerBuild": "passed",
+  "adminBuild": "passed",
+  "lint": "passed; engine MJS excluded by existing lint config and directly tested with Node",
+  "serviceBundles": "passed; services not started",
+  "npmAuditKnownVulnerabilities": 0,
+  "newPaidOperations": 0,
+  "gpuStarted": false,
+  "accountLimitsChanged": false,
+  "deployment": false,
+  "generalThreeArabProductionIntegration": "incomplete; private saved-audio bridge only",
+  "acceleratedDefaultInPlatform": "original-quality remains; general commissioned native transport pending",
+  "freshMotionInferenceAfterPromptFix": false,
+  "new30sThreeArabNarration": false,
+  "sourcePublicationOnly": true
+}

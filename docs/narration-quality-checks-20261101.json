@@ -1,0 +1,66 @@
+{
+  "date": "2026-11-01",
+  "branch": "codex/ltx-film-engine-integration",
+  "scope": "local Habibi narration quality only",
+  "paidCalls": 0,
+  "GPUStarted": false,
+  "weightsDownloaded": false,
+  "deployed": false,
+  "newVoicesAuditioned": false,
+  "fiveProductionReferencesCleared": false,
+  "checks": {
+    "voiceDirectorTransportAndPreview": {
+      "passed": 93,
+      "failed": 0,
+      "skipped": 0,
+      "log": "work/narration-verified-tests.log"
+    },
+    "pythonSpeech": {
+      "passed": 35,
+      "failed": 0
+    },
+    "gateway": {
+      "passed": 82,
+      "failed": 0
+    },
+    "react": {
+      "files": 172,
+      "passed": 746,
+      "failed": 0,
+      "log": "work/narration-frontend-tests.log"
+    },
+    "typecheck": "passed via npm run build",
+    "lint": "passed",
+    "customerBuild": "passed",
+    "serviceBundleBuild": "passed",
+    "localFFmpeg": "passed exact sample preservation and no clipping"
+  },
+  "broadEngineFirstRun": {
+    "tests": 779,
+    "passed": 754,
+    "failed": 11,
+    "skipped": 14,
+    "log": "work/narration-engine-tests.log",
+    "cause": "All 11 failures: ENGINE_FFMPEG_BIN was absent; only FILM_FFMPEG_PATH was configured. Preserved initial log. Retested affected preview and final-production files with existing local binary, no code changes for this environment issue.",
+    "previewRetest": "4/4 passed in 93-test affected suite",
+    "finalProductionRetest": {
+      "passed": 8,
+      "failed": 0,
+      "log": "work/narration-final-production-env.log"
+    },
+    "entireSuiteRerun": false,
+    "skipsRemainUnverified": true
+  },
+  "localPreview": {
+    "file": "../../work/narration-quality-local/ali-mastered.wav",
+    "nativeReused": true,
+    "samples": 91904,
+    "durationMs": 3829,
+    "pronunciationVerified": false
+  },
+  "remaining": [
+    "Five appropriately licensed/consented, clean, transcript-matched and human-auditioned production references",
+    "Owner-approved same-text cloud audition; no paid dispatch exists in comparison review script",
+    "Human word accuracy, naturalness, deep/rough timbre, cross-chunk identity and pacing review"
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "date": "2026-11-01",
+  "pythonCandidateTests": {
+    "passed": 8,
+    "failed": 0
+  },
+  "nodeCandidateTests": {
+    "passed": 4,
+    "failed": 0
+  },
+  "reactTests": {
+    "passed": 746,
+    "failed": 0,
+    "files": 172
+  },
+  "typecheck": "passed",
+  "lint": "passed after correcting Buffer import in existing sample finalizer",
+  "customerBuild": "passed",
+  "serviceBundles": "passed; no service started",
+  "pythonSyntax": "passed",
+  "paidOperations": 0,
+  "weightsDownloaded": false,
+  "productionDeployment": false,
+  "productionEnabled": false,
+  "remaining": [
+    "component license review",
+    "isolated native environment compatibility",
+    "approved cloud audition and listening review",
+    "production routing and selector activation"
+  ],
+  "followUp": {
+    "directorIntegrationTestsPassed": 21,
+    "candidateNodeTestsPassed": 6,
+    "pythonCandidateTestsPassed": 8,
+    "failed": 0,
+    "build": "passed",
+    "typecheck": "passed",
+    "rootLint": "passed; engine paths excluded by repository lint configuration",
+    "paidCalls": 0,
+    "licenseAuditSources": 6,
+    "nativeEnvironmentBuilt": false,
+    "newAuditionsGenerated": false,
+    "productionActivated": false,
+    "remaining": [
+      "codec inherited license reconciliation",
+      "pretrained watermark license scope clarification",
+      "native environment build and validation",
+      "bounded cloud audition",
+      "user listening choice before activation"
+    ]
+  },
+  "licenseFollowUp": {
+    "pythonPassed": 9,
+    "nodePassed": 6,
+    "failed": 0,
+    "decoderLicense": "resolved Apache-2.0 code and weights by publisher",
+    "remaining": "SilentCipher pretrained checkpoint scope",
+    "nativeGate": "before torch import or CUDA access",
+    "cloudCalls": 0,
+    "weightsDownloaded": false,
+    "newAudioGenerated": false
+  },
+  "finalPrivateAudition": {
+    "date": "2026-11-01",
+    "modelId": "3arab-voicedesign-v1",
+    "adapterVariant": "audioseal-v1",
+    "selectedStyles": [
+      "solemn",
+      "calm"
+    ],
+    "licenseEligibleWithNotices": true,
+    "cpuPreflight": {
+      "imports": true,
+      "checked": {
+        "ready": true,
+        "files": 8,
+        "bytes": 1552418354
+      },
+      "watermarkCPUCheck": {
+        "backend": "audioseal",
+        "payloadHex": "4D53",
+        "detected": true,
+        "score": 1.0,
+        "sampleCountPreserved": true,
+        "sampleRate": 24000,
+        "samples": 48000,
+        "noiseToSignalRatio": 0.0010000000886001002,
+        "strengthApplied": 0.8932878397837286,
+        "headroomGain": 1.0
+      },
+      "torch": "2.10.0+cu128",
+      "audioseal": "0.2.0",
+      "omegaconf": "2.3.0",
+      "gpuUsed": false
+    },
+    "audioQA": {
+      "samples": [
+        {
+          "style": "solemn",
+          "durationSeconds": 15.0,
+          "sampleRate": 48000,
+          "channels": 1,
+          "peak": 0.980010986328125,
+          "rms": 0.1699954975528287,
+          "clippedSamples": 0,
+          "firstActivitySeconds": 0.1,
+          "lastActivitySeconds": 15.0,
+          "loadSeconds": 11.113908915000003,
+          "inferenceSeconds": 24.442915682,
+          "watermark": {
+            "backend": "audioseal",
+            "payloadHex": "4D53",
+            "detected": true,
+            "score": 1.0,
+            "sampleCountPreserved": true,
+            "sampleRate": 48000,
+            "samples": 720000,
+            "noiseToSignalRatio": 0.0003746669021250057,
+            "strengthApplied": 1.0,
+            "headroomGain": 0.9747253842244761
+          },
+          "pronunciationVerified": false,
+          "listeningApproved": false,
+          "mp3SHA256": "cd7d901262de9ac1ae11bb8e8349c047f4124f1e25b69bdb665ef6f9b3c63b43"
+        },
+        {
+          "style": "calm",
+          "durationSeconds": 15.0,
+          "sampleRate": 48000,
+          "channels": 1,
+          "peak": 0.980010986328125,
+          "rms": 0.164964484533484,
+          "clippedSamples": 0,
+          "firstActivitySeconds": 0.1,
+          "lastActivitySeconds": 15.0,
+          "loadSeconds": 2.1320000058722144e-06,
+          "inferenceSeconds": 1.0508879469999997,
+          "watermark": {
+            "backend": "audioseal",
+            "payloadHex": "4D53",
+            "detected": true,
+            "score": 1.0,
+            "sampleCountPreserved": true,
+            "sampleRate": 48000,
+            "samples": 720000,
+            "noiseToSignalRatio": 0.0003960324749412699,
+            "strengthApplied": 1.0,
+            "headroomGain": 0.9679579435598956
+          },
+          "pronunciationVerified": false,
+          "listeningApproved": false,
+          "mp3SHA256": "5d98099a1d22e24fd3aa5cdc9c0e5c490da13b889b6dc71c1a9377589b629740"
+        }
+      ],
+      "cloudStopped": true,
+      "baselineGrossUSD": 4.8121879,
+      "recordedGrossUSD": 4.8927045,
+      "recordedAdditionalUSD": 0.11084327000000016,
+      "billingMayLag": true,
+      "usageLimitUnchanged": 6.35,
+      "spendLimitUnchanged": 0,
+      "rawSourcesPreserved": true,
+      "deployment": false,
+      "cloudStoppedAndTasksZero": true,
+      "grossUSD": 4.92303117,
+      "allActiveApps": 0
+    },
+    "localVerification": {
+      "pythonTestsPassed": 16,
+      "nodeUniqueTestsPassed": 48,
+      "failed": 0,
+      "customerBuild": "passed",
+      "typecheck": "passed",
+      "lint": "passed; engine paths excluded by repository config",
+      "ffmpegDecode": "both MP3 files passed",
+      "browserPlayers": "both readyState 4, duration 15, no media error"
+    },
+    "productionActivated": false,
+    "published": false,
+    "listeningApproved": false,
+    "scope": "Private owner audition; Habibi, current videos, rental/account systems unchanged",
+    "remaining": [
+      "owner listening review including full sentence ending",
+      "production registry/profile admission and deployment not authorized/performed"
+    ],
+    "artifactsDirectory": "C:\\Users\\hp\\Documents\\Codex\\2026-10-27\\codex-python-modal-windows-python-modal\\work\\three-arab-audioseal-audition6",
+    "storedAssetsGiB": 1.4458022583276033,
+    "storageIndicativeUSDPerMonthBeforeAllowances": 0.14
+  }
+}

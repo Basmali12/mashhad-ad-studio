@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-31",
+  "task": "Completion 2 of 4 only / B2",
+  "tests": {
+    "backend": {
+      "passed": 549,
+      "failed": 0,
+      "composition": "538 regression excluding nine long-film mocks plus those nine passed in broad run, plus two final additional regressions for two-lease capacity and pinned licence policy. Affected final modules rerun after final repairs."
+    },
+    "gateway": {
+      "passed": 82,
+      "failed": 0
+    },
+    "react": {
+      "passed": 738,
+      "failed": 0,
+      "files": 170
+    },
+    "python": {
+      "passed": 174,
+      "failed": 0
+    },
+    "uniquePassed": 1543,
+    "uniqueFailed": 0
+  },
+  "checks": {
+    "typescript": "passed",
+    "customerBuild": "passed",
+    "adminBuild": "passed",
+    "reelsWorkerBuild": "passed; no service started",
+    "repositoryLint": "passed",
+    "explicitNodeEngineLint": "passed",
+    "gitDiffCheck": "passed with existing LF/CRLF warnings"
+  },
+  "commands": [
+    "node --test --test-concurrency=2 services/film-engine/tests/*.test.mjs",
+    "node --test --test-concurrency=2 <all engine test files except task12-readiness.test.mjs>",
+    "node --test <affected commissioning/registry/platform/native/model tests>",
+    "npm run film:gateway:check",
+    "npm test -- --maxWorkers=2",
+    "python -X utf8 -m unittest discover -s services/film-engine/tests -p test_*.py",
+    "npm run typecheck",
+    "npm run lint",
+    "npm run build",
+    "npm run build:admin",
+    "node scripts/build-reels-worker.mjs"
+  ],
+  "notPerformed": [
+    "GPU or cloud jobs",
+    "paid API or OpenAI request",
+    "weight download",
+    "live account/token use",
+    "backup or restore point",
+    "production deployment or DNS change",
+    "commit or push",
+    "live PostgreSQL migration/validation",
+    "subsequent completion task"
+  ],
+  "limitations": [
+    "Cloud environment/native inference remains untested; Mocks are not inference proof",
+    "LatentSync commercial face-weight rights unresolved and closed",
+    "Other publisher/gated codec/licence conditions remain explicit",
+    "Approved test inputs are required for image edits, I2V, voice and synchronization"
+  ],
+  "codeSHA256": {
+    "services/film-engine/engine/engine-policy.mjs": "3db71e29a0831d74f980ed72da1ff262750014bc16c0f339d8e84f77952e3d3f",
+    "services/film-engine/engine/engine-registry.mjs": "32e46dff3262793e17a68c5f8be8b0cb37e541afb9864006838e2541de7d9bf3",
+    "services/film-engine/engine/engine-commissioning.mjs": "7e579563bb1a5838750d09e84a7c4fa8d102320127cefb82b9512929e9304cd0",
+    "services/film-engine/engine/admin-model-test-runner.mjs": "9ac9bb62f2e13f2d3f8ab11c1f17d050dff98fcc38aff430a9fcd20ed781b7e4",
+    "services/film-engine/engine/registry-rental-bridge.mjs": "747658b866d84bddd27af67a6bdb08114e17968630d375fc3ac6cd791beaf5d7",
+    "services/film-engine/engine/film-platform.mjs": "a41c76d3b881a2565eadbc2e8211c8a7413eefef65e6a24d1b9c85aeb7124939",
+    "services/film-engine/engine/production-models.mjs": "2aa02e5cb85d22210040f49aa016f529362e0ba7e2c9c4c69ca1b489a1f6cb51",
+    "services/film-gateway/film-bridge.mjs": "f3ed3cda75d24c7b0739bb47c932ed912bc8e53e61625a1126dfb362ff74d7d6",
+    "src/features/film/EngineDefinitions.tsx": "95d682c2e43455cf646e902bde77ef3c2fb60df23b97410f2bfcbe54048da7cd",
+    "src/features/film/EngineCommissioning.tsx": "048e50fcf3cd3a04db61a55369090ee331175cca281d628c311df98327424f7d",
+    "src/features/film/FilmAdmin.tsx": "0f7464ab5afeefdf7e84508348d4658c508ff50ed36d3701f97d691e25fed941",
+    "shared/film-contracts.ts": "ca92f8c1b4d3bca2f0c0deab5695203a17a9286331271dd553add8a7a3db0cca",
+    "shared/film-request-policy.ts": "91cf78506d33ee4a7c5c2758ecade7c51c56843d71126aab74daf032fb62b0b5",
+    "shared/engine-catalog.ts": "1ba931b61167d73404ee4908f714d6fa46e446624fa42e34d221e922c74bcb87"
+  }
+}

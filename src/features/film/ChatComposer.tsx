@@ -20,7 +20,7 @@ export default function ChatComposer({value,onChange,onSend,onImage,disabled,sen
   <input ref={picker} type="file" accept="image/png,image/jpeg" className="film-sr-only" tabIndex={-1} aria-label="رفع صورة للمحادثة" disabled={imageDisabled} onChange={e=>{const file=e.target.files?.[0];e.target.value='';if(file)onImage(file);}}/>
   <form className="film-composer" onSubmit={e=>{e.preventDefault();onSend();}}>
    <button type="button" aria-label="إرفاق صورة" disabled={imageDisabled} onClick={()=>picker.current?.click()}>+</button>
-   <div className="film-composer-content">{children}<label className="film-sr-only" htmlFor="film-chat-message">رسالتك للمخرج</label><textarea ref={textarea} id="film-chat-message" rows={1} maxLength={10000} value={value} onChange={e=>onChange(e.target.value)} placeholder="اكتب فكرتك…" disabled={disabled}/></div>
+   <div className="film-composer-content">{children}<label className="film-sr-only" htmlFor="film-chat-message">رسالتك للمخرج</label><textarea ref={textarea} id="film-chat-message" rows={1} maxLength={1000000} value={value} onChange={e=>onChange(e.target.value)} placeholder="اكتب فكرتك…" disabled={disabled}/></div>
    <button className="film-primary" aria-label="إرسال الرسالة" disabled={sendDisabled}>↑</button>
   </form>
  </footer>;

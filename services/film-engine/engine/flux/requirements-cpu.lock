@@ -1,0 +1,3 @@
+# Preparation uses public pinned files; no inference dependencies.
+huggingface-hub==1.32.0
+modal==1.6.2

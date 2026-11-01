@@ -1,0 +1,115 @@
+{
+  "date": "2026-10-31",
+  "scope": "Completion 3 of 4 only; local implementation, fixtures and official public licence/security metadata",
+  "repository": "Basmali12/mashhad-ad-studio",
+  "branch": "codex/ltx-film-engine-integration",
+  "tests": {
+    "backend": {
+      "fullPassed": 574,
+      "fullFailed": 0,
+      "finalAffectedPassed": 73,
+      "finalAffectedFailed": 0,
+      "additionalUniqueFinalCases": [
+        "an altered dependency lock cannot inherit pinned license clearance",
+        "preparation access failures remain safe, stopped and recoverable without status dispatching a replacement"
+      ],
+      "uniquePassed": 576
+    },
+    "gateway": {
+      "passed": 82,
+      "failed": 0
+    },
+    "react": {
+      "files": 172,
+      "passed": 746,
+      "failed": 0
+    },
+    "python": {
+      "passed": 183,
+      "failed": 0
+    },
+    "uniquePassed": 1587,
+    "failed": 0
+  },
+  "checks": {
+    "typescript": "passed all four scopes",
+    "repositoryLint": "passed",
+    "explicitEngineNodeLint": "passed",
+    "customerBuild": "passed Vite6.4.5",
+    "adminBuild": "passed Vite6.4.5",
+    "reelsWorkerBuild": "passed; no service started",
+    "gitDiffCheck": "passed; existing CRLF warnings only",
+    "npmAudit": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "productionOnlyAudit": "zero vulnerabilities; separate JSON stored"
+  },
+  "commands": [
+    "node --test --test-concurrency=2 services/film-engine/tests/*.test.mjs",
+    "node --test <seven final affected test files>",
+    "python -X utf8 -m unittest discover -s services/film-engine/tests -p test_*.py",
+    "npm run film:gateway:check",
+    "npm test -- --maxWorkers=2",
+    "npm run lint",
+    "npx eslint --no-ignore <affected engine/gateway files>",
+    "npm run build",
+    "npm run build:admin",
+    "node scripts/build-reels-worker.mjs",
+    "npm audit --json --fetch-timeout=20000 --fetch-retries=0",
+    "npm audit --omit=dev --json --fetch-timeout=20000 --fetch-retries=0",
+    "git diff --check"
+  ],
+  "remainingConstraints": [
+    "LatentSync bundled InsightFace pretrained detector and landmark weights have no verified commercial grant; customer publication stays blocked. Restricted private noncommercial research is not a generic personal entertainment licence.",
+    "Hunyuan territorial/scale/pass-through/disclosure and publisher terms remain obligations; operator acknowledgement does not grant extra rights.",
+    "Audar/NeuCodec licence eligibility, Hub gated access and complete local weights are separate. Actual account/codec access and speech quality remain untested.",
+    "Existing IMG.LY AGPL/commercial licence obligations remain. App Vite loader patches embedded validation only; direct raw package Node imports must not bypass it.",
+    "Model loading, GPU inference, real lip quality, cloud deployment and actual PostgreSQL/live filesystem cleanup were not validated.",
+    "Background removal native ONNX execution remains untested; controlled boundary mocks and actual patched validation/build exercised."
+  ],
+  "notPerformed": [
+    "weights/downloads",
+    "GPU or cloud CPU tasks",
+    "paid APIs or OpenAI",
+    "live account/token connection",
+    "live customer/media deletion",
+    "backup/restore point",
+    "production deployment/DNS",
+    "commit/push",
+    "completion task 4"
+  ],
+  "evidenceDocuments": [
+    "docs/completion-03-licenses.md",
+    "docs/completion-03-security.md",
+    "docs/completion-03-retention.md",
+    "docs/completion-03-speech-access.md"
+  ],
+  "codeSHA256": {
+    "package.json": "a684a0b5a250eb9c2a2006bb1a846d2a514bfdd13fb714dd3cc3a6067aa06072",
+    "package-lock.json": "a44a7c0a575f10ee6cfb802138f65801ff42c1f7c93328b9c15f150091da97b1",
+    "scripts/background-removal-security.ts": "36af4a785d87f4e8134b43449b493d8abcbff6a34c59ae9a5232295b5d20e3fc",
+    "vite.config.ts": "54816311354bf325b787079a4634a9bee4eea0a1a7d9ca9318f2fc9ca30f8fce",
+    "vite.preview.config.ts": "474cf91ef44dac87cf5622bdf4f7345f9012fea085b0e8b6fd97b7f631c5e4e9",
+    "services/film-engine/engine/model-licenses.mjs": "fdddc3909eea6268c4f8d65955602eaf9ded5079d2daaec0f86a9dc63ce236cf",
+    "services/film-engine/engine/model-license-evidence.json": "3525603a847fb122a40cda53dba90fbebb447010b86c9def8de718f368a4e1b0",
+    "services/film-engine/engine/engine-policy.mjs": "fad035dc05c90e58ccc9cb0abdb21d950454bf5db7d0cb192d31fad8c7dca94f",
+    "services/film-engine/engine/engine-registry.mjs": "10e63b7a283ed8297011d2d21f9a7ed752d50c486a0f5399ab1ab0b48edbe8e2",
+    "services/film-engine/engine/flux-modal-transport.mjs": "6cf4d98fb3d4d994b6ba8ef28cdd23f118592619ca90ffd10f9b1d652a348979",
+    "services/film-engine/engine/flux_modal_bridge.py": "620452a4bcd886716711e924963dc3faca29c4eb3f7fa82a76f342da897d3c55",
+    "services/film-engine/engine/speech/access.py": "7f226546f2347645bac6c7d301a0c59e1b765d3868f047dd0ce783d3ebeb8d83",
+    "services/film-engine/engine/speech/prepare.py": "449d37b4317f69e7b0d2d5ddc969b44ca33c543e5ba54d5f6c83c0df401b3924",
+    "services/film-engine/engine/latentsync-integration.mjs": "9033b580db2ad69c69b618ab98eada74a2b37dc5e60968314b0b0b7bd438c34b",
+    "services/film-engine/engine/latentsync-modal-transport.mjs": "f0a89af9a8ecb9cfb9c5c7795f66c73c6407711e6a0585493e45c15315288843",
+    "services/film-engine/engine/latentsync/prepare.py": "30de80c098405207eef4a97ed6a46d0c843df3d3b4fb9efa4281521780ffbb49",
+    "services/film-engine/engine/latentsync/runtime.py": "8f6e647fdd471cb79c467f489c70d30ad5663bebd81df11d38b3acfb367f7113",
+    "services/film-engine/engine/latentsync/deploy.py": "070b1e2521b007c7d957775c6f1e8900e362deb786db744ff689c9a481e34431",
+    "services/film-engine/engine/production-media-retention.mjs": "84fd195ca6ae4436d62ffe496b8cd118b8b4fbff99262664009f442bb0678f12",
+    "services/film-engine/engine/film-media-library.mjs": "78718e10a2f2f154b9030bf55776ae145018ac4279de93402a229feffaa635a5",
+    "services/film-gateway/film-bridge.mjs": "76e7c5e0dba6a918fc0883780940ca0970b46d5b59f7713e5c3be58033347f09"
+  }
+}

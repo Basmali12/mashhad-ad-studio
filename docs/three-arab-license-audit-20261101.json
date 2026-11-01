@@ -1,0 +1,106 @@
+{
+  "checkedAt": "2026-11-01T13:51:57.367808+00:00",
+  "sources": [
+    {
+      "component": "3arab source metadata",
+      "url": "https://raw.githubusercontent.com/sherif1313/3arab-TTS/ff242278c423d4cbb03920ab5e1dbb2d468ad26d/pyproject.toml",
+      "status": 200,
+      "sha256": "2e049f46d8628d535a017ea5cd8a7f880750317db24bee665d96b100029bf35f",
+      "bytes": 3849,
+      "assessment": "MIT metadata; independent from weight license"
+    },
+    {
+      "component": "3arab weights",
+      "url": "https://huggingface.co/sherif1313/3arab-TTS-500M-v1-VoiceDesign/raw/88c3b2c35dbd6da614a723afcd19b27662ab714c/README.md",
+      "status": 200,
+      "sha256": "9e165be75862a4fa8e7b3df36d43a90c381dfd8b0bc2457c09da196f6ee55254",
+      "bytes": 6645,
+      "assessment": "Apache-2.0 model card"
+    },
+    {
+      "component": "Arabic decoder",
+      "url": "https://huggingface.co/sherif1313/DACVAE-Arabic-32dim/raw/cdf438ec7a0ccd1b9d325b167303620e2868eb7c/README.md",
+      "status": 200,
+      "sha256": "1595e0091613eb480b45fe4998db4c0efd097d1050d334707f84993967a127ca",
+      "bytes": 724,
+      "assessment": "Apache-2.0 card; acknowledges parent codec"
+    },
+    {
+      "component": "Parent decoder",
+      "url": "https://huggingface.co/facebook/dacvae-watermarked/raw/main/README.md",
+      "status": 200,
+      "sha256": "243c9a29eae6c741d5a63779786ab7aba4030d6f486eb3a30f39c653cf5b91d8",
+      "bytes": 1715,
+      "assessment": "Apache-2.0 metadata and SAM license prose; reconciliation pending"
+    },
+    {
+      "component": "SilentCipher code",
+      "url": "https://raw.githubusercontent.com/SesameAILabs/silentcipher/d46d7d0893a583d8968ab3a6626e2289faec9152/LICENSE",
+      "status": 200,
+      "sha256": "157b6af8c1bc4eac646abdf17473934a85e8815ade3a346cd83a58a171586a73",
+      "bytes": 1075,
+      "assessment": "MIT code license"
+    },
+    {
+      "component": "SilentCipher weights",
+      "url": "https://huggingface.co/sony/silentcipher/raw/a1c4d021905e0dc5b24be5f68db5fc4dba410ee1/README.md",
+      "status": 200,
+      "sha256": "105f2bccec31749d64f6159fc1f4df67cbd174e2c7ac9d6c27077f2393e27af8",
+      "bytes": 7794,
+      "assessment": "No explicit weight license found in card"
+    }
+  ],
+  "commercialApproved": false,
+  "privateSynthesisApproved": false,
+  "conclusion": "DACVAE code/weights Apache confirmed by publisher. Selected AudioSeal watermark variant is MIT code and weights with explicit publisher scope, replacing only post-synthesis watermarking. SilentCipher optional original path remains blocked; it is not used by the active private audition. License eligibility does not establish speech quality or production readiness.",
+  "cloudDispatch": false,
+  "weightsDownloaded": false,
+  "followUp": {
+    "checkedAt": "2026-11-01T13:57:44.368659+00:00",
+    "decoderParent": {
+      "status": "resolved_apache_2_code_and_weights",
+      "source": "https://huggingface.co/facebook/dacvae-watermarked/discussions/1",
+      "publisherComments": [
+        {
+          "author": "lematt1991",
+          "date": "2025-12-19T13:22:09.941Z",
+          "text": "This has been fixed.  Sorry for the confusion!"
+        },
+        {
+          "author": "lematt1991",
+          "date": "2025-12-19T17:26:01.195Z",
+          "text": "Yes, also apache-2.0.  Updated the model card"
+        }
+      ]
+    },
+    "watermarkWeights": [
+      {
+        "issue": 7,
+        "source": "https://github.com/sony/silentcipher/issues/7",
+        "comments": 0,
+        "responseSHA256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "issue": 8,
+        "source": "https://github.com/sony/silentcipher/issues/8",
+        "comments": 0,
+        "responseSHA256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "issue": 9,
+        "source": "https://github.com/sony/silentcipher/issues/9",
+        "comments": 0,
+        "responseSHA256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      }
+    ]
+  },
+  "activeAdapterVariant": {
+    "name": "audioseal-v1",
+    "source": "https://github.com/facebookresearch/audioseal/blob/e63a8a0e5cdf7bb797159c92ba15961557fe9bd2/README.md",
+    "weights": "https://huggingface.co/facebook/audioseal/tree/3c19eba53390776cf2cc9ed5f6c9ac67ce72ecba",
+    "license": "MIT including weights, explicitly stated by publisher",
+    "silentcipherWeightsUsed": false,
+    "licenseEligibleWithNotices": true,
+    "productionQualityApproved": false
+  }
+}

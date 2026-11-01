@@ -1,0 +1,98 @@
+{
+  "executed": false,
+  "pricingReferenceDate": "2026-10-31",
+  "ratesSource": "https://modal.com/pricing",
+  "rows": [
+    {
+      "test": "FLUX — صورة واحدة",
+      "gpu": "L40S",
+      "cpu": 4,
+      "ramGiB": 64,
+      "windowSeconds": 1500,
+      "estimatedComputeUSD": 1.10472,
+      "proposedComputeAllocationUSD": 1.5,
+      "note": "720p، seed ثابت، 4 steps؛ حساب واحد فقط"
+    },
+    {
+      "test": "Qwen — تعديل الصورة",
+      "gpu": "RTX-PRO-6000",
+      "cpu": 4,
+      "ramGiB": 128,
+      "windowSeconds": 1500,
+      "estimatedComputeUSD": 1.76784,
+      "proposedComputeAllocationUSD": 2.5,
+      "note": "مرجع واحد، 40 steps؛ لا توليد شخصية جديدة"
+    },
+    {
+      "test": "Wan — تحريك المرجع",
+      "gpu": "RTX-PRO-6000",
+      "cpu": 4,
+      "ramGiB": 256,
+      "windowSeconds": 5400,
+      "estimatedComputeUSD": 7.898688,
+      "proposedComputeAllocationUSD": 10,
+      "note": "81 إطاراً/16fps ≈5.0625ث؛ قياس/قص مشروع إلى5ث"
+    },
+    {
+      "test": "Hunyuan — مقارنة نفس الحركة",
+      "gpu": "RTX-PRO-6000",
+      "cpu": 4,
+      "ramGiB": 128,
+      "windowSeconds": 5400,
+      "estimatedComputeUSD": 6.364224,
+      "proposedComputeAllocationUSD": 8,
+      "note": "121 إطاراً/24fps ≈5.0417ث؛ بعد قبول شروط المناطق"
+    },
+    {
+      "test": "Habibi IRQ — جملة عراقية",
+      "gpu": "L40S",
+      "cpu": 2,
+      "ramGiB": 16,
+      "windowSeconds": 1500,
+      "estimatedComputeUSD": 0.90558,
+      "proposedComputeAllocationUSD": 1.2,
+      "note": "مرجع مرخّص5–12ث ونص مطابق؛ خرج24kHz"
+    },
+    {
+      "test": "Habibi EGY — جملة مصرية",
+      "gpu": "L40S",
+      "cpu": 2,
+      "ramGiB": 16,
+      "windowSeconds": 1500,
+      "estimatedComputeUSD": 0.90558,
+      "proposedComputeAllocationUSD": 1.2,
+      "note": "محاولة مستقلة، نفس ضوابط المرجع"
+    },
+    {
+      "test": "Habibi MSA — جملة فصيحة",
+      "gpu": "L40S",
+      "cpu": 2,
+      "ramGiB": 16,
+      "windowSeconds": 1500,
+      "estimatedComputeUSD": 0.90558,
+      "proposedComputeAllocationUSD": 1.2,
+      "note": "محاولة مستقلة، ليس استبدالاً للهجة العراقية"
+    },
+    {
+      "test": "Audar — تعبير واحد",
+      "gpu": "L40S",
+      "cpu": 4,
+      "ramGiB": 32,
+      "windowSeconds": 1500,
+      "estimatedComputeUSD": 0.99816,
+      "proposedComputeAllocationUSD": 1.3,
+      "note": "بعد مراجعة الترخيص وإتاحة NeuCodec؛ تعبير رسمي واحد"
+    },
+    {
+      "test": "LatentSync — وجه واحد",
+      "gpu": "L40S",
+      "cpu": 4,
+      "ramGiB": 32,
+      "windowSeconds": 1500,
+      "estimatedComputeUSD": 0.99816,
+      "proposedComputeAllocationUSD": 1.3,
+      "note": "محظور قبل حل ترخيص InsightFace؛ لا تشغيل افتراضي"
+    }
+  ],
+  "invoiceCapGuaranteed": false
+}

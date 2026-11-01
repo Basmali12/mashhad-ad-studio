@@ -1,0 +1,10 @@
+{
+  "prefixCorrelationFirst12Seconds": 1.0,
+  "originalTailRmsDB": -36.88507486923689,
+  "repairedTailRmsDB": -200.0,
+  "originalSamples": 720896,
+  "repairedSamples": 720896,
+  "videoFrameHashesEqual": true,
+  "sourceSpeechPCMIdenticalThroughSeconds": 12.46,
+  "paidOperations": 0
+}

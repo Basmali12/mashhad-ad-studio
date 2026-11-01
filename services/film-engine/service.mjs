@@ -9,7 +9,7 @@ import {openStore} from './engine/open-store.mjs';
 
 // Dedicated deployment only. Never inherit the historical engine's data default.
 export function transferWorkerApp(env){
- const name=env.ENGINE_CLOUD_TRANSFER_APP?.trim()||'iff-ltx25-cloud-copy-v1';
+ const name=env.ENGINE_CLOUD_TRANSFER_APP?.trim()||'mashhad-model-cloud-copy-v1';
  if(!/^[a-zA-Z0-9_-]{1,64}$/.test(name))throw Error('INVALID_TRANSFER_WORKER_APP');
  return name;
 }
@@ -36,7 +36,7 @@ export async function createFilmService({env=process.env,engine:providedEngine}=
   }catch(e){await store?.close();throw e;}
  }
  const engine=providedEngine||await createEngineAPI({folder,key:env.ENGINE_MASTER_KEY,store,origin,cloudTransferApp:transferWorkerApp(env),allowPaid:env.ENGINE_ALLOW_PAID_ACTIONS==='YES',allowCustomerRentals:enabled});
- const platform=createFilmPlatform({engine,origin,secret,enabled,referenceCustomerByteLimit,mediaOrigins:(env.FILM_MEDIA_ORIGINS||'').split(',').filter(Boolean),textEnabled:env.FILM_TEXT_ENABLED==='YES',textBudgetMicroUSD:Number(env.FILM_TEXT_ADMIN_BUDGET_MICRO_USD||0)});
+ const platform=createFilmPlatform({engine,origin,secret,enabled,latentSyncPaidEnabled:env.FILM_LATENTSYNC_PAID_ENABLED==="YES",latentSyncLicenseAccepted:env.FILM_LATENTSYNC_LICENSE_ACCEPTED==="YES",latentSyncFaceRightsApproved:env.FILM_LATENTSYNC_FACE_RIGHTS_APPROVED==="YES",latentSyncRightsEvidence:env.FILM_LATENTSYNC_RIGHTS_EVIDENCE||null,productionDirectorEnabled:env.FILM_DIRECTOR_ENABLED==="YES",fluxPaidEnabled:env.FILM_FLUX_PAID_ENABLED==="YES",qwenPaidEnabled:env.FILM_QWEN_PAID_ENABLED==="YES",wanPaidEnabled:env.FILM_WAN_PAID_ENABLED==="YES",hunyuanPaidEnabled:env.FILM_HUNYUAN_PAID_ENABLED==="YES",hunyuanLicenseAccepted:env.FILM_HUNYUAN_LICENSE_ACCEPTED==="YES",speechPaidEnabled:env.FILM_SPEECH_PAID_ENABLED==="YES",audarLicenseAccepted:env.FILM_AUDAR_LICENSE_ACCEPTED==="YES",audarCodecLicenseAccepted:env.FILM_AUDAR_CODEC_LICENSE_ACCEPTED==="YES",referenceCustomerByteLimit,mediaOrigins:(env.FILM_MEDIA_ORIGINS||'').split(',').filter(Boolean),textEnabled:env.FILM_TEXT_ENABLED==='YES',textBudgetMicroUSD:Number(env.FILM_TEXT_ADMIN_BUDGET_MICRO_USD||0)});
  const handler=async(req,res)=>{
   try{if(await platform.handler(req,res))return;
    // Legacy engine routes remain behind their existing admin authentication.

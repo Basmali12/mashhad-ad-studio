@@ -2,19 +2,14 @@
 Read-only operations never instantiate an Image/App or create a Volume.
 """
 import asyncio
-import hashlib
-import io
 import json
 import os
 from pathlib import Path
-import shutil
 import sys
-import tempfile
 import time
 
 ROOT = Path(__file__).resolve().parent
-MANIFEST = json.loads((ROOT/'runtime/source-manifest.json').read_text())
-PREFIX = '/ltx25/'+MANIFEST['model_revision']
+from model_profile import MANIFEST, PREFIX, require_model
 
 
 def emit(kind, data):
@@ -85,7 +80,7 @@ async def metadata(credentials, app_id=None, job_id=None, stop=False,include_bil
     relevant=[]
     for app in apps.apps:
         item={'id':app.app_id,'name':app.description,'containers':app.n_running_tasks,'state':app.state}
-        if any(word in app.description.lower() for word in ('ltx','iff-engine')):
+        if app.description.startswith(('iff-engine-','mashhad-model-')):
             try:
                 layout=await asyncio.wait_for(c._stub.AppGetLayout(api.AppGetLayoutRequest(app_id=app.app_id)),10)
                 item['functions']=list(layout.app_layout.function_ids.keys());item['classes']=list(layout.app_layout.class_ids.keys())
@@ -100,154 +95,49 @@ async def metadata(credentials, app_id=None, job_id=None, stop=False,include_bil
             'volumes':[{'name':v.label,'id':v.volume_id} for v in volumes.items]}
 
 
+
 def discover(request):
+    """Read metadata only; no image, transfer, volume creation or model download."""
     import modal
-    c, workspace = client(request['credentials'])
-    result = sync_metadata(request['credentials'])
-    result.update(workspace=workspace,environment='main',files=[],ready=False,capacity='unknown_until_paid_allocation',sdk=modal.__version__,revision=MANIFEST['model_revision'],sourceCommit=MANIFEST['source_commit'],dependencies='engine/runtime/requirements-remote.lock',configurationSource='pinned locally verified benchmark; remote dependency image not introspected',freeStorageQuotaBytes=None)
-    volume_name = request['volume']
-    if volume_name not in [v['name'] for v in result['volumes']]:
+    c,workspace=client(request['credentials'])
+    result=sync_metadata(request['credentials'])
+    result.update(workspace=workspace,environment='main',files=[],ready=False,
+                  capacity='unknown_until_paid_allocation',sdk=modal.__version__,
+                  revision=MANIFEST.get('model_revision'),sourceCommit=MANIFEST.get('source_commit'),
+                  profile=MANIFEST['id'],modelConfigured=MANIFEST.get('enabled') is True,
+                  freeStorageQuotaBytes=None)
+    if not MANIFEST.get('enabled') or not MANIFEST.get('files'):
+        result['reason']='ENGINE_NOT_CONFIGURED'
         return result
-    volume = modal.Volume.from_name(volume_name,create_if_missing=False,client=c,environment_name='main')
-    try:
-        entries = {e.path.lstrip('/'):e for e in volume.listdir(PREFIX,recursive=True)}
-    except Exception:
-        return result
-    for name, info in MANIFEST['files'].items():
-        entry = entries.get((PREFIX+'/'+name).lstrip('/'))
+    require_model()
+    volume_name=request['volume']
+    if volume_name not in [v['name'] for v in result['volumes']]:return result
+    volume=modal.Volume.from_name(volume_name,create_if_missing=False,client=c,environment_name='main')
+    try:entries={e.path.lstrip('/'):e for e in volume.listdir(PREFIX,recursive=True)}
+    except Exception:return result
+    for name,spec in MANIFEST['files'].items():
+        entry=entries.get((PREFIX+'/'+name).lstrip('/'))
         if entry:
-            result['files'].append({'name':name,'size':entry.size,'manifestMatch':entry.size == info['size'],'expectedSHA256':info['sha256'],'hashVerifiedNow':False})
-    marker = entries.get((PREFIX+'/READY.json').lstrip('/'))
-    if marker and marker.size < 65536:
-        saved = json.loads(b''.join(volume.read_file(PREFIX+'/READY.json')))
-        result['readyMarker'] = {'revision':saved.get('revision'),'present':True}
-        result['ready'] = saved.get('revision') == MANIFEST['model_revision'] and len(result['files']) == 5 and all(f['manifestMatch'] for f in result['files'])
-    result['integrityNote'] = 'Names, sizes and READY revision checked. No multi-GB hash download during discovery.'
+            result['files'].append({'name':name,'size':entry.size,'manifestMatch':entry.size==spec['size'],
+                                    'expectedSHA256':spec['sha256'],'hashVerifiedNow':False})
+    marker=entries.get((PREFIX+'/READY.json').lstrip('/'))
+    if marker and marker.size<65536:
+        saved=json.loads(b''.join(volume.read_file(PREFIX+'/READY.json')))
+        result['readyMarker']={'revision':saved.get('revision'),'present':True}
+        result['ready']=saved.get('revision')==MANIFEST['model_revision'] and len(result['files'])==len(MANIFEST['files']) and all(f['manifestMatch'] for f in result['files'])
+    result['integrityNote']='Names, sizes and READY revision checked. Model bytes are not downloaded during discovery.'
     return result
 
 
 def quality_discover(request):
-    """Metadata only: separate active quality readiness from legacy base storage."""
-    import modal
-    c,workspace=client(request['credentials'])
-    from runtime.inference_profile import PROFILE_MANIFEST
-    profile=PROFILE_MANIFEST
-    volume=modal.Volume.from_name(request['volume'],create_if_missing=False,client=c,environment_name='main')
-    try:entries={e.path.lstrip('/'):e for e in volume.listdir(PREFIX,recursive=True)}
-    except Exception:return {'ready':False,'profile':profile['id'],'files':[],'workspace':workspace}
-    files=[]
-    for name,spec in profile['files'].items():
-        entry=entries.get((PREFIX+'/'+name).lstrip('/'))
-        files.append({'name':name,'size':entry.size if entry else None,'expectedSize':spec['size'],
-                      'present':bool(entry and entry.size==spec['size'])})
-    marker=entries.get((PREFIX+'/READY.json').lstrip('/'));ready=False
-    if marker and marker.size<65536:
-        saved=json.loads(b''.join(volume.read_file(PREFIX+'/READY.json')))
-        ready=saved.get('revision')==profile['model_revision'] and all(f['present'] for f in files)
-    return {'ready':ready,'profile':profile['id'],'files':files,'workspace':workspace,'hashVerifiedNow':False}
-
-
-def transfer(request):
-    import modal
-    if not request.get('paidApproved'):
-        raise RuntimeError('Approval required')
-    if not isinstance(request.get('plan'),dict) or not isinstance(request['plan'].get('files'),list):
-        raise RuntimeError('Explicit transfer plan required')
-    connected_at=time.monotonic();emit('event',{'kind':'phase_start','phase':'connection'})
-    destination_client, destination_workspace = client(request['credentials'])
-    if destination_workspace == 'basm1998ali':
-        raise RuntimeError('Primary storage is read-only')
-    official=request.get('plan',{}).get('source')=='official'
-    if official:
-        if not request['plan'].get('licenseAccepted') or not request.get('hfCredentials',{}).get('HF_TOKEN'):
-            raise RuntimeError('Official model access requires token and license approval')
-        source=None
-    else:
-        source_client, _ = client(request['source'])
-        source = modal.Volume.from_name(request['sourceVolume'],client=source_client,create_if_missing=False,environment_name='main')
-    emit('event',{'kind':'phase_end','phase':'connection','seconds':time.monotonic()-connected_at})
-    emit('event',{'kind':'phase_start','phase':'source_discovery'})
-    if source:source.hydrate()
-    # Reconcile AGAIN after approval: transfer only missing files.
-    inspection = discover(request)
-    emit('event',{'kind':'phase_end','phase':'source_discovery'})
-    needed = [name for name in MANIFEST['files'] if not any(f['name']==name and f['manifestMatch'] for f in inspection['files'])]
-    if inspection['files']:
-        existing=modal.Volume.from_name(request['volume'],client=destination_client,create_if_missing=False,environment_name='main')
-        for name,expected in MANIFEST['files'].items():
-            if name in needed:continue
-            emit('event',{'kind':'phase_start','phase':'integrity','file':name})
-            digest=hashlib.sha256()
-            for chunk in existing.read_file(PREFIX+'/'+name):digest.update(chunk)
-            if digest.hexdigest()!=expected['sha256']:needed.append(name)
-            else:emit('event',{'phase':'integrity','kind':'file_verified','file':name})
-    required = sum(MANIFEST['files'][name]['size'] for name in needed)
-    approved={f['name'] for f in request['plan']['files']}
-    unexpected=[name for name in needed if name not in approved]
-    if unexpected:
-        return {'ready':False,'requiresNewPlan':True,'corruptFiles':unexpected,'cloud_stopped':True,'gpuUsed':False,
-                'reason':'Integrity changed the transfer scope; approve a new plan before additional bytes are transferred.'}
-    folder = Path(request['artifactDir']);folder.mkdir(parents=True,exist_ok=True,mode=0o700)
-    if needed and shutil.disk_usage(folder).free < max(MANIFEST['files'][n]['size'] for n in needed)+2**30:
-        raise RuntimeError('Private staging disk space insufficient')
-    storage_started=time.monotonic();emit('event',{'phase':'storage','kind':'phase_start'})
-    destination = modal.Volume.from_name(request['volume'],client=destination_client,create_if_missing=True,environment_name='main')
-    destination.hydrate()
-    emit('event',{'phase':'storage','kind':'phase_end','seconds':time.monotonic()-storage_started})
-    done=0;started=time.monotonic()
-    for name in needed:
-        expected=MANIFEST['files'][name]
-        with tempfile.TemporaryDirectory(dir=folder) as tmp:
-            local=Path(tmp)/'weight.part';digest=hashlib.sha256();size=0;last_progress=0
-            if official:
-                from huggingface_hub import hf_hub_download
-                staging=Path(request['stagingDir']);staging.mkdir(parents=True,exist_ok=True,mode=0o700)
-                emit('event',{'phase':'transfer','kind':'phase_start','file':name})
-                # Explicit token argument does not save a global HF login. The private
-                # staging directory supports client-native partial-download resume.
-                local=Path(hf_hub_download(repo_id=MANIFEST['model_repo'],revision=MANIFEST['model_revision'],filename=name,token=request['hfCredentials']['HF_TOKEN'],local_dir=staging,endpoint='https://huggingface.co'))
-                with local.open('rb') as stream:
-                    for chunk in iter(lambda:stream.read(8*2**20),b''):digest.update(chunk);size+=len(chunk)
-            else:
-                with local.open('wb') as stream:
-                    for chunk in source.read_file(PREFIX+'/'+name):
-                        stream.write(chunk);digest.update(chunk);size+=len(chunk)
-                        now=time.monotonic()
-                        if now-last_progress>=.5 or size==expected['size']:
-                            last_progress=now;elapsed=max(.001,now-started)
-                            emit('event',{'phase':'transfer','kind':'progress','file':name,'transferred':done+size,'required':required,'unit':'source_bytes_received','rate':(done+size)/elapsed,'eta':None})
-            if size!=expected['size'] or digest.hexdigest()!=expected['sha256']:
-                emit('event',{'kind':'phase_error','phase':'integrity','error_type':'SOURCE_SHA256_MISMATCH','file':name})
-                raise RuntimeError('Source integrity failure')
-            emit('event',{'phase':'upload','kind':'phase_start','file':name})
-            # SDK upload has no trustworthy byte callback or ranged write: indeterminate UI.
-            with destination.batch_upload(force=True) as batch:
-                batch.put_file(local,PREFIX+'/'+name)
-            # Read back destination and verify SHA, not just name/size.
-            digest=hashlib.sha256();checked=0
-            for chunk in destination.read_file(PREFIX+'/'+name):
-                digest.update(chunk);checked+=len(chunk)
-            if checked!=size or digest.hexdigest()!=expected['sha256']:
-                emit('event',{'kind':'phase_error','phase':'integrity','error_type':'DESTINATION_SHA256_MISMATCH','file':name})
-                raise RuntimeError('Destination integrity failure')
-            done+=size
-            emit('event',{'phase':'integrity','kind':'file_verified','file':name,'transferred':done,'required':required})
-            if official:local.unlink()  # Valid destination is now the durable copy.
-    # Every destination file was either hash-checked above or after upload.
-    config_started=time.monotonic();emit('event',{'phase':'engine_configuration','kind':'phase_start'})
-    runtime={'model_revision':MANIFEST['model_revision'],'source_commit':MANIFEST['source_commit'],'torch':'2.9.1+cu128','cuda':'12.8','gpu_choices':['RTX-PRO-6000','L40S'],'native_audio':True,'vae':'conv','offload':'cpu','precision':'FP8 cast / BF16 compute'}
-    marker={'revision':MANIFEST['model_revision'],'files':MANIFEST['files'],'preparedBy':'iraqi-film-forge','time':time.time()}
-    with destination.batch_upload(force=True) as batch:
-        batch.put_file(io.BytesIO(json.dumps(runtime).encode()),PREFIX+'/RUNTIME.json')
-        batch.put_file(io.BytesIO(json.dumps(marker).encode()),PREFIX+'/READY.json')
-    emit('event',{'phase':'engine_configuration','kind':'phase_end','seconds':time.monotonic()-config_started})
-    final=discover(request)
-    if not final['ready']:
-        raise RuntimeError('Final readiness failed')
-    return {'ready':True,'transferredBytes':done,'cloud_stopped':True,'gpuUsed':False,'elapsedSeconds':time.monotonic()-started,'recordedCost':None,'inspection':final}
+    result=discover(request)
+    return {**result,'profile':MANIFEST['id'],
+            'files':[{**entry,'present':entry['manifestMatch']} for entry in result['files']],
+            'hashVerifiedNow':False}
 
 
 def official_model_info(request):
+    require_model()
     from huggingface_hub import hf_hub_download
     cache=Path(request['cacheDir']);cache.mkdir(parents=True,exist_ok=True,mode=0o700)
     result=[]
@@ -256,40 +146,45 @@ def official_model_info(request):
                              token=request['hfCredentials']['HF_TOKEN'],cache_dir=cache,dry_run=True,endpoint='https://huggingface.co')
         if info.file_size!=expected['size']:raise RuntimeError('Official source size mismatch')
         result.append({'name':name,'size':info.file_size,'revision':MANIFEST['model_revision']})
-    return {'files':result,'accessVerifiedBy':'official hf_hub_download(dry_run=True) metadata requests','modelDownloaded':False}
+    return {'files':result,'accessVerifiedBy':'official metadata requests','modelDownloaded':False}
+
+
+def execute(request):
+    action=request['action']
+    if action in ('generate','session'):
+        # No retired inference module, GPU definition or provider request remains.
+        raise RuntimeError('ENGINE_NOT_CONFIGURED')
+    if action=='verify':
+        _,workspace=client(request['credentials'])
+        return {'workspace':workspace,'verified':True,'capacity':'unknown'}
+    if action=='discover':return discover(request)
+    if action=='quality_discover':return quality_discover(request)
+    if action in ('inspect','stop'):
+        client(request['credentials'])
+        return sync_metadata(request['credentials'],request['appId'],request['jobId'],action=='stop',started_at=request.get('startedAt'))
+    if action=='transfer':
+        require_model()
+        raise RuntimeError('CLOUD_TRANSFER_REQUIRED')
+    if action.startswith('cloud_transfer_'):
+        from cloud_transfer_host import run
+        return run(request)
+    if action=='official_plan':return official_model_info(request)
+    raise RuntimeError('Unsupported action')
 
 
 def main():
-    request=json.loads(sys.stdin.readline())
-    action=request['action']
-    if action=='verify':
-        _, workspace=client(request['credentials']);result={'workspace':workspace,'verified':True,'capacity':'unknown'}
-    elif action=='discover':result=discover(request)
-    elif action=='quality_discover':result=quality_discover(request)
-    elif action in ('inspect','stop'):
-        client(request['credentials'])
-        result=sync_metadata(request['credentials'],request['appId'],request['jobId'],action=='stop',started_at=request.get('startedAt'))
-    elif action=='transfer':result=transfer(request)
-    elif action.startswith('cloud_transfer_'):
-        from cloud_transfer_host import run
-        result=run(request)
-    elif action=='official_plan':result=official_model_info(request)
-    elif action in ('generate','session'):
-        from gpu_host import run
-        result=run(request,session=action=='session')
-    else:raise RuntimeError('Unsupported action')
-    emit('result',result)
+    emit('result',execute(json.loads(sys.stdin.readline())))
 
 
 def sync_metadata(*args,**kwargs):
-    # Run internal RPCs on the SDK synchronizer's loop, not asyncio.run's separate loop.
-    # This avoids the from_env singleton crossing event loops after Workspace.hydrate.
+    # Run internal RPCs on the SDK synchronizer's loop rather than a new loop.
     from modal._utils.async_utils import synchronize_api
     return synchronize_api(metadata)(*args,**kwargs)
 
 
 if __name__=='__main__':
     try:main()
-    except BaseException:
-        emit('error',{'code':'MODAL_OPERATION_FAILED'})
+    except BaseException as error:
+        code='ENGINE_NOT_CONFIGURED' if str(error)=='ENGINE_NOT_CONFIGURED' else 'MODAL_OPERATION_FAILED'
+        emit('error',{'code':code})
         sys.exit(1)

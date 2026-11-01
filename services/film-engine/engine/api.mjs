@@ -45,6 +45,7 @@ function imageBytes(data) {
     return bytes;
 }
 export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || '.engine-data', key = process.env.ENGINE_MASTER_KEY, provider = new ModalProvider(), allowPaid = process.env.ENGINE_ALLOW_PAID_ACTIONS === 'YES', origin = process.env.ENGINE_ORIGIN || 'https://localhost:3443', trustProxy = process.env.ENGINE_TRUST_PROXY === 'loopback', cookieSameSite = process.env.ENGINE_COOKIE_SAME_SITE === 'none' ? 'None' : 'Strict', store = undefined, primaryOnly=process.env.ENGINE_PRIMARY_ONLY==='YES',cloudTransferApp=process.env.ENGINE_CLOUD_TRANSFER_APP||'',textFetch=fetch,textQuality=undefined,allowCustomerRentals=process.env.CUSTOMER_PLATFORM_ENABLED==='YES' } = {}) {
+    const productionAvailable=!(provider instanceof ModalProvider)&&provider.modelConfigured!==false;
     if(store===undefined)store=await openStore(folder,key);
     if(allowCustomerRentals&&store&&!await store.rentalsReady())throw Error('RENTAL_MIGRATION_002_REQUIRED');
     textQuality??=new TextQuality(folder);
@@ -89,7 +90,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
     async function recoverArtifact(j) {
         try {
             const folder = path.resolve(store.folder, 'artifacts', j.id), receipt = JSON.parse(await fs.readFile(path.join(folder, 'audit.json'), 'utf8')), video = await fs.readFile(path.join(folder, 'video.mp4'));
-            if(!j.tenantId&&(j.quality?.textQualityRequired||receipt.audit?.pipeline==='DFRPipeline')&&receipt.textQuality?.status!=='passed')return false;
+            if(!j.tenantId&&j.quality?.textQualityRequired&&receipt.textQuality?.status!=='passed')return false;
             if (!receipt.videoVerified || hash(video) !== receipt.sha256 || !receipt.metadata?.ffprobe?.streams?.some(s => s.codec_type === 'audio'))
                 return false;
             const v = receipt.metadata.ffprobe.streams.find(s => s.codec_type === 'video');
@@ -217,7 +218,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
             const latest=await store.get('job',job.id);
             if(latest?.stopRequestedAt){job.stopRequestedAt=latest.stopRequestedAt;job.status='stopped';job.cloudStopped=true;return;}
             if(['start','generate'].includes(job.action))await verifyArtifactStorage(store.folder,job.id);
-            const payload = { credentials: credentials(a), source: source ? credentials(source) : null, sourceVolume: source?.volume, volume: a.volume, settings: job.settings, plan: job.plan, jobId: job.id, prompt: job.prompt, previousFrame: job.previousFrame, hfCredentials: job.plan?.source === 'official' ? store.open(a.hf, a.id + ':hf') : undefined, paidApproved: true, artifactDir: path.resolve(store.folder, 'artifacts', job.id), stagingDir: path.resolve(store.folder, 'transfer-cache', a.id) };
+            const payload = { credentials: credentials(a), source: source ? credentials(source) : null, sourceVolume: source?.volume, volume: a.volume, settings: job.settings, plan: job.plan, jobId: job.id, prompt: job.prompt, hfCredentials: job.plan?.source === 'official' ? store.open(a.hf, a.id + ':hf') : undefined, paidApproved: true, artifactDir: path.resolve(store.folder, 'artifacts', job.id), stagingDir: path.resolve(store.folder, 'transfer-cache', a.id) };
             if(isCloud(job)){
                 const receipt=await provider.call('cloud_transfer_dispatch',{...payload,workerApp:job.plan.workerApp},queueEvent,600000);
                 await events;if(eventError)throw Error('EVENT_RECORDING_FAILED_RECONCILE');
@@ -558,7 +559,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                     json(res, 409, { error: 'ACCOUNT_ALREADY_LINKED' });
                     return true;
                 }
-                const aid = id(), isPrimary = info.workspace === 'basm1998ali', a = { id: aid, workspace: info.workspace, label: String(b.label || info.workspace).slice(0, 100), mode: 'token', role: isPrimary ? 'primary' : 'backup', activated:isPrimary,volume: isPrimary ? 'modal-ltx25-test-models' : 'iff-ltx25-' + aid.slice(0, 8), createdAt: Date.now(), credentials: store.seal({ tokenId: b.tokenId, tokenSecret: b.tokenSecret }, aid) };
+                const aid = id(), isPrimary = info.workspace === 'basm1998ali', a = { id: aid, workspace: info.workspace, label: String(b.label || info.workspace).slice(0, 100), mode: 'token', role: isPrimary ? 'primary' : 'backup', activated:isPrimary,volume: isPrimary ? manifest.source_volume : 'mashhad-model-' + aid.slice(0, 8), createdAt: Date.now(), credentials: store.seal({ tokenId: b.tokenId, tokenSecret: b.tokenSecret }, aid) };
                 await store.transaction(async()=>{
                     if((await store.all('account')).some(existing=>existing.workspace===info.workspace))throw Error('ACCOUNT_ALREADY_LINKED');
                     await store.put('account',a);await store.audit('account_linked',aid);
@@ -573,7 +574,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                     json(res, 200, publicAccount(existing));
                     return true;
                 }
-                const a = { id: id(), workspace: info.workspace, label: 'Modal الأساسي', mode: 'local_profile', role: 'primary', volume: 'modal-ltx25-test-models', createdAt: Date.now() };
+                const a = { id: id(), workspace: info.workspace, label: 'Modal الأساسي', mode: 'local_profile', role: 'primary', volume: manifest.source_volume, createdAt: Date.now() };
                 (await store.put('account', a));
                 (await store.audit('primary_linked', a.id));
                 json(res, 201, publicAccount(a));
@@ -586,10 +587,15 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                     const b=await body(req);
                     if(!/^ak-[\w-]{8,200}$/.test(b.tokenId||'')||!/^as-[\w-]{8,300}$/.test(b.tokenSecret||''))throw Error('INVALID_TOKEN_FORMAT');
                     if((await store.all('job')).some(j=>(j.accountId===a.id||j.sourceId===a.id)&&unconfirmedResource(j)))throw Error('STOP_AND_RECONCILE_JOBS_FIRST');
+                    if((await store.all('engine-runtime')).some(r=>r.accountId===a.id&&r.cloudStopped!==true)||(await store.all('engine-preparation')).some(r=>r.accountId===a.id&&r.cloudStopped===false))throw Error('STOP_AND_RECONCILE_JOBS_FIRST');
                     const verified=await provider.call('verify',{credentials:{tokenId:b.tokenId,tokenSecret:b.tokenSecret,expectedWorkspace:a.workspace}});
                     if(verified.workspace!==a.workspace)throw Error('ACCOUNT_TOKEN_WORKSPACE_MISMATCH');
-                    a.credentials=store.seal({tokenId:b.tokenId,tokenSecret:b.tokenSecret},a.id);a.mode='token';a.credentialsUpdatedAt=Date.now();
-                    await store.put('account',a);await store.audit('account_credentials_renewed',a.id);json(res,200,publicAccount(a));return true;
+                    await store.transaction(async()=>{
+                        const fresh=await account(a.id);
+                        if((await store.all('engine-runtime')).some(r=>r.accountId===a.id&&r.cloudStopped!==true)||(await store.all('engine-preparation')).some(r=>r.accountId===a.id&&r.cloudStopped===false)||(await store.all('job')).some(j=>(j.accountId===a.id||j.sourceId===a.id)&&unconfirmedResource(j)))throw Error('STOP_AND_RECONCILE_JOBS_FIRST');
+                        fresh.credentials=store.seal({tokenId:b.tokenId,tokenSecret:b.tokenSecret},a.id);fresh.mode='token';fresh.credentialsUpdatedAt=Date.now();
+                        await store.put('account',fresh);Object.assign(a,fresh);await store.audit('account_credentials_renewed',a.id);
+                    });json(res,200,publicAccount(a));return true;
                 }
                 if(req.method==='POST'&&am[2]==='activate'){
                     const checked=await discover(a);
@@ -602,6 +608,8 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                         const current=await account(a.id);
                         if(current.role==='primary'||current.workspace==='basm1998ali')throw Error('PRIMARY_ACCOUNT_IS_FIXED');
                         if((await store.all('job')).some(j=>(j.accountId===a.id||j.sourceId===a.id)&&unconfirmedResource(j)))throw Error('STOP_AND_RECONCILE_JOBS_FIRST');
+                        if((await store.all('engine-runtime')).some(r=>r.accountId===a.id&&r.cloudStopped!==true)||(await store.all('engine-preparation')).some(r=>r.accountId===a.id&&r.cloudStopped===false))throw Error('STOP_AND_RECONCILE_JOBS_FIRST');
+                        if((await store.all('engine-definition')).some(e=>e.accountId===a.id))throw Error('ACCOUNT_IN_USE');
                         if((await store.all('film-slot')).some(s=>s.accountId===a.id&&!s.retired)||(await store.all('rental')).some(r=>r.accountId===a.id&&r.state!=='closed'))throw Error('ACCOUNT_IN_USE');
                         // Explicit non-secret historical whitelist. Never copy credentials, hf, paths or encrypted values.
                         await store.put('account-archive',{id:current.id,label:current.label,workspace:current.workspace,volume:current.volume,role:current.role,mode:current.mode,createdAt:current.createdAt,unlinked:true,unlinkedAt:Date.now()});
@@ -644,12 +652,13 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                 json(res, 200, selection);
                 return true;
             }
+            if(!productionAvailable&&['quote','execute'].includes(route))throw Error('ENGINE_NOT_CONFIGURED');
             if (route === 'quote' && req.method === 'POST') {
                 const b = await body(req);
                 if(scope?.tenantId&&(b.accountId!==scope.accountId||!['start','generate'].includes(b.action)))throw Error('RENTAL_SCOPE_DENIED');
                 const a = (await account(b.accountId)), s = scope?.tenantId?settings(b.settings):fixedEngineSettings(b.settings);
                 requirePrimary(a);
-                if(b.action!=='prepare'&&quality.textQualityRequired&&s.gpu!=='RTX-PRO-6000')throw Error('DFR_RTX_PRO_6000_10S_ONLY');
+                if(b.action!=='prepare'&&quality.textQualityRequired&&s.gpu!=='RTX-PRO-6000')throw Error('ENGINE_PROFILE_UNSUPPORTED');
                 if (!['prepare', 'start', 'generate'].includes(b.action))
                     throw Error('INVALID_ACTION');
                 if(['start','generate'].includes(b.action))await verifyArtifactStorage(store.folder);
@@ -662,9 +671,8 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                 if(b.action!=='prepare'&&quality.textQualityRequired){
                     await textQuality.available();
                     const activeQuality=inspection.productionQuality;
-                    if(!activeWeightsReady(activeQuality))throw Error('LTX_DFR_WEIGHTS_REQUIRED');
+                    if(!activeWeightsReady(activeQuality))throw Error('MODEL_WEIGHTS_REQUIRED');
                     if(a.corruptFiles?.some(name=>activeQuality.files.some(f=>f.name===name)))throw Error('WEIGHTS_NOT_READY');
-                    // A retired Conv VAE is not a dependency of the active profile.
                     inspection.ready=true;
                 }
                 if(b.action==='prepare'&&b.verifyOnly===true&&!(quality.textQualityRequired?inspection.productionQuality?.files?.some(f=>f.present):inspection.files.length))throw Error('NO_SAVED_WEIGHTS_TO_VERIFY');
@@ -693,7 +701,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                     const expected=Object.entries(inferenceManifest.files);
                     if(expected.some(([name,f])=>!sourceFiles.some(s=>s.name===name&&s.size===f.size&&(b.source==='official'||s.manifestMatch===true))))throw Error('SOURCE_ACTIVE_PROFILE_NOT_READY');
                     const destinationFiles=quality.textQualityRequired?inspection.productionQuality?.files||[]:inspection.files;
-                    plan = { source: b.source === 'official' ? 'official' : 'volume', files: expected.filter(([name,f])=>a.corruptFiles?.includes(name)||!destinationFiles.some(d=>d.name===name&&d.size===f.size&&(quality.textQualityRequired?d.present:d.manifestMatch))).map(([name,f])=>({name,size:f.size,sha256:f.sha256})), requiredBytes: 0, sourceVolume, destinationVolume: a.volume, modelRepo: manifest.model_repo, modelRevision: manifest.model_revision, licenseAccepted: b.licenseAccepted === true, licenseURL: 'https://huggingface.co/Lightricks/LTX-2.5/tree/' + manifest.model_revision,
+                    plan = { source: b.source === 'official' ? 'official' : 'volume', files: expected.filter(([name,f])=>a.corruptFiles?.includes(name)||!destinationFiles.some(d=>d.name===name&&d.size===f.size&&(quality.textQualityRequired?d.present:d.manifestMatch))).map(([name,f])=>({name,size:f.size,sha256:f.sha256})), requiredBytes: 0, sourceVolume, destinationVolume: a.volume, modelRepo: manifest.model_repo, modelRevision: manifest.model_revision, licenseAccepted: b.licenseAccepted === true, licenseURL: manifest.license_url||null,
                         localStagingAvailableBytes:0,localStagingRequiredBytes:0,localStagingReady:false,blockingReason:null,
                         transport: b.source === 'official' ? 'official huggingface_hub → private resumable staging → Volume.batch_upload' : 'official Volume.read_file → private server staging → Volume.batch_upload', resume: b.source === 'official' ? 'HF client resumes partial downloads when supported; completed destination files skipped' : 'completed files; incomplete files restart (SDK has no ranged write)', storageUSDPerMonth: Object.values(inferenceManifest.files).reduce((n, f) => n + f.size, 0) / 2 ** 30 * .09, storageNote: 'Undiscounted list rate; excludes free allowances, account-specific billing and continued storage after this task.', integrityReadBytes: Object.values(inferenceManifest.files).reduce((n, f) => n + f.size, 0), networkCostUSD: null, buildCostUSD: 0 };
                     plan.requiredBytes = plan.files.reduce((n, f) => n + f.size, 0);
@@ -724,7 +732,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                     throw Error('APPLICATION_MONTHLY_LIMIT_REQUIRES_BOUNDED_PLAN');
                 if ((b.action !== 'prepare'||cloudPrepare) && ledger.limitUSD !== null && ledger.estimatedOrReservedUSD + est.resourceWindowUSD > ledger.limitUSD)
                     throw Error('APPLICATION_MONTHLY_LIMIT_EXCEEDED');
-                const q = { id: id(), ...(scope?.tenantId?{tenantId:scope.tenantId,rentalId:scope.rentalId,engineSlotId:scope.engineSlotId}:{}), action: b.action, accountId: a.id, sourceId, settings: s, estimate: est, quality:qualityFor(s), plan, prompt: b.action === 'generate' ? b.prompt : null,engineJobId:b.engineJobId, projectId: b.projectId, sceneId: b.sceneId, previousSceneId: b.previousSceneId, createdAt: Date.now(), expiresAt: Date.now() + 300000, consumed: false };
+                const q = { id: id(), ...(scope?.tenantId?{tenantId:scope.tenantId,rentalId:scope.rentalId,engineSlotId:scope.engineSlotId}:{}), action: b.action, accountId: a.id, sourceId, settings: s, estimate: est, quality:qualityFor(s), plan, prompt: b.action === 'generate' ? b.prompt : null,engineJobId:b.engineJobId, projectId: b.projectId, sceneId: b.sceneId, createdAt: Date.now(), expiresAt: Date.now() + 300000, consumed: false };
                 if(b.action==='generate'){
                     q.audioContract=ArabicDialogue.checkPrompt(q.prompt,b.audioContract);
                     q.dialoguePolicyVersion=ArabicDialogue.version;
@@ -756,23 +764,8 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                     if (artifactExists)
                         throw Error('EXISTING_VIDEO_REQUIRES_LOCAL_RECONCILIATION');
                     q.retryOfJobId = old.id;
-                    q.initialFramePath = old.previousFrame || null;
-                    q.previousSceneId = old.previousSceneId;
                 }
-                if (b.initialFrame) {
-                    if (typeof b.initialFrame !== 'string' || b.initialFrame.length > 5500000 || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(b.initialFrame))
-                        throw Error('INVALID_REFERENCE_IMAGE');
-                    const content = Buffer.from(b.initialFrame.split(',')[1], 'base64');
-                    if (content.length > 4000000 || content.length < 16)
-                        throw Error('REFERENCE_IMAGE_TOO_LARGE');
-                    const isImage = content.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) || (content[0] === 255 && content[1] === 216 && content[2] === 255) || (content.toString('ascii', 0, 4) === 'RIFF' && content.toString('ascii', 8, 12) === 'WEBP');
-                    if (!isImage)
-                        throw Error('INVALID_IMAGE_SIGNATURE');
-                    const refs = path.resolve(store.folder, 'references');
-                    await fs.mkdir(refs, { recursive: true, mode: 0o700 });
-                    q.initialFramePath = path.join(refs, q.id + '.image');
-                    await fs.writeFile(q.initialFramePath, content, { mode: 0o600, flag: 'wx' });
-                }
+                if(b.initialFrame||b.previousSceneId)throw Error('ENGINE_NOT_CONFIGURED');
                 if (b.action === 'generate' && b.projectSnapshot) {
                     const p = b.projectSnapshot;
                     if(scope?.tenantId)throw Error('RENTAL_PROJECT_SNAPSHOT_DENIED');
@@ -844,7 +837,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                 if(q.engineJobId&&prepared?.id!==q.engineJobId)throw Error('ENGINE_SESSION_EXPIRED_NO_NEW_GPU');
                 if (busy.length && !prepared)
                     throw Error('ONE_ACTIVE_OR_UNCERTAIN_JOB_ONLY');
-                let sceneKey = null, previousFrame = q.initialFramePath || null;
+                let sceneKey = null;
                 if (q.action === 'generate') {
                     sceneKey = sceneHash(q.projectId,q.sceneId,scope);
                     const scene = (await store.get('scene', sceneKey));
@@ -852,23 +845,8 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                         json(res, 409, { error: 'SCENE_EXISTS_RESUME_EXISTING_JOB', jobId: scene.jobId, status: scene.status });
                         return true;
                     }
-                    if (q.previousSceneId) {
-                        const previous = (await store.get('scene', sceneHash(q.projectId,q.previousSceneId,scope)));
-                        if (!previous || previous.status !== 'completed')
-                            throw Error('PREVIOUS_SCENE_NOT_COMPLETE');
-                        previousFrame = path.resolve(store.folder, 'artifacts', previous.jobId, 'last-frame.png');
-                        let frame;
-                        try {
-                            frame = await fs.stat(previousFrame);
-                        }
-                        catch {
-                            throw Error('LAST_FRAME_NEEDS_LOCAL_RECOVERY_NO_REGENERATION');
-                        }
-                        if (frame.size < 32)
-                            throw Error('LAST_FRAME_NEEDS_LOCAL_RECOVERY_NO_REGENERATION');
-                    }
                 }
-                const j = { id: id(),tenantId:q.tenantId,rentalId:q.rentalId,engineSlotId:q.engineSlotId, quality:q.quality, quoteId: q.id, accountId: a.id, workspace: a.workspace, action: q.action, settings: q.settings, estimate: q.estimate, plan: q.plan, prompt: q.prompt, audioContract:q.audioContract, dialoguePolicyVersion:q.dialoguePolicyVersion, dialogueScriptHash:q.dialogueScriptHash, creativeSnapshot:q.creativeSnapshot, sourceId: q.sourceId, projectId: q.projectId, sceneId: q.sceneId, previousSceneId: q.previousSceneId, retryOfJobId: q.retryOfJobId, sceneKey, previousFrame, attachedEngineId: prepared?.id, appId: prepared?.appId, status: 'queued', createdAt: Date.now(), events: [], cloudStopped: false };
+                const j = { id: id(),tenantId:q.tenantId,rentalId:q.rentalId,engineSlotId:q.engineSlotId, quality:q.quality, quoteId: q.id, accountId: a.id, workspace: a.workspace, action: q.action, settings: q.settings, estimate: q.estimate, plan: q.plan, prompt: q.prompt, audioContract:q.audioContract, dialoguePolicyVersion:q.dialoguePolicyVersion, dialogueScriptHash:q.dialogueScriptHash, creativeSnapshot:q.creativeSnapshot, sourceId: q.sourceId, projectId: q.projectId, sceneId: q.sceneId, retryOfJobId: q.retryOfJobId, sceneKey, attachedEngineId: prepared?.id, appId: prepared?.appId, status: 'queued', createdAt: Date.now(), events: [], cloudStopped: false };
                 await store.transaction(async () => {
                     // Lifecycle decisions share this transaction with slot retirement and credential unlink.
                     if(!await store.get('account',q.accountId)||(q.sourceId&&!await store.get('account',q.sourceId)))throw Error('ACCOUNT_UNLINKED');
@@ -923,7 +901,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                     const b=await body(req);if(b.approved!==true)throw Error('QUALITY_REVIEW_APPROVAL_REQUIRED');
                     const review=typeof b.reviewCallId==='string'?await store.get('text-call',b.reviewCallId):null;
                     if(j.status==='completed'&&j.result?.textQuality?.reviewCallId===b.reviewCallId){json(res,200,j);return true;}
-                    if(j.status!=='needs_review'||j.error!=='GENERATION_SUCCEEDED_TEXT_REVIEW_REQUIRED'||!j.result?.videoVerified||!review||review.status!=='completed'||review.mode!=='review'||review.projectId!==j.projectId||review.evidence?.jobId!==j.id||review.evidence?.sha256!==j.result.sha256||review.evidence?.policy!=='ltx-native-av-sampled-visual-review-v1'||review.visualReview?.visibleText!=='not_seen_in_samples'||review.visualReview?.audioAssessment!=='not_checked')throw Error('MATCHED_VISUAL_REVIEW_REQUIRED');
+                    if(j.status!=='needs_review'||j.error!=='GENERATION_SUCCEEDED_TEXT_REVIEW_REQUIRED'||!j.result?.videoVerified||!review||review.status!=='completed'||review.mode!=='review'||review.projectId!==j.projectId||review.evidence?.jobId!==j.id||review.evidence?.sha256!==j.result.sha256||review.evidence?.policy!=='sampled-visual-review-v1'||review.visualReview?.visibleText!=='not_seen_in_samples'||review.visualReview?.audioAssessment!=='not_checked')throw Error('MATCHED_VISUAL_REVIEW_REQUIRED');
                     const bytes=await fs.readFile(path.resolve(store.folder,'artifacts',j.id,'video.mp4'));
                     if(hash(bytes)!==j.result.sha256)throw Error('REVIEW_ARTIFACT_CHANGED');
                     j.result.textQuality={...j.result.textQuality,detectorStatus:j.result.textQuality.status,status:'passed',reviewCallId:review.id,acceptanceBasis:'detector_plus_sampled_visual_review',reviewedAt:Date.now(),scope:'sampled_frames_not_full_video_or_audio',reviewModel:review.model};
@@ -934,8 +912,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
                 const a = (await store.get('account', j.accountId)) || (await store.all('account')).find(a => a.workspace === j.workspace);
                 if(req.method==='GET'&&jm[2]==='raw-video'){
                     if(!j.result?.videoVerified)throw Error('VIDEO_NOT_READY');
-                    const root=path.resolve(store.folder,'artifacts',j.id),raw=path.join(root,'raw-ltx.mp4');
-                    const file=await fs.stat(raw).then(()=>raw,()=>path.join(root,'video.mp4'));
+                    const file=path.resolve(store.folder,'artifacts',j.id,'video.mp4');
                     res.writeHead(200,{'Content-Type':'video/mp4','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'});res.end(await fs.readFile(file));return true;
                 }
                 if (req.method === 'GET' && jm[2] === 'video') {
@@ -1060,7 +1037,7 @@ export async function createEngineAPI({ folder = process.env.ENGINE_DATA_DIR || 
     };
     // Recovery follows original approved child-call IDs; it never calls dispatch.
     const preparationWatcher=store?preparationRecovery({store,resume:resumeCloud}):null;
-    return { handler:guardedHandler, hasAdminSession, invoke,store,allowPaid,quality, close: async () => {
+    return { productionAvailable, handler:guardedHandler, hasAdminSession, invoke,store,allowPaid,quality, close: async () => {
             preparationWatcher?.close();
             cloudMonitorShutdown.abort(); // Detach CPU observation, not the approved cloud transfer.
             for (const c of controllers.values())

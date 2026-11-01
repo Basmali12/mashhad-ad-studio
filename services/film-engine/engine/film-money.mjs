@@ -46,14 +46,15 @@ export function createAIWallet(store,{now=Date.now}={}){
  async function reserve(input,inTransaction=false){
   const work=async()=>{
    const {kind,requestId,projectId,estimatedMicroUSD,pricing}=input;
-   if(!['text-call','film-image-preview'].includes(kind)||!Number.isSafeInteger(estimatedMicroUSD)||estimatedMicroUSD<=0)throw Error('INVALID_AI_RESERVATION');
-   const p=await store.get('film-project',projectId);if(!p?.customerId)throw Error('AI_OWNER_REQUIRED');
+   if(!['text-call','production-text-call','film-image-preview'].includes(kind)||!Number.isSafeInteger(estimatedMicroUSD)||estimatedMicroUSD<=0)throw Error('INVALID_AI_RESERVATION');
+   const projectKind=input.projectKind??'film-project';if(!['film-project','production-project'].includes(projectKind)||projectKind==='production-project'&&kind!=='production-text-call'||kind==='production-text-call'&&projectKind!=='production-project')throw Error('INVALID_AI_RESERVATION');
+   const p=await store.get(projectKind,projectId);if(!p?.customerId)throw Error('AI_OWNER_REQUIRED');
    const chargeId=key(kind,requestId),old=await store.get('film-ai-charge',chargeId);
-   if(old){if(old.customerId!==p.customerId||old.projectId!==projectId)throw Error('AI_CHARGE_SCOPE_CHANGED');return old;}
+   if(old){if(old.customerId!==p.customerId||old.projectId!==projectId||(old.projectKind??'film-project')!==projectKind)throw Error('AI_CHARGE_SCOPE_CHANGED');return old;}
    await requireFunds(p.customerId);const lots=await lotsFor(p.customerId),d=debit(lots,estimatedMicroUSD,now());
    if(d.uncovered)throw Error('AI_INSUFFICIENT_CREDIT');
    for(const lot of lots)await store.put('film-credit',lot);
-   const r={id:chargeId,version:1,kind,requestId,projectId,customerId:p.customerId,state:'reserved',heldMicroUSD:estimatedMicroUSD,entries:d.entries,pricing,createdAt:now(),amountMicroUSD:null,source:'OpenAI usage at published rates; no markup; not invoice'};
+   const r={id:chargeId,version:1,kind,requestId,projectId,projectKind,customerId:p.customerId,state:'reserved',heldMicroUSD:estimatedMicroUSD,entries:d.entries,pricing,createdAt:now(),amountMicroUSD:null,source:'OpenAI usage at published rates; no markup; not invoice'};
    await store.put('film-ai-charge',r);await store.put('film-ledger',{id:chargeId+'-hold',customerId:p.customerId,projectId,type:'ai_hold',microUSD:-estimatedMicroUSD,chargeId,createdAt:now()});return r;
   };return inTransaction?work():store.transaction(work);
  }
@@ -72,7 +73,7 @@ export function createAIWallet(store,{now=Date.now}={}){
   Object.assign(r,{state:'settled',amountMicroUSD:actual,computedUSD,uncoveredMicroUSD:uncovered,settledAt:now(),...(zeroReason?{zeroReason}:{})});await store.put('film-ai-charge',r);return r;
  });}
  async function recover({releaseUnsent=false}={}){for(const r of await store.all('film-ai-charge'))if(pending(r)){
-  const call=await store.get(r.kind,r.requestId),usd=r.kind==='text-call'?call?.usage?.computedUSD:call?.computedUSD;
+  const call=await store.get(r.kind,r.requestId),usd=['text-call','production-text-call'].includes(r.kind)?call?.usage?.computedUSD:call?.computedUSD;
   if(call?.projectId===r.projectId&&Number.isFinite(usd)&&['completed','failed'].includes(call.status))await settle(r.id,usd);
   else if(releaseUnsent&&r.state==='reserved'&&!r.submittedAt)await settle(r.id,0,{zeroReason:'not_submitted_before_restart'});
  }}

@@ -8,6 +8,7 @@ import time
 import modal
 from transfer_contract import *
 
+require_model()
 app=modal.App(APP_NAME)
 source=modal.Volume.from_name(SOURCE_VOLUME,create_if_missing=False).with_mount_options(read_only=True)
 state=modal.Dict.from_name(DICT_NAME,create_if_missing=True)
@@ -26,7 +27,7 @@ def copy_models(request):
     from modal.exception import NotFoundError
     job=request.get('jobId','');workspace=request.get('destinationWorkspace','');volume=request.get('volume','')
     if not re.fullmatch(r'[a-f0-9-]{36}',job) or request.get('paidApproved') is not True:raise RuntimeError('TRANSFER_APPROVAL_REQUIRED')
-    if workspace==SOURCE_WORKSPACE or not workspace or not re.fullmatch(r'iff-ltx25-[a-f0-9]{8}',volume):raise RuntimeError('INVALID_TRANSFER_DESTINATION')
+    if workspace==SOURCE_WORKSPACE or not workspace or not re.fullmatch(r'mashhad-model-[a-f0-9]{8}',volume):raise RuntimeError('INVALID_TRANSFER_DESTINATION')
     validate_request(request)
     claim=state.get('dispatch:'+job)
     if not claim or claim.get('workspace')!=workspace or claim.get('volume')!=volume or claim.get('files')!=request.get('files') or claim.get('mode')!=request.get('mode') or claim.get('transferPlanFingerprint')!=request.get('transferPlanFingerprint') or any(claim.get(k)!=v for k,v in IDENTITY.items()) or state.get('active')!=job:raise RuntimeError('TRANSFER_CLAIM_MISMATCH')

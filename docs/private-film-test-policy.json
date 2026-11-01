@@ -1,0 +1,14 @@
+{
+  "scope": "private future film tests only; does not activate public site/rental engines",
+  "defaultProfile": "accelerated",
+  "modelId": "wan22-i2v-a14b",
+  "weightsRevision": "f4b91eba1fd7dc2eb038191e2bca7ed33423032d",
+  "steps": 4,
+  "gpu": "RTX-PRO-6000",
+  "cpu": 4,
+  "ramGiB": 128,
+  "keepResidentAcrossSequentialShots": true,
+  "successfulResultsMustNotBeRegenerated": true,
+  "originalQuality": "Retained; use only after explicit material quality defect and budget availability/consent. No automatic old-profile fallback.",
+  "latestEvidence": "docs/afterlife-accelerated-film-20261101.json"
+}

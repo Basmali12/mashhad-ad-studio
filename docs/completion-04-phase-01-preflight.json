@@ -1,0 +1,487 @@
+{
+  "phase": "Completion4 phase1 only: no spending, no deploy, awaiting explicit consent",
+  "checkedAtUTC": "2026-10-31T18:29:22.876575+00:00",
+  "localEvidence": {
+    "B1": "implemented locally; later B2/B3 changes recorded; current customer client uses director/production APIs",
+    "B2": "implemented locally and regression-tested; not on live administration site",
+    "B3B5": "Completion3 recorded 1587 unique passing local tests, audit0; all21 recorded code hashes still match"
+  },
+  "liveEvidence": {
+    "adminURL": "https://scan.iraqaistudio.com/reels-admin/",
+    "adminHTTPStatus": 200,
+    "liveLastModified": "Fri, 30 Oct 2026 15:17:22 GMT",
+    "liveEntry": "assets/admin-PBeUZ_hT.js",
+    "localEntry": "assets/admin-BNtKC3Mn.js",
+    "liveUI": "Legacy LTX onboarding/test controls; new generic commissioning not deployed. No integrated customer production test admitted.",
+    "accountsVisible": [
+      {
+        "name": "الحساب الأساسي",
+        "workspace": "basm1998ali",
+        "legacyInspection": "not ready/not inspected",
+        "unconfirmedOperations": 0
+      },
+      {
+        "name": "husrd2021",
+        "workspace": "husrd2021",
+        "legacyInspection": "not ready/not inspected",
+        "unconfirmedOperations": 0
+      },
+      {
+        "name": "Nor",
+        "workspace": "mawaeediasn",
+        "legacyInspection": "not ready/not inspected",
+        "unconfirmedOperations": 0
+      }
+    ],
+    "secretValuesReadOrLogged": false,
+    "directSDK": {
+      "profile": "basm1998ali",
+      "workspaceVerified": "basm1998ali",
+      "sdk": "1.6.2",
+      "liveApps": 0,
+      "mainEnvironmentOnly": true,
+      "volumes": [
+        {
+          "name": "iraq-video-model-comparison-v1",
+          "files": 163,
+          "GiB": 79.439,
+          "newProductionNamespace": false,
+          "priorHunyuanRepo": "hunyuanvideo-community/HunyuanVideo-1.5-Diffusers-720p_i2v",
+          "priorHunyuanRevision": "dcf088ef4e420dd54bc25930ee810bb6613dfcb5",
+          "reusableAsCurrentManifest": false
+        },
+        {
+          "name": "modal-ltx25-test-models",
+          "files": 13,
+          "GiB": 0.01,
+          "contents": "historical result files only; no old model code/weights loaded or restored"
+        }
+      ]
+    },
+    "ModalDashboard": {
+      "workspace": "basm1998ali",
+      "displayedCreditsUSD": 23.68,
+      "creditSource": "live authenticated Modal dashboard; not assumed monthly grant",
+      "containerLimit": 100,
+      "containersInUse": 0,
+      "GPUQuota": 10,
+      "GPUsInUse": 0,
+      "typeSpecificAvailabilityGuaranteed": false
+    },
+    "otherAccounts": "listed in authenticated existing admin; their new model namespaces, direct token validation, GPU quotas and credits not independently established by the old UI; no automatic fallback"
+  },
+  "pricing": {
+    "source": "https://modal.com/pricing",
+    "checkedDate": "2026-10-31",
+    "L40SSecondUSD": 0.000542,
+    "RTXPro6000SecondUSD": 0.000842,
+    "physicalCPUCoreSecondUSD": 1.31e-05,
+    "RAMGiBSecondUSD": 2.22e-06,
+    "volumeGiBMonthUSD": 0.09,
+    "egressGiBUSD": 0.04,
+    "includedAllowanceApplied": false,
+    "note": "Preparation/test figures are full configured conservative windows, not measured output runtime, invoice values or enforced financial caps. Prices assume standard preemptible Functions/default region; actual peak RAM/CPU, builds and egress may add cost. Hub inbound weight downloads are not blindly billed as Modal egress."
+  },
+  "models": [
+    {
+      "model": "FLUX.2 Klein 4B",
+      "modelId": "flux2-klein-4b",
+      "accountProposed": "basm1998ali",
+      "version": "4B",
+      "revision": "e7b7dc27f91deacad38e78976d1f2b499d76a294",
+      "gpu": "L40S",
+      "cpu": 4,
+      "ramGiB": 64,
+      "resourceWindowSeconds": 3000,
+      "downloadGiB": 14.879,
+      "preparationResources": {
+        "gpu": null,
+        "cpu": 2,
+        "ramGiB": 8,
+        "windowSeconds": 3600
+      },
+      "preparationCPUUSD": 0.09432,
+      "preparationRAMUSD": 0.063936,
+      "testGPUUSD": 1.626,
+      "testCPUUSD": 0.1572,
+      "testRAMUSD": 0.42624,
+      "storageGrossUSDPerMonth": 1.339067,
+      "buildUSD": null,
+      "networkEgressUSD": null,
+      "proposedApprovalBudgetUSD": 5,
+      "approved": false,
+      "invoiceHardCapVerified": false,
+      "failurePlan": "One sequential attempt; stop only the recorded owned runtime/call; verify terminal calls and zero owned containers. Unknown state is retained and blocks all subsequent tests/retries/account switching.",
+      "testResourceWindowUSD": 2.20944,
+      "readiness": "software integrated; not prepared/deployed/real-inference-verified",
+      "blockers": []
+    },
+    {
+      "model": "Qwen Image Edit 2511",
+      "modelId": "qwen-image-edit-2511",
+      "accountProposed": "basm1998ali",
+      "version": "2511",
+      "revision": "6f3ccc0b56e431dc6a0c2b2039706d7d26f22cb9",
+      "gpu": "RTX-PRO-6000",
+      "cpu": 4,
+      "ramGiB": 128,
+      "resourceWindowSeconds": 5400,
+      "downloadGiB": 53.756,
+      "preparationResources": {
+        "gpu": null,
+        "cpu": 2,
+        "ramGiB": 8,
+        "windowSeconds": 3600
+      },
+      "preparationCPUUSD": 0.09432,
+      "preparationRAMUSD": 0.063936,
+      "testGPUUSD": 4.5468,
+      "testCPUUSD": 0.28296,
+      "testRAMUSD": 1.534464,
+      "storageGrossUSDPerMonth": 4.838073,
+      "buildUSD": null,
+      "networkEgressUSD": null,
+      "proposedApprovalBudgetUSD": 8,
+      "approved": false,
+      "invoiceHardCapVerified": false,
+      "failurePlan": "One sequential attempt; stop only the recorded owned runtime/call; verify terminal calls and zero owned containers. Unknown state is retained and blocks all subsequent tests/retries/account switching.",
+      "testResourceWindowUSD": 6.364224,
+      "readiness": "software integrated; not prepared/deployed/real-inference-verified",
+      "blockers": []
+    },
+    {
+      "model": "Wan 2.2 I2V-A14B",
+      "modelId": "wan22-i2v-a14b",
+      "accountProposed": "basm1998ali",
+      "version": "2.2",
+      "revision": "596658fd9ca6b7b71d5057529bbf319ecbc61d74",
+      "gpu": "RTX-PRO-6000",
+      "cpu": 4,
+      "ramGiB": 256,
+      "resourceWindowSeconds": 5400,
+      "downloadGiB": 117.535,
+      "preparationResources": {
+        "gpu": null,
+        "cpu": 2,
+        "ramGiB": 8,
+        "windowSeconds": 3600
+      },
+      "preparationCPUUSD": 0.09432,
+      "preparationRAMUSD": 0.063936,
+      "testGPUUSD": 4.5468,
+      "testCPUUSD": 0.28296,
+      "testRAMUSD": 3.068928,
+      "storageGrossUSDPerMonth": 10.578177,
+      "buildUSD": null,
+      "networkEgressUSD": null,
+      "proposedApprovalBudgetUSD": 10,
+      "approved": false,
+      "invoiceHardCapVerified": false,
+      "failurePlan": "One sequential attempt; stop only the recorded owned runtime/call; verify terminal calls and zero owned containers. Unknown state is retained and blocks all subsequent tests/retries/account switching.",
+      "testResourceWindowUSD": 7.898688,
+      "readiness": "software integrated; not prepared/deployed/real-inference-verified",
+      "blockers": []
+    },
+    {
+      "model": "HunyuanVideo 1.5",
+      "modelId": "hunyuanvideo15",
+      "accountProposed": "basm1998ali",
+      "version": "1.5",
+      "revision": "9b49404b3f5df2a8f0b31df27a0c7ab872e7b038",
+      "gpu": "RTX-PRO-6000",
+      "cpu": 4,
+      "ramGiB": 128,
+      "resourceWindowSeconds": 5400,
+      "downloadGiB": 148.27,
+      "preparationResources": {
+        "gpu": null,
+        "cpu": 2,
+        "ramGiB": 8,
+        "windowSeconds": 3600
+      },
+      "preparationCPUUSD": 0.09432,
+      "preparationRAMUSD": 0.063936,
+      "testGPUUSD": 4.5468,
+      "testCPUUSD": 0.28296,
+      "testRAMUSD": 1.534464,
+      "storageGrossUSDPerMonth": 13.344325,
+      "buildUSD": null,
+      "networkEgressUSD": null,
+      "proposedApprovalBudgetUSD": 8,
+      "approved": false,
+      "invoiceHardCapVerified": false,
+      "failurePlan": "One sequential attempt; stop only the recorded owned runtime/call; verify terminal calls and zero owned containers. Unknown state is retained and blocks all subsequent tests/retries/account switching.",
+      "testResourceWindowUSD": 6.364224,
+      "readiness": "software integrated; not prepared/deployed/real-inference-verified",
+      "blockers": [
+        "publisher territory/scale/disclosure conditions",
+        "selected variant not prepared; current manifest bundles all four variants"
+      ]
+    },
+    {
+      "model": "Habibi IRQ",
+      "modelId": "habibi-irq",
+      "accountProposed": "basm1998ali",
+      "version": "0.1.1-specialized",
+      "revision": "3ad11a152851245c002156526c5e1d0b12f2b9d5",
+      "gpu": "L40S",
+      "cpu": 2,
+      "ramGiB": 16,
+      "resourceWindowSeconds": 1500,
+      "downloadGiB": 1.307,
+      "preparationResources": {
+        "gpu": null,
+        "cpu": 2,
+        "ramGiB": 8,
+        "windowSeconds": 3600
+      },
+      "preparationCPUUSD": 0.09432,
+      "preparationRAMUSD": 0.063936,
+      "testGPUUSD": 0.813,
+      "testCPUUSD": 0.0393,
+      "testRAMUSD": 0.05328,
+      "storageGrossUSDPerMonth": 0.117611,
+      "buildUSD": null,
+      "networkEgressUSD": null,
+      "proposedApprovalBudgetUSD": 1.5,
+      "approved": false,
+      "invoiceHardCapVerified": false,
+      "failurePlan": "One sequential attempt; stop only the recorded owned runtime/call; verify terminal calls and zero owned containers. Unknown state is retained and blocks all subsequent tests/retries/account switching.",
+      "testResourceWindowUSD": 0.90558,
+      "readiness": "software integrated; not prepared/deployed/real-inference-verified",
+      "blockers": [
+        "approved owned voice reference/transcript required"
+      ]
+    },
+    {
+      "model": "Habibi EGY",
+      "modelId": "habibi-egy",
+      "accountProposed": "basm1998ali",
+      "version": "0.1.1-specialized",
+      "revision": "3ad11a152851245c002156526c5e1d0b12f2b9d5",
+      "gpu": "L40S",
+      "cpu": 2,
+      "ramGiB": 16,
+      "resourceWindowSeconds": 1500,
+      "downloadGiB": 1.307,
+      "preparationResources": {
+        "gpu": null,
+        "cpu": 2,
+        "ramGiB": 8,
+        "windowSeconds": 3600
+      },
+      "preparationCPUUSD": 0.09432,
+      "preparationRAMUSD": 0.063936,
+      "testGPUUSD": 0.813,
+      "testCPUUSD": 0.0393,
+      "testRAMUSD": 0.05328,
+      "storageGrossUSDPerMonth": 0.117618,
+      "buildUSD": null,
+      "networkEgressUSD": null,
+      "proposedApprovalBudgetUSD": 1.5,
+      "approved": false,
+      "invoiceHardCapVerified": false,
+      "failurePlan": "One sequential attempt; stop only the recorded owned runtime/call; verify terminal calls and zero owned containers. Unknown state is retained and blocks all subsequent tests/retries/account switching.",
+      "testResourceWindowUSD": 0.90558,
+      "readiness": "software integrated; not prepared/deployed/real-inference-verified",
+      "blockers": [
+        "approved owned voice reference/transcript required"
+      ]
+    },
+    {
+      "model": "Habibi MSA",
+      "modelId": "habibi-msa",
+      "accountProposed": "basm1998ali",
+      "version": "0.1.1-specialized",
+      "revision": "3ad11a152851245c002156526c5e1d0b12f2b9d5",
+      "gpu": "L40S",
+      "cpu": 2,
+      "ramGiB": 16,
+      "resourceWindowSeconds": 1500,
+      "downloadGiB": 1.307,
+      "preparationResources": {
+        "gpu": null,
+        "cpu": 2,
+        "ramGiB": 8,
+        "windowSeconds": 3600
+      },
+      "preparationCPUUSD": 0.09432,
+      "preparationRAMUSD": 0.063936,
+      "testGPUUSD": 0.813,
+      "testCPUUSD": 0.0393,
+      "testRAMUSD": 0.05328,
+      "storageGrossUSDPerMonth": 0.117604,
+      "buildUSD": null,
+      "networkEgressUSD": null,
+      "proposedApprovalBudgetUSD": 1.5,
+      "approved": false,
+      "invoiceHardCapVerified": false,
+      "failurePlan": "One sequential attempt; stop only the recorded owned runtime/call; verify terminal calls and zero owned containers. Unknown state is retained and blocks all subsequent tests/retries/account switching.",
+      "testResourceWindowUSD": 0.90558,
+      "readiness": "software integrated; not prepared/deployed/real-inference-verified",
+      "blockers": [
+        "approved owned voice reference/transcript required"
+      ]
+    },
+    {
+      "model": "Audar Flash",
+      "modelId": "audar-tts-v1-flash",
+      "accountProposed": "basm1998ali",
+      "version": "V1-Flash",
+      "revision": "addf2d80538edab4de2103843678825bc11ddce1",
+      "gpu": "L40S",
+      "cpu": 2,
+      "ramGiB": 16,
+      "resourceWindowSeconds": 1500,
+      "downloadGiB": 4.313,
+      "preparationResources": {
+        "gpu": null,
+        "cpu": 2,
+        "ramGiB": 8,
+        "windowSeconds": 3600
+      },
+      "preparationCPUUSD": 0.09432,
+      "preparationRAMUSD": 0.063936,
+      "testGPUUSD": 0.813,
+      "testCPUUSD": 0.0393,
+      "testRAMUSD": 0.05328,
+      "storageGrossUSDPerMonth": 0.388178,
+      "buildUSD": null,
+      "networkEgressUSD": null,
+      "proposedApprovalBudgetUSD": 1.5,
+      "approved": false,
+      "invoiceHardCapVerified": false,
+      "failurePlan": "One sequential attempt; stop only the recorded owned runtime/call; verify terminal calls and zero owned containers. Unknown state is retained and blocks all subsequent tests/retries/account switching.",
+      "testResourceWindowUSD": 0.90558,
+      "readiness": "software integrated; not prepared/deployed/real-inference-verified",
+      "blockers": [
+        "NeuCodec gated access unverified",
+        "approved owned voice reference/transcript required"
+      ]
+    },
+    {
+      "model": "LatentSync 1.6",
+      "modelId": "latentsync16",
+      "accountProposed": "basm1998ali",
+      "version": "1.6",
+      "revision": "c42c7e6c8e9c213626389fa7d9a3c444b8536353",
+      "gpu": "L40S",
+      "cpu": 4,
+      "ramGiB": 32,
+      "resourceWindowSeconds": 1500,
+      "downloadGiB": 6.538,
+      "preparationResources": {
+        "gpu": null,
+        "cpu": 2,
+        "ramGiB": 8,
+        "windowSeconds": 3600
+      },
+      "preparationCPUUSD": 0.09432,
+      "preparationRAMUSD": 0.063936,
+      "testGPUUSD": 0.813,
+      "testCPUUSD": 0.0786,
+      "testRAMUSD": 0.10656,
+      "storageGrossUSDPerMonth": 0.588454,
+      "buildUSD": null,
+      "networkEgressUSD": null,
+      "proposedApprovalBudgetUSD": 0,
+      "approved": false,
+      "invoiceHardCapVerified": false,
+      "failurePlan": "One sequential attempt; stop only the recorded owned runtime/call; verify terminal calls and zero owned containers. Unknown state is retained and blocks all subsequent tests/retries/account switching.",
+      "testResourceWindowUSD": 0.99816,
+      "readiness": "private noncommercial research only; excluded from proposed commercial round",
+      "blockers": [
+        "commercial InsightFace face weights grant unavailable",
+        "no approved confined research project/inputs in scope"
+      ]
+    }
+  ],
+  "fullRoundBeforeLatentSync": {
+    "downloadGiB": 342.674,
+    "preparationUSD": 1.266048,
+    "testResourceWindowUSD": 26.458896,
+    "totalComputeWindowUSD": 27.724944,
+    "grossStorageMonthUSD": 30.840653,
+    "proposedApprovalAllocationsUSD": 37.0,
+    "buildAndNetworkExtra": true,
+    "exceedsCurrentCreditsAtFullWindow": true,
+    "finalFilmNewGenerationBudgeted": false
+  },
+  "recommendedNextApproval": {
+    "scope": "one FLUX preparation and one private image generation only; no other engine, no customer publication",
+    "account": "basm1998ali",
+    "computeAndBuildWorkingBudgetUSD": 5,
+    "persistentWeightsGiB": 14.879,
+    "grossStorageMonthUSD": 1.339067,
+    "includedStorageAllowanceUnverified": true,
+    "notProviderInvoiceCap": true,
+    "prerequisites": [
+      "agree explicit operational budget and exact resource/time/stop settings before any dispatch",
+      "use securely bound current new-engine backend/private path; no live deploy without separate consent",
+      "retain uncertain outcomes; no retry or next engine after failure"
+    ],
+    "approved": false
+  },
+  "trialOrder": [
+    "FLUX one portrait",
+    "Qwen one owned reference edit",
+    "Wan one supported short silent motion",
+    "Hunyuan same motion/reference comparison after licence conditions",
+    "Habibi IRQ, EGY, MSA one reference-bound sample each",
+    "Audar one expression sample after legal gated access; another expression requires explicit added allowance",
+    "LatentSync separate lawful confined noncommercial research only, not in commercial budget",
+    "new short final film only after required accepted samples and a separate bounded film quote"
+  ],
+  "compatibility": {
+    "python": "3.12 configured",
+    "imageVideo": "torch2.9.1+cu128, torchvision0.24.1+cu128 where required, diffusers0.42.1, transformers5.22.1",
+    "speech": "torch/torchaudio2.8.0+cu128, transformers4.57.6, neucodec0.0.6",
+    "latentsync": "torch/torchvision/torchaudio2.5.1/0.20.1/2.5.1+cu121 on L40S; separate environment",
+    "cloudBuildOrRuntimeValidated": false,
+    "previousDependencyMockChecks": "evidence only; CUDA imports, native compilation, GPU memory, reference identity and speech quality unproven"
+  },
+  "actionsNotPerformed": [
+    "container/image build",
+    "weight download/copy",
+    "CPU preparation job",
+    "GPU task",
+    "OpenAI/paid API",
+    "resource stop",
+    "backup/restore",
+    "source implementation changes",
+    "production deploy",
+    "new model publication",
+    "phase2"
+  ],
+  "subsequentStrict5USDGate": {
+    "decision": "STOP_BEFORE_PAID_DISPATCH",
+    "evidence": "docs/completion-04-flux-strict-budget-gate.json",
+    "B2DirectAuthorizationReopened": true,
+    "previousIntegrationReadinessIsNotEndToEndCloudAuthorizationProof": true
+  },
+  "storageAllowanceCorrection": {
+    "checkedDate": "2026-10-31",
+    "officialSource": "https://modal.com/pricing#what-does-my-included-usage-cover",
+    "officialStatement": "Volumes include up to 1 TiB free.",
+    "workspaceEnvironmentInventory": [
+      "main"
+    ],
+    "currentGiB": 79.449,
+    "withFluxGiB": 94.328,
+    "withAllProposedNonLatentModelsGiB": 422.123,
+    "SDKVolumeMeteredCostUSD": "0.00000000",
+    "interpretation": "Prior gross list-price estimates are not an actual monthly amount due; current and proposed stated storage remain below1024GiB as long as no additional storage exceeds this allowance."
+  },
+  "latestApproval": {
+    "model": "flux2-klein-4b",
+    "account": "basm1998ali",
+    "maxTotalTrialUSD": 20,
+    "workspaceUsageLimitUSD": 26,
+    "netSpendLimitUSD": 0,
+    "explicitWorkspaceLimitUserConsent": true,
+    "baselineGrossUSD": "6.34874585",
+    "additionalWorkspaceHeadroomUSD": 19.65125415,
+    "sitePublishApproved": false,
+    "otherModelsApproved": false
+  }
+}

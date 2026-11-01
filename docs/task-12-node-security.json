@@ -1,0 +1,69 @@
+{
+  "checkedDate": "2026-10-31",
+  "command": "npm audit --omit=dev --json",
+  "counts": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 2,
+    "critical": 0,
+    "total": 2
+  },
+  "affected": {
+    "@imgly/background-removal": {
+      "name": "@imgly/background-removal",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "zod"
+      ],
+      "effects": [],
+      "range": ">=1.2.0",
+      "nodes": [
+        "node_modules/@imgly/background-removal"
+      ],
+      "fixAvailable": {
+        "name": "@imgly/background-removal",
+        "version": "1.1.5",
+        "isSemVerMajor": true
+      }
+    },
+    "zod": {
+      "name": "zod",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1243066,
+          "name": "zod",
+          "dependency": "zod",
+          "title": "Zod can exhaust memory while validating oversized constrained collections",
+          "url": "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5",
+          "severity": "high",
+          "cwe": [
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<4.6.6"
+        }
+      ],
+      "effects": [
+        "@imgly/background-removal"
+      ],
+      "range": "<4.6.6",
+      "nodes": [
+        "node_modules/@imgly/background-removal/node_modules/zod"
+      ],
+      "fixAvailable": {
+        "name": "@imgly/background-removal",
+        "version": "1.1.5",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "automaticFixApplied": false,
+  "reason": "Suggested replacement changes compatibility; no blind forced major/downgrade applied during scoped audit."
+}

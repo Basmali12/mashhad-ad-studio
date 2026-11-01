@@ -1,3 +1,4 @@
+import {backgroundRemovalSecurity} from './scripts/background-removal-security';
 import {defineConfig} from 'vite';
 import fs from 'node:fs';
 const localSample={name:'local-film-sample',configureServer(server:import('vite').ViteDevServer){server.middlewares.use((req,res,next)=>{
@@ -10,4 +11,4 @@ const localSample={name:'local-film-sample',configureServer(server:import('vite'
  }).catch(()=>{res.statusCode=404;res.end();});
  });}};
 // Dedicated local view: no project env files or publishing/server plugins.
-export default defineConfig({envDir:false,server:{host:'127.0.0.1',port:43148,strictPort:true},define:{__APP_VERSION__:JSON.stringify('معاينة محلية')},plugins:[localSample,{name:'local-preview-entry',configureServer(server){server.middlewares.use((req,_res,next)=>{if(req.url?.split('?')[0]==='/')req.url='/preview.html';next();});}}]});
+export default defineConfig({envDir:false,server:{host:'127.0.0.1',port:43148,strictPort:true},define:{__APP_VERSION__:JSON.stringify('معاينة محلية')},plugins:[backgroundRemovalSecurity(),localSample,{name:'local-preview-entry',configureServer(server){server.middlewares.use((req,_res,next)=>{if(req.url?.split('?')[0]==='/')req.url='/preview.html';next();});}}]});

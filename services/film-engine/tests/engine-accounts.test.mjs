@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,rm,readFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+import {randomBytes} from 'node:crypto';
+import {createEngineAPI} from '../engine/api.mjs';
+import {createEngineRegistry} from '../engine/engine-registry.mjs';
+import {Store} from '../engine/store.mjs';
+
+test('account addition verifies only, seals secrets, denies duplicates and admits inactive-model definitions without allocating',async t=>{
+ const folder=await mkdtemp(path.join(tmpdir(),'generic-accounts-')),calls=[];
+ const provider={call:async action=>{calls.push(action);if(action!=='verify')throw Error('CLOUD_FORBIDDEN');return {workspace:'fixture-new-account'};},session:()=>{throw Error('GPU_FORBIDDEN');}};
+ const key=randomBytes(32).toString('base64'),store=new Store(folder,key);store.installRentalSchema();
+ const api=await createEngineAPI({folder,key,store,provider,allowPaid:false,allowCustomerRentals:true,origin:'https://fixture.test'});
+ t.after(async()=>{await api.close();await rm(folder,{recursive:true,force:true});});
+ const input={label:'نور تجريبي',tokenId:'ak-synthetic-id-123456',tokenSecret:'as-synthetic-secret-123456'};
+ const saved=await api.invoke('accounts',input);assert.equal(saved.label,input.label);assert.equal(saved.workspace,'fixture-new-account');assert.ok(!JSON.stringify(saved).includes(input.tokenSecret));assert.ok(!JSON.stringify(saved).includes(input.tokenId));
+ const stored=api.store.get('account',saved.id);assert.equal(stored.activated,false);assert.notEqual(stored.credentials,input.tokenSecret);assert.equal(api.store.open(stored.credentials,saved.id).tokenSecret,input.tokenSecret);
+ assert.throws(()=>api.store.open(stored.credentials,'different-account'));
+ assert.equal((await readFile(path.join(folder,'engines.sqlite'))).includes(Buffer.from(input.tokenSecret)),false);
+ await assert.rejects(api.invoke('accounts',input),/ACCOUNT_ALREADY_LINKED/);await assert.rejects(api.invoke('accounts',{...input,tokenId:'invalid'}),/INVALID_TOKEN_FORMAT/);
+ await assert.rejects(api.invoke('accounts',input,{tenantId:'customer',rentalId:'rental',engineSlotId:'slot',accountId:saved.id}),/RENTAL_SCOPE_DENIED/);
+ const registry=createEngineRegistry({store:api.store}),actor={isAdmin:true};
+ const def=await registry.dispatch(actor,'admin.engine.save',{accountId:saved.id,modelId:'flux2-klein-4b',name:'صور',gpu:'RTX-PRO-6000',cpu:4,ramGiB:96,hourPriceUSD:'3'});
+ assert.equal(def.preparationState,'needs_manifest');assert.equal(def.runtime.state,'stopped');assert.deepEqual(calls,['verify','verify']);assert.equal(api.store.all('job').length,0);
+ api.store.put('engine-runtime',{id:def.id,runId:'unconfirmed-fixture',accountId:saved.id,cloudStopped:false,state:'failed'});
+ await assert.rejects(api.invoke('accounts/'+saved.id,undefined,undefined,'DELETE'),/STOP_AND_RECONCILE_JOBS_FIRST/);
+ api.store.put('engine-runtime',{id:def.id,runId:'unconfirmed-fixture',accountId:saved.id,cloudStopped:true,state:'stopped'});
+ await assert.rejects(api.invoke('accounts/'+saved.id,undefined,undefined,'DELETE'),/ACCOUNT_IN_USE/);
+});

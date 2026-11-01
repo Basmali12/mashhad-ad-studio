@@ -23,7 +23,7 @@ export default function AdminCommissioning({request,accounts,onRefresh}:{request
  },[slotId,request,follow,stopId,onRefresh]);
  const inFlight=!!status&&!['not_started','completed','failed','stopped','needs_review'].includes(status.status)||!!status&&status.status!=='not_started'&&status.cloudStopped!==true;
  return <section className="film-card film-commissioning"><h3>تجهيز المحرك واختباره ونشره</h3>
-  <p>كل الخطوات من هنا. الأوزان تبقى في التخزين الدائم؛ مكتبات CUDA وPyTorch وLTX تُبنى داخل صورة Modal عند اختبار التشغيل، وتُعاد الاستفادة من الصورة المحفوظة.</p>
+  <p>إدارة الحسابات والتخزين والمحركات باقية. إنتاج الفيديو متوقف إلى حين إعداد محرك جديد؛ لا يبدأ تجهيز مدفوع أو اختبار بمجرد فتح هذه الصفحة.</p>
   <ol className="film-commission-steps"><li>ربط الحساب وفحصه</li><li>تجهيز الأوزان والتحقق منها</li><li>محرك خاص</li><li>بناء المكتبات واختبار فيديو</li><li>معاينة الصورة والصوت</li><li>نشر للزبائن</li></ol>
   <label>الحساب<select value={accountId} onChange={e=>{setAccountId(e.target.value);setSlotId('');setStatus(null);setVideo('');setQuote(null);setReviewed(false);}} disabled={busy||inFlight}><option value="">اختر حساباً محفوظاً</option>{accounts.filter(a=>!a.unlinked).map(a=><option key={a.id} value={a.id}>{a.label||a.workspace}{a.weightsReady?' — الأوزان جاهزة':' — يحتاج تجهيز الأوزان'}</option>)}</select></label>
   {account&&!account.weightsReady&&<p className="film-warning">الحساب مربوط، لكن الأوزان غير معتمدة بعد. أكمل تجهيز الحساب أعلاه؛ لا يبدأ اختبار GPU ولا يظهر للزبائن الآن.</p>}

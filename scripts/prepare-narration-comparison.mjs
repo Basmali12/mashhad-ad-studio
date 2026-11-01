@@ -1,0 +1,14 @@
+/* global process, console */
+/** Offline review package. Never imports a provider or dispatches synthesis.
+ * Optional --input DIR: <styleId>.wav + <styleId>.json {text,sha256}.
+ * Different-text recordings are rejected, not presented as a fair comparison.
+ */
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {hash} from '../services/film-engine/engine/store.mjs';
+import {narrationComparisonPlan,NARRATION_STYLES} from '../services/film-engine/engine/narration-styles.mjs';
+import {speechSignal} from '../services/film-engine/engine/narration-mastering.mjs';
+const repo=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),arg=process.argv.indexOf('--input'),input=arg<0?null:path.resolve(process.argv[arg+1]??''),out=path.resolve(repo,'work/narration-comparison');await fs.mkdir(out,{recursive:true});const plan=narrationComparisonPlan();
+for(const sample of plan.samples){if(!input)continue;const stem=path.join(input,sample.styleId);let receipt;try{receipt=JSON.parse(await fs.readFile(stem+'.json','utf8'));}catch(e){if(e.code==='ENOENT')continue;throw e;}if(receipt.text!==plan.text)throw Error('NARRATION_COMPARISON_TEXT_MISMATCH');const bytes=await fs.readFile(stem+'.wav');if(receipt.sha256!==hash(bytes))throw Error('NARRATION_COMPARISON_AUDIO_CHANGED');const signal=speechSignal(bytes);if(signal.sampleRate!==24000||signal.channels!==1)throw Error('NARRATION_COMPARISON_FORMAT_INVALID');await fs.writeFile(path.join(out,sample.styleId+'.wav'),bytes);sample.state='awaiting_listening_review';sample.signal=signal;sample.audio=sample.styleId+'.wav';sample.listeningApproved=false;}
+const escape=t=>t.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');const html=`<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>مقارنة أصوات مشهد — محلي</title><style>body{font:18px system-ui;max-width:850px;margin:auto;padding:24px;background:#101724;color:#eee}article{padding:16px;border:1px solid #65758c;border-radius:12px;margin:12px 0}audio{width:100%}small{color:#a7b8cc}</style><h1>مقارنة أصوات مشهد</h1><p>${escape(plan.text)}</p><p>النص واحد. إعداد السرعة والمرجع موضحان لكل عينة. لا توجد عينات مولّدة أو معتمدة تلقائياً. استخدم مستوى استماع ثابتاً وقيّم النطق والوقفات والخامة.</p>${plan.samples.map(s=>`<article><h2>${NARRATION_STYLES.find(v=>v.id===s.styleId).label}</h2><small>السرعة: ${s.speakingRate} · Habibi MSA</small>${s.audio?`<audio controls preload="none" src="${s.audio}"></audio>`:'<p>بانتظار مرجع مرخص وموافقة على التجربة الصوتية.</p>'}</article>`).join('')}</html>`;await fs.writeFile(path.join(out,'index.html'),html);await fs.writeFile(path.join(out,'plan.json'),JSON.stringify(plan,null,2));console.log(JSON.stringify({review:path.join(out,'index.html'),samples:plan.samples.length,available:plan.samples.filter(s=>s.audio).length,paidDispatch:false}));

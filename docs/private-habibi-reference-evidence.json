@@ -1,0 +1,102 @@
+{
+  "purpose": "private_functional_tests_only",
+  "datasetRevision": "1d247ff668738d824c400cdefc542df6499f8c5e",
+  "sourceCodeRevision": "3b4d793481f1a8e686a2229c6d7946c5d9f6b8c0",
+  "recordingLicense": "Apache-2.0",
+  "licenseSource": "https://huggingface.co/datasets/SWivid/Habibi/blob/1d247ff668738d824c400cdefc542df6499f8c5e/README.md",
+  "licenseCardSHA256": "20c0fbbea2ae99601440509739e6a36e292e76be0787b11c17ae13c09f67a24b",
+  "scope": "Licensed benchmark use; no claimed human consent, endorsement, identity clearance or production voice publication.",
+  "excluded": "Official EGY/MSA MP3 examples originate from ElevenLabs voice library; not used.",
+  "references": [
+    {
+      "dialect": "IRQ",
+      "modelId": "habibi-irq",
+      "source": "https://raw.githubusercontent.com/SWivid/Habibi-TTS/3b4d793481f1a8e686a2229c6d7946c5d9f6b8c0/src/habibi_tts/assets/IRQ.wav",
+      "metadataSource": "https://raw.githubusercontent.com/SWivid/Habibi-TTS/3b4d793481f1a8e686a2229c6d7946c5d9f6b8c0/src/habibi_tts/assets/README.md",
+      "datasetRow": null,
+      "transcript": "يعني ااا ما نقدر ناخذ وقت أكثر، ااا لأنه شروط كلش يحتاجلها وقت.",
+      "transcriptSource": "official pinned assets README",
+      "sourceSHA256": "d6180049f407364cc6667ad6903ba5e55a2b00f002d17ffe16a685199859fca4",
+      "sourceAudio": {
+        "sampleRate": 24000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "samples": 132888,
+        "durationMs": 5537
+      },
+      "normalizedSHA256": "5a188a04d5918f9b95732157128ec465b3cd62bfb059efd149b38e27477f85b0",
+      "normalizedAudio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "samples": 88592,
+        "durationMs": 5537
+      },
+      "localFileName": "IRQ-16khz.wav",
+      "conversion": "FFmpeg PCM resample only; no trim, padding, synthesis or transcript rewrite",
+      "rightsAttestationKind": "licensed",
+      "privateOnly": true,
+      "listeningVerified": false
+    },
+    {
+      "dialect": "EGY",
+      "modelId": "habibi-egy",
+      "source": "https://datasets-server.huggingface.co/cached-assets/SWivid/Habibi/--/1d247ff668738d824c400cdefc542df6499f8c5e/--/EGY/test/0/audio/audio.wav",
+      "metadataSource": "https://datasets-server.huggingface.co/rows?dataset=SWivid%2FHabibi&config=EGY&split=test&offset=0&length=1",
+      "datasetRow": 0,
+      "transcript": "لو حد بص على الترجمة بتاعتها في القاموس حيلاقي عدم اليقين بس ده ترجمة مش دقيقة برضه، هو يقين ناقص",
+      "transcriptSource": "official benchmark row",
+      "sourceSHA256": "842a699af5f4a7290b0f0fe86a03509e7ecba0b19ade9d95f49a89268f75895c",
+      "sourceAudio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "samples": 135456,
+        "durationMs": 8466
+      },
+      "normalizedSHA256": "842a699af5f4a7290b0f0fe86a03509e7ecba0b19ade9d95f49a89268f75895c",
+      "normalizedAudio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "samples": 135456,
+        "durationMs": 8466
+      },
+      "localFileName": "EGY-16khz.wav",
+      "conversion": "FFmpeg PCM resample only; no trim, padding, synthesis or transcript rewrite",
+      "rightsAttestationKind": "licensed",
+      "privateOnly": true,
+      "listeningVerified": false
+    },
+    {
+      "dialect": "MSA",
+      "modelId": "habibi-msa",
+      "source": "https://datasets-server.huggingface.co/cached-assets/SWivid/Habibi/--/1d247ff668738d824c400cdefc542df6499f8c5e/--/MSA/test/2/audio/audio.wav",
+      "metadataSource": "https://datasets-server.huggingface.co/rows?dataset=SWivid%2FHabibi&config=MSA&split=test&offset=2&length=1",
+      "datasetRow": 2,
+      "transcript": "مسار الإصلاح السياسي في المغرب على محك الانتخابات المحلية",
+      "transcriptSource": "official benchmark row",
+      "sourceSHA256": "cb23a912e8e7cc32bddc4201cd295889b9f7d556d525765e5e5aa4bcf31cfda7",
+      "sourceAudio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "samples": 90560,
+        "durationMs": 5660
+      },
+      "normalizedSHA256": "adbd09d7b816a64455f75b95a49ba30b6bb8596e52bfa3f7a1b8b23f74902f1e",
+      "normalizedAudio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "samples": 90560,
+        "durationMs": 5660
+      },
+      "localFileName": "MSA-16khz.wav",
+      "conversion": "FFmpeg PCM resample only; no trim, padding, synthesis or transcript rewrite",
+      "rightsAttestationKind": "licensed",
+      "privateOnly": true,
+      "listeningVerified": false
+    }
+  ]
+}

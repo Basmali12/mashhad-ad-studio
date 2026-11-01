@@ -1,0 +1,37 @@
+{
+  "observedAtUTC": "2026-10-31T23:27:29.258092+00:00",
+  "scope": "primary approved private model apps only",
+  "apps": [
+    {
+      "name": "mashhad-hunyuan-7893b4ff02ff",
+      "appId": "ap-vhP71jKPo62L9tk2Ee3eLB",
+      "stopped": true,
+      "activeTasks": 0
+    },
+    {
+      "name": "mashhad-wan-d830d93c394d",
+      "appId": "ap-1j96ElhlVTI56zzEp3EH3b",
+      "stopped": true,
+      "activeTasks": 0
+    },
+    {
+      "name": "mashhad-wan-d830d93c394d",
+      "appId": "ap-yJLA1D4Ux8Tb6fiYdhyWRN",
+      "stopped": true,
+      "activeTasks": 0
+    },
+    {
+      "name": "mashhad-qwen-226b322e3abb",
+      "appId": "ap-bpTgnl0C2o3AHkhmA2O9fQ",
+      "stopped": true,
+      "activeTasks": 0
+    },
+    {
+      "name": "mashhad-flux-ccdb2b9aca33",
+      "appId": "ap-KNTSx2Frte8zk7JIBO1OmS",
+      "stopped": true,
+      "activeTasks": 0
+    }
+  ],
+  "allStopped": true
+}
