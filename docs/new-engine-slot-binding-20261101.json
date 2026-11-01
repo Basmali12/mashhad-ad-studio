@@ -1,0 +1,46 @@
+{
+  "recordedAt": "2026-11-01T20:53:32.768796+00:00",
+  "backendSource": "1571dad9c02e1c17869fd02b3ac8be4a4ccb5a40",
+  "cardsLinked": 3,
+  "modelDefinitions": 18,
+  "primaryExistingWeightLocationsLinked": 6,
+  "customerTariffUSDPerHour": 3,
+  "directorEnabled": true,
+  "GPUEnabled": false,
+  "paidOperations": 0,
+  "readOnlyFluxInspection": {
+    "present": 17,
+    "total": 17,
+    "verified": 0,
+    "deploymentReady": false
+  },
+  "walletAndAccountsPreserved": true,
+  "tests": {
+    "backend": {
+      "passed": 799,
+      "failed": 0,
+      "skipped": 0,
+      "note": "Full suite before final canonical-ID migration adjustment; affected tests rerun afterwards"
+    },
+    "gateway": {
+      "passed": 82,
+      "failed": 0
+    },
+    "finalAffectedTransportAndBinding": {
+      "passed": 22,
+      "failed": 0
+    },
+    "deploymentGuards": {
+      "passed": 4,
+      "failed": 0
+    },
+    "typecheck": "passed",
+    "lint": "passed"
+  },
+  "remaining": [
+    "Primary imported files require fresh account-bound checksums/READY attestation and deployment; no private test approval copied",
+    "Secondary accounts require independent preparation and commissioning",
+    "GPU execution and untested engine publication remain disabled; no cloud prepare or inference was authorized for this linkage operation"
+  ],
+  "deploymentIntegrityNote": "Exclude only film-customer.updatedAt from comparisons; all balances, account credentials, other customer fields, file/project records remain protected."
+}
