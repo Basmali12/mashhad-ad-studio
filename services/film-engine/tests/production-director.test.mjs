@@ -200,3 +200,11 @@ test('real director quote contains chosen narrator candidates, never runnable or
  assert.equal(context.approvedVoiceProfiles[0].modelId,'habibi-irq');
  assert.equal(f.modelCalls(),0);assert.equal(f.calls.length,0);
 });
+
+test('admin text configuration uses the new director without retired engine routes or paid calls',async t=>{
+ const folder=await mkdtemp(path.join(tmpdir(),'director-admin-config-')),store=new Store(folder,randomBytes(32).toString('base64'));let legacy=0;
+ store.put('config',{id:'openai-director',credentials:store.seal({key:'synthetic-key'},'openai-director')});
+ const platform=createFilmPlatform({engine:{store,allowPaid:false,productionAvailable:false,invoke:async()=>{legacy++;throw Error('RETIRED_ROUTE');}},origin:'https://fixture.test',secret:'synthetic-test-secret-at-least-32',startWorker:false});
+ t.after(async()=>{await platform.close();store.close();await rm(folder,{recursive:true,force:true});});
+ const value=await platform.dispatch({id:'admin-config',email:'admin@fixture.test',isAdmin:true},'admin.text.config',{});assert.equal(value.configured,true);assert.equal(legacy,0);assert.equal(store.all('production-text-call').length,0);
+});
