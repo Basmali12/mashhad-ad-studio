@@ -1,6 +1,6 @@
 {
   "recordedAt": "2026-11-01T20:53:32.768796+00:00",
-  "backendSource": "1571dad9c02e1c17869fd02b3ac8be4a4ccb5a40",
+  "backendSource": "5923b83ee9db5451745574bc90a94c2b13a7cd73",
   "cardsLinked": 3,
   "modelDefinitions": 18,
   "primaryExistingWeightLocationsLinked": 6,
@@ -12,7 +12,8 @@
     "present": 17,
     "total": 17,
     "verified": 0,
-    "deploymentReady": false
+    "deploymentReady": false,
+    "note": "Actual SDK read on primary account; 17 files present, 0 accepted under new live account attestation; no GPU/deploy/download."
   },
   "walletAndAccountsPreserved": true,
   "tests": {
@@ -42,5 +43,12 @@
     "Secondary accounts require independent preparation and commissioning",
     "GPU execution and untested engine publication remain disabled; no cloud prepare or inference was authorized for this linkage operation"
   ],
-  "deploymentIntegrityNote": "Exclude only film-customer.updatedAt from comparisons; all balances, account credentials, other customer fields, file/project records remain protected."
+  "deploymentIntegrityNote": "Exclude only film-customer.updatedAt from comparisons; all balances, account credentials, other customer fields, file/project records remain protected.",
+  "finalDeploymentManifestCommit": "c5774b573a6794a27ba301f95b8ce5310187c51b",
+  "finalAdminRefresh": "successful, no unavailable banner",
+  "finalAffectedDirectorAndBindings": {
+    "passed": 27,
+    "failed": 0
+  },
+  "canonicalWeightIdentitiesPreserved": true
 }
