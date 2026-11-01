@@ -1599,13 +1599,13 @@
   "adminFiles": [
     {
       "path": "admin.html",
-      "bytes": 907,
-      "sha256": "e4c16de1f4e713a7a54616a752273662e321ff34491f5c4b354f8ede46751092"
+      "bytes": 906,
+      "sha256": "37a7bf6a3f2fd468a56db468486745241d9953a373dd9146ece71af7435146b0"
     },
     {
       "path": "admin.webmanifest",
-      "bytes": 654,
-      "sha256": "4086bad94587e047fb8854dffebb4ab84c9fef6321d06b7720bcacc9f8e2e131"
+      "bytes": 628,
+      "sha256": "465d138c27600abd613b3416cf4304d10aaab35ecf68cd52674788dee19bf32c"
     },
     {
       "path": "app-192.png",
@@ -1619,18 +1619,18 @@
     },
     {
       "path": "CNAME",
-      "bytes": 18,
-      "sha256": "1bf22700a3947cd90b79acc67718aa1916668b093ed3e7e1f9894aecb640a890"
+      "bytes": 17,
+      "sha256": "27a6d016ac4cc1c36a446914162b38c6038562b8f4df1528b7c1cb8d35be32d1"
     },
     {
       "path": "data-deletion.html",
-      "bytes": 1811,
-      "sha256": "09affd4e5dc4e008415808719d2dc630023ef514efe78abfd430714d191ee6bd"
+      "bytes": 1810,
+      "sha256": "91891c26aac993fa1efe694f1f6194154e96c5d20a20b536231238d08a416edd"
     },
     {
       "path": "manifest.webmanifest",
-      "bytes": 680,
-      "sha256": "87726b6b36c7d641fd6f016d68ec9e45cbb2a3d2fd40dae716c464bdec3162f8"
+      "bytes": 654,
+      "sha256": "fddc6afcf52f6185cfb710ed01afd60e2d5e0534ae6627ced2abc9b0bfeb1d5c"
     },
     {
       "path": "mashhad-admin-icon-v1-180.png",
@@ -1674,13 +1674,13 @@
     },
     {
       "path": "privacy.html",
-      "bytes": 3118,
-      "sha256": "f33dc6b23c2b2a43b6a311051a2e2ac5deec32ad114740c2eff56c0623220fe4"
+      "bytes": 3117,
+      "sha256": "62fbbde917cd180e3e041ea6956e9e5e0ccdb6885e8c8ddd993810d1d14ea137"
     },
     {
       "path": "sw.js",
-      "bytes": 237,
-      "sha256": "6daf25f74fe5ba95707c97544ad68ab4557c3ce9fea2d8ddcb6e2e0dc29ced02"
+      "bytes": 233,
+      "sha256": "482ecb61c11a2275561f55118dee6603d3595b78b9bbe3189f62a7b2b40cc2f7"
     },
     {
       "path": "ui-warmup.json",
@@ -1729,8 +1729,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 907,
-      "sha256": "e4c16de1f4e713a7a54616a752273662e321ff34491f5c4b354f8ede46751092"
+      "bytes": 906,
+      "sha256": "37a7bf6a3f2fd468a56db468486745241d9953a373dd9146ece71af7435146b0"
     }
   ],
   "gpuAllowed": false,
