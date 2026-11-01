@@ -164,7 +164,7 @@ def bridge_probe(gateway):
     origin = gateway['FILM_BACKEND_ORIGIN'].rstrip('/')
     require(origin.startswith('https://'), 'HTTPS_REQUIRED')
     body = json.dumps({'requestId': str(uuid.uuid4()), 'actor': {'id': 'deployment-verification', 'isAdmin': True},
-                       'operation': 'admin.engine.models', 'input': {}}, separators=(',', ':')).encode()
+                       'operation': None, 'input': {}}, separators=(',', ':')).encode()
     timestamp, nonce = str(int(time.time() * 1000)), str(uuid.uuid4())
     signature = hmac.new(gateway['FILM_BRIDGE_SECRET'].encode(), timestamp.encode() + b'\n' +
                          nonce.encode() + b'\n' + body, hashlib.sha256).hexdigest()
@@ -172,11 +172,16 @@ def bridge_probe(gateway):
     request = urllib.request.Request(origin + '/api/film-bridge', data=body,
         headers={'Content-Type': 'application/json', 'x-film-time': timestamp,
                  'x-film-nonce': nonce, 'x-film-signature': signature})
-    with urllib.request.urlopen(request, context=context, timeout=30) as response:
-        value = json.load(response)
-        require(response.status == 200 and isinstance(value, (dict, list))
-                and (not isinstance(value, dict) or not value.get('error')), 'BRIDGE_PROBE_FAILED')
-    return {'signedModelsContract': True}
+    # Invalid operation is rejected after HMAC/store checks and before customer writes.
+    # A deployment probe must not create a synthetic user or alter customer timestamps.
+    try:
+        with urllib.request.urlopen(request, context=context, timeout=30):
+            raise RuntimeError('BRIDGE_PROBE_FAILED')
+    except urllib.error.HTTPError as error:
+        value = json.loads(error.read(4096))
+        require(error.code == 400 and value.get('error') == 'INVALID_INPUT', 'BRIDGE_PROBE_FAILED')
+    return {'signedBackendContract': True, 'probeCreatedCustomer': False}
+
 
 
 def apply(commit):
