@@ -58,3 +58,23 @@ export function newEngineSlotPublication(e,publication,previous){
  if(e.rentalSlotId&&(!previous||previous.id!==e.rentalSlotId||previous.accountId!==e.accountId||previous.genericEngineId!==e.id||previous.retired))throw Error('ENGINE_BINDING_MISMATCH');
  return {...previous,id:e.rentalSlotId??e.id,genericEngineId:e.id,modelId:e.modelId,accountId:e.accountId,name:e.rentalSlotId?previous.name:e.name,gpu:e.gpu,ram:e.ramGiB,cpu:e.cpu,settings:{gpu:e.gpu,cpu:e.cpu,ram:e.ramGiB},hourMicros:e.hourMicros,revision:e.revision,published:true,locked:false,testingOnly:false,retired:false,publicationTestId:publication.testId};
 }
+
+/** Owner-directed storage pointers only: never transplant readiness/test receipts. */
+export async function linkExistingWeightLocations({store,workspace,sources,approved=false}){
+ if(!approved)throw Error('APPROVAL_REQUIRED');
+ if(!Array.isArray(sources)||new Set(sources.map(x=>x.modelId)).size!==sources.length)throw Error('INVALID_WEIGHT_SOURCE');
+ for(const row of sources)if(!MODEL_IDS.includes(row.modelId)||!/^[A-Za-z0-9_-]{1,100}$/.test(row.volume??'')||!new RegExp('^models/'+row.modelId+'/[A-Za-z0-9_-]{1,100}$').test(row.weightPath??''))throw Error('INVALID_WEIGHT_SOURCE');
+ return store.transaction(async()=>{
+  const accounts=(await store.all('account')).filter(a=>!a.unlinked&&a.workspace===workspace);if(accounts.length!==1)throw Error('WEIGHT_ACCOUNT_AMBIGUOUS');const account=accounts[0];
+  for(const kind of ['rental','engine-runtime','engine-preparation','engine-test','job'])for(const row of await store.all(kind))if(row.accountId===account.id&&(kind==='rental'?row.state!=='closed':row.cloudStopped!==true))throw Error('ACCOUNT_IN_USE');
+  let updated=0;
+  for(const source of sources)for(const e of (await store.all('engine-definition')).filter(e=>e.accountId===account.id&&e.modelId===source.modelId)){
+   if(e.volume===source.volume&&e.weightPath===source.weightPath)continue;
+   e.volume=source.volume;e.weightPath=source.weightPath;e.revision++;delete e.publication;
+   await store.put('engine-definition',e);await store.delete('engine-inspection',e.id);
+   if(e.rentalSlotId){const slot=await store.get('film-slot',e.rentalSlotId);if(slot?.genericEngineId!==e.id||slot.accountId!==account.id)throw Error('ENGINE_BINDING_MISMATCH');await store.put('film-slot',{...slot,locked:true});}
+   await store.audit('existing_weight_location_linked_unverified',e.id);updated++;
+  }
+  return {updated,readyTransferred:false,paidOperations:0};
+ });
+}
