@@ -1,6 +1,6 @@
 {
   "schema": "mashhad-site-update-v1",
-  "sourceCommit": "1571dad9c02e1c17869fd02b3ac8be4a4ccb5a40",
+  "sourceCommit": "5923b83ee9db54517455748c90a94c2b13a7cd73",
   "pagesCommit": "dedfaf0369f82bb61f6957095c16eb0b9592ef8d",
   "customerVersion": "2026.11.01.1-mashhad-1793557883126",
   "adminVersion": "2026.11.01.1-mashhad-1793557938364",
@@ -177,8 +177,8 @@
     },
     {
       "path": "services/film-engine/engine/film-platform.mjs",
-      "bytes": 91397,
-      "sha256": "4810ffd7fb1364d10deacdbbc1359566e0b962e6e7e1ee4f24594d3c9e3694db"
+      "bytes": 91353,
+      "sha256": "cbc6745e57414ef2a8e34ad49b99632bea718bfe2b6c6fa8d94b084f393040f5"
     },
     {
       "path": "services/film-engine/engine/film-progress.mjs",
