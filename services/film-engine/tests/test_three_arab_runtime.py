@@ -80,6 +80,10 @@ class CandidateTests(unittest.TestCase):
  def test_missing_or_invalid_explicit_duration_blocks_thirty_second_fallback(self):
   for duration in (None,True,0,30,float('nan')):
    with self.assertRaisesRegex(ValueError,'DURATION'):runtime.validate_request({**self.request,'seconds':duration})
+ def test_explicit_story_window_is_opt_in_and_still_bounded(self):
+  self.assertEqual(runtime.validate_request({**self.request,'seconds':30},maximum_seconds=30)['seconds'],30)
+  for duration in (None,True,31,float('nan')):
+   with self.assertRaisesRegex(ValueError,'DURATION'):runtime.validate_request({**self.request,'seconds':duration},maximum_seconds=30)
  def test_empty_oversized_and_injected_fields_rejected_before_backend(self):
   for patching in ({'text':''},{'text':'a'*601},{'text':'<|token|>'},{'style':'unknown'},{'seed':True},{'url':'https://bad.test'}):
    with self.assertRaises(ValueError):runtime.validate_request({**self.request,**patching})

@@ -27,7 +27,7 @@ export function createThreeArabFilmTrack({store,now=Date.now}){
    if(hash(repaired.bytes)!==hash(b))throw Error('THREE_ARAB_REPAIR_OUTPUT_INVALID');
    repairEvidence=repaired.evidence;
   }
-  if(!u||!u.narratorId||r?.modelId!==THREE_ARAB_MANIFEST.modelId||r?.result?.adapterVariant!=='audioseal-v1'||!Object.hasOwn(THREE_ARAB_STYLES,r.request?.style??'')||r.request.text!==u.text||r.result.sha256!==(repairEvidence?.sourceSHA256??hash(b))||r.result.watermark?.detected!==true||r.result.watermark.backend!=='audioseal'||r.result.watermark.score<.8||r.result.watermark.sampleCountPreserved!==true)throw Error('THREE_ARAB_FILM_RECEIPT_INVALID');
+  if(!u||!u.narratorId||r?.modelId!==THREE_ARAB_MANIFEST.modelId||r?.result?.adapterVariant!=='audioseal-v1'||!(Object.hasOwn(THREE_ARAB_STYLES,r.request?.style??'')||r.request?.style==='male_story')||r.request.text!==u.text||r.result.sha256!==(repairEvidence?.sourceSHA256??hash(b))||r.result.watermark?.detected!==true||r.result.watermark.backend!=='audioseal'||r.result.watermark.score<.8||r.result.watermark.sampleCountPreserved!==true)throw Error('THREE_ARAB_FILM_RECEIPT_INVALID');
   const tailReview=inspectNarrationTail(b);
   if(tailReview.requiresReview)throw Error('THREE_ARAB_AUDIO_TAIL_REVIEW_REQUIRED');
   const canonical=JSON.stringify(Object.fromEntries(Object.entries(r.request).sort(([a],[b])=>a.localeCompare(b))));

@@ -12,6 +12,7 @@ import time
 
 ROOT=Path(__file__).resolve().parent
 STYLES={
+ 'male_story':{'label':'راو رجولي عميق','demo':None,'caption':'صوت رجل بالغ، رجولي جهوري غليظ وعميق جداً، بقرار صوتي منخفض وخشونة طبيعية خفيفة. راو وثائقي وقور، يتحدث بالعربية الفصحى بوضوح وبإيقاع هادئ ومتزن ومؤثر.'},
  'solemn':{'label':'دينية مهيبة','demo':'005.wav','caption':'صوت رجل عميق. يتحدث بأسلوب سرد هادئ وجاد في جو مهيب. بسرعة بطيئة قليلاً وبدون تمطيط.'},
  'calm':{'label':'سرد هادئ','demo':'003.wav','caption':'صوت رجل هادئ ومنخفض. يروي القصة بوضوح وبسرعة ثابتة وبطيئة قليلاً، مع وقفات طبيعية.'},
 }
@@ -25,7 +26,7 @@ def require_native_eligibility():
 def digest(data):return hashlib.sha256(data).hexdigest()
 def request_fingerprint(request):return digest(json.dumps(request,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode())
 
-def validate_request(request):
+def validate_request(request,*,maximum_seconds=20):
  if not isinstance(request,dict) or set(request)!={'text','style','seed','seconds'}:raise ValueError('THREE_ARAB_REQUEST_INVALID')
  text=request['text'];style=request['style'];seconds=request['seconds'];seed=request['seed']
  if not isinstance(text,str) or not text.strip() or len(text)>600 or len(text.encode())>1400 or re.search(r'[\x00-\x1f\ufffd]|<\||\|>',text):raise ValueError('THREE_ARAB_TEXT_INVALID')
@@ -33,7 +34,7 @@ def validate_request(request):
  if type(seed) is not int or not 0<=seed<2**32:raise ValueError('THREE_ARAB_SEED_INVALID')
  # V1 does NOT predict duration: its upstream None fallback is 30s. Explicit
  # test windows are estimates requiring listening review, never word-safe claims.
- if type(seconds) not in (int,float) or not math.isfinite(seconds) or not 3<=seconds<=20:raise ValueError('THREE_ARAB_DURATION_REQUIRED')
+ if type(seconds) not in (int,float) or not math.isfinite(seconds) or maximum_seconds not in (20,30) or not 3<=seconds<=maximum_seconds:raise ValueError('THREE_ARAB_DURATION_REQUIRED')
  return {**request,'caption':STYLES[style]['caption'],'numSteps':40,'numCandidates':1,'trimTail':False,'noReference':True}
 
 def verify_files(root,spec=None):
@@ -49,9 +50,9 @@ def verify_files(root,spec=None):
  return {'ready':True,'files':len(spec['files']),'bytes':sum(f['size'] for f in spec['files'])}
 
 class ThreeArabRuntime:
- def __init__(self,root,*,backend_factory=None):self.root=Path(root);self.backend_factory=backend_factory;self.backend=None
+ def __init__(self,root,*,backend_factory=None,maximum_seconds=20):self.root=Path(root);self.backend_factory=backend_factory;self.backend=None;self.maximum_seconds=maximum_seconds
  def generate(self,request,output_dir,*,approved=False,rights_reviewed=False,execution_id=None):
-  value=validate_request(request)
+  value=validate_request(request,maximum_seconds=self.maximum_seconds)
   if approved is not True or rights_reviewed is not True or not isinstance(execution_id,str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,100}',execution_id):raise RuntimeError('THREE_ARAB_APPROVAL_REQUIRED')
   verify_files(self.root);folder=Path(output_dir)
   folder.mkdir(parents=True,exist_ok=True)
